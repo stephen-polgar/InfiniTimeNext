@@ -10,6 +10,7 @@
 #include <libraries/gpiote/app_gpiote.h>
 #include <hal/nrf_wdt.h>
 #include <cstring>
+#include <components/gfx/Gfx.h>
 #include <drivers/St7789.h>
 #include <components/brightness/BrightnessController.h>
 #include <algorithm>
@@ -47,6 +48,7 @@ Pinetime::Drivers::SpiNorFlash spiNorFlash {flashSpi};
 Pinetime::Drivers::Spi lcdSpi {spi, Pinetime::PinMap::SpiLcdCsn};
 Pinetime::Drivers::St7789 lcd {lcdSpi, Pinetime::PinMap::LcdDataCommand, Pinetime::PinMap::LcdReset};
 
+Pinetime::Components::Gfx gfx {lcd};
 Pinetime::Controllers::BrightnessController brightnessController;
 
 void DisplayProgressBar(uint8_t percent, uint16_t color);
@@ -90,6 +92,7 @@ void Process(void* /*instance*/) {
   spiNorFlash.Wakeup();
   brightnessController.Init();
   lcd.Init();
+  gfx.Init();
 
   NRF_LOG_INFO("Display logo")
   DisplayLogo();

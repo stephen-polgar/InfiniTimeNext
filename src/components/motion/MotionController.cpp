@@ -1,7 +1,5 @@
 #include "components/motion/MotionController.h"
-
 #include <task.h>
-
 #include "utility/Math.h"
 
 using namespace Pinetime::Controllers;

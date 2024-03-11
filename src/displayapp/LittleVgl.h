@@ -11,7 +11,7 @@ namespace Pinetime {
   namespace Components {
     class LittleVgl {
     public:
-      enum class FullRefreshDirections { None, Up, Down, Left, Right, LeftAnim, RightAnim };
+      enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
       LittleVgl(Pinetime::Drivers::St7789& lcd, Pinetime::Controllers::FS& filesystem);
 
       LittleVgl(const LittleVgl&) = delete;

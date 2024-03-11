@@ -1,11 +1,7 @@
 #pragma once
 
-#include <cstdint>
-#include <lvgl/lvgl.h>
-#include "displayapp/screens/Screen.h"
-#include <components/motion/MotionController.h>
+#include "Screen.h"
 #include "displayapp/apps/Apps.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
 
 namespace Pinetime {
@@ -19,25 +15,20 @@ namespace Pinetime {
 
       class Steps : public Screen {
       public:
-        Steps(Controllers::MotionController& motionController, Controllers::Settings& settingsController);
+        Steps();
         ~Steps() override;
-
-        void Refresh() override;
-        void lapBtnEventHandler(lv_event_t event);
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        Controllers::MotionController& motionController;
-        Controllers::Settings& settingsController;
-
-        uint32_t currentTripSteps = 0;
-
-        lv_obj_t* lSteps;
-        lv_obj_t* stepsArc;
-        lv_obj_t* resetBtn;
-        lv_obj_t* resetButtonLabel;
-        lv_obj_t* tripLabel;
-
+        void Refresh() override;
+        void lapBtnClicked();
+        static void lap_event_handler(lv_obj_t* obj, lv_event_t event);
+        static void set_event_handler(lv_obj_t* obj, lv_event_t event);
+        uint32_t currentTripSteps;
+        lv_obj_t *lSteps, *stepsArc, *resetBtn, *resetButtonLabel, *tripLabel;
         uint32_t stepsCount;
+        void setTrip(uint32_t value);
 
         lv_task_t* taskRefresh;
       };
@@ -48,8 +39,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Steps;
       static constexpr const char* icon = Screens::Symbols::shoe;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::Steps(controllers.motionController, controllers.settingsController);
+      static Screens::Screen* Create() {
+        return new Screens::Steps();
       };
     };
   }

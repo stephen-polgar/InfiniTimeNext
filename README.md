@@ -1,8 +1,26 @@
-# [InfiniTime](https://github.com/InfiniTimeOrg/InfiniTime)
+# [InfiniTimeNext](https://github.com/stephen-polgar/InfiniTimeNext)
 
+This repository is a fork of the [InfiniTime firmware](https://github.com/InfiniTimeOrg/InfiniTime) for the PineTime smartwatch.
+It was optimized for my daily use. Since it seems stable and useful, I decided to publish it for further development. 
+## New main functions
+- The stopwatch can run in the background
+- Multiple saved alarm times with advanced settings
+- Several saved timers can run at the same time
+- Steps are shown in meters also
+### Removed apps
+ - Chimes 
+ - All games
+ - WatchFace: InfiniTime, PineTime
+### Changes
+Now most system and user application constructors are empty and are used to create new "Screen" based objects with different parameters.
+Constructors do not load the screen. The watch screen are filled and cleaned by the Screen::Load() and Screen::UnLoad() functions.
+The utility/StaticStack.h are replaced with utility/ScreenStack.h which can store "Screen objects" with different parameters.
+And lots of small changes and optimizations.
+Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator.
+ 
 ![InfiniTime logo](doc/logo/infinitime-logo-small.jpg "InfiniTime Logo")
 
-Fast open-source firmware for the [PineTime smartwatch](https://pine64.org/devices/pinetime/) with many features, written in modern C++.
+Fast open-source firmware for the [PineTime smartwatch](https://www.pine64.org/pinetime/) with many features, written in modern C++.
 
 ## New to InfiniTime?
 
@@ -10,7 +28,7 @@ Fast open-source firmware for the [PineTime smartwatch](https://pine64.org/devic
 - [Updating the software](doc/gettingStarted/updating-software.md)
 - [About the firmware and bootloader](doc/gettingStarted/about-software.md)
 - [PineTimeStyle Watch face](https://wiki.pine64.org/wiki/PineTimeStyle)
-  - [Weather integration](https://wiki.pine64.org/wiki/Infinitime-Weather)
+- [Weather integration](https://wiki.pine64.org/wiki/Infinitime-Weather)
 
 ### Companion apps
 
@@ -40,7 +58,7 @@ Fast open-source firmware for the [PineTime smartwatch](https://pine64.org/devic
 
 ### Build, flash and debug
 
-- [InfiniTime simulator](https://github.com/InfiniTimeOrg/InfiniSim)
+- [InfiniTimeNext simulator](https://github.com/stephen-polgar/InfiniSimNext)
 - [Build the project](doc/buildAndProgram.md)
 - [Build the project with Docker](doc/buildWithDocker.md)
 - [Build the project with VSCode](doc/buildWithVScode.md)

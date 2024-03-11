@@ -365,9 +365,7 @@ list(APPEND SOURCE_FILES
         logging/NrfLogger.cpp
         displayapp/DisplayApp.cpp
         displayapp/screens/Screen.cpp
-        displayapp/screens/Tile.cpp
-        displayapp/screens/InfiniPaint.cpp
-        displayapp/screens/Paddle.cpp
+        displayapp/screens/Tile.cpp              
         displayapp/screens/StopWatch.cpp
         displayapp/screens/BatteryIcon.cpp
         displayapp/screens/BleIcon.cpp
@@ -376,14 +374,11 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Label.cpp
         displayapp/screens/FirmwareUpdate.cpp
         displayapp/screens/Music.cpp
-        displayapp/screens/Navigation.cpp
-        displayapp/screens/Metronome.cpp
+        displayapp/screens/Navigation.cpp      
         displayapp/screens/Motion.cpp
-        displayapp/screens/Weather.cpp
         displayapp/screens/FirmwareValidation.cpp
         displayapp/screens/ApplicationList.cpp
-        displayapp/screens/Notifications.cpp
-        displayapp/screens/Twos.cpp
+        displayapp/screens/Notifications.cpp        
         displayapp/screens/HeartRate.cpp
         displayapp/screens/FlashLight.cpp
         displayapp/screens/List.cpp
@@ -391,12 +386,14 @@ list(APPEND SOURCE_FILES
         displayapp/screens/BatteryInfo.cpp
         displayapp/screens/Steps.cpp
         displayapp/screens/Timer.cpp
-        displayapp/screens/Dice.cpp
+        displayapp/screens/TimerSet.cpp
         displayapp/screens/PassKey.cpp
         displayapp/screens/Error.cpp
         displayapp/screens/Alarm.cpp
+        displayapp/screens/AlarmSet.cpp
         displayapp/screens/Styles.cpp
-        displayapp/screens/WeatherSymbols.cpp
+        displayapp/screens/WeatherSymbols.cpp   
+        displayapp/screens/Weather.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
         displayapp/widgets/PageIndicator.cpp
@@ -415,16 +412,13 @@ list(APPEND SOURCE_FILES
         displayapp/screens/settings/SettingSetDateTime.cpp
         displayapp/screens/settings/SettingSetDate.cpp
         displayapp/screens/settings/SettingSetTime.cpp
-        displayapp/screens/settings/SettingChimes.cpp
         displayapp/screens/settings/SettingShakeThreshold.cpp
         displayapp/screens/settings/SettingBluetooth.cpp
 
         ## Watch faces
         displayapp/screens/WatchFaceAnalog.cpp
-        displayapp/screens/WatchFaceDigital.cpp
-        displayapp/screens/WatchFaceInfineat.cpp
+        displayapp/screens/WatchFaceDigital.cpp       
         displayapp/screens/WatchFaceTerminal.cpp
-        displayapp/screens/WatchFacePineTimeStyle.cpp
         displayapp/screens/WatchFaceCasioStyleG7710.cpp
 
         ##
@@ -465,7 +459,7 @@ list(APPEND SOURCE_FILES
         components/firmwarevalidator/FirmwareValidator.cpp
         components/motor/MotorController.cpp
         components/settings/Settings.cpp
-        components/timer/Timer.cpp
+        components/timer/TimerController.cpp
         components/alarm/AlarmController.cpp
         components/fs/FS.cpp
         drivers/Cst816s.cpp
@@ -533,7 +527,7 @@ list(APPEND RECOVERY_SOURCE_FILES
         components/ble/MotionService.cpp
         components/firmwarevalidator/FirmwareValidator.cpp
         components/settings/Settings.cpp
-        components/timer/Timer.cpp
+        components/timer/TimerController.cpp
         components/alarm/AlarmController.cpp
         drivers/Cst816s.cpp
         FreeRTOS/port.c
@@ -543,6 +537,7 @@ list(APPEND RECOVERY_SOURCE_FILES
         systemtask/SystemTask.cpp
         systemtask/SystemMonitor.cpp
         drivers/TwiMaster.cpp
+        components/gfx/Gfx.cpp
         components/rle/RleDecoder.cpp
         components/heartrate/HeartRateController.cpp
         heartratetask/HeartRateTask.cpp
@@ -572,6 +567,7 @@ list(APPEND RECOVERYLOADER_SOURCE_FILES
 
         components/rle/RleDecoder.cpp
 
+        components/gfx/Gfx.cpp
         drivers/St7789.cpp
         components/brightness/BrightnessController.cpp
 
@@ -589,10 +585,8 @@ set(INCLUDE_FILES
         displayapp/Messages.h
         displayapp/TouchEvents.h
         displayapp/screens/Screen.h
-        displayapp/screens/Tile.h
-        displayapp/screens/InfiniPaint.h
-        displayapp/screens/StopWatch.h
-        displayapp/screens/Paddle.h
+        displayapp/screens/Tile.h       
+        displayapp/screens/StopWatch.h       
         displayapp/screens/BatteryIcon.h
         displayapp/screens/BleIcon.h
         displayapp/screens/NotificationIcon.h
@@ -606,11 +600,12 @@ set(INCLUDE_FILES
         displayapp/Apps.h
         displayapp/screens/Notifications.h
         displayapp/screens/HeartRate.h
-        displayapp/screens/Metronome.h
         displayapp/screens/Motion.h
-        displayapp/screens/Timer.h
-        displayapp/screens/Dice.h
+        displayapp/screens/Timer.h   
+        displayapp/screens/TimerSet.h  
         displayapp/screens/Alarm.h
+        displayapp/screens/AlarmSet.h
+        displayapp/screens/Weather.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h
         displayapp/widgets/PageIndicator.h
@@ -651,7 +646,7 @@ set(INCLUDE_FILES
         components/ble/MotionService.h
         components/ble/SimpleWeatherService.h
         components/settings/Settings.h
-        components/timer/Timer.h
+        components/timer/TimerController.h
         components/alarm/AlarmController.h
         drivers/Cst816s.h
         FreeRTOS/portmacro.h
@@ -772,7 +767,7 @@ link_directories(
 
 
 set(COMMON_FLAGS -MP -MD -mthumb -mabi=aapcs -ftree-vrp -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin -fshort-enums -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fstack-usage -fno-exceptions -fno-non-call-exceptions)
-set(WARNING_FLAGS -Wall -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined -Wreturn-type -Werror=return-type -Werror)
+set(WARNING_FLAGS -Wall -Wno-reorder -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined -Wreturn-type -Werror=return-type -Werror)
 set(DEBUG_FLAGS -Og -g3)
 set(RELEASE_FLAGS -Os)
 set(CXX_FLAGS -fno-rtti)

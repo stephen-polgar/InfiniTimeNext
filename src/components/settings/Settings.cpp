@@ -1,6 +1,5 @@
 #include "components/settings/Settings.h"
-#include <cstdlib>
-#include <cstring>
+
 
 using namespace Pinetime::Controllers;
 

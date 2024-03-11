@@ -2,8 +2,7 @@
     "configurations": [
         {
             "name": "nrfCC",
-            "includePath": [
-                "${workspaceFolder}/**",
+            "includePath": [              
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/src"
             ],

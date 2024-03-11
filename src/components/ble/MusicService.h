@@ -62,7 +62,7 @@ namespace Pinetime {
       static const char EVENT_MUSIC_VOLUP = 0x05;
       static const char EVENT_MUSIC_VOLDOWN = 0x06;
 
-      enum MusicStatus { NotPlaying = 0x00, Playing = 0x01 };
+      enum MusicStatus  : uint8_t { NotPlaying = 0x00, Playing = 0x01 };
 
     private:
       struct ble_gatt_chr_def characteristicDefinition[14];

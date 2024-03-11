@@ -1,31 +1,25 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
+#include "Screen.h"
 #include "components/brightness/BrightnessController.h"
-#include "systemtask/SystemTask.h"
-#include <cstdint>
-#include <lvgl/lvgl.h>
 
 namespace Pinetime {
-
   namespace Applications {
     namespace Screens {
-
       class FlashLight : public Screen {
       public:
-        FlashLight(System::SystemTask& systemTask, Controllers::BrightnessController& brightness);
-        ~FlashLight() override;
+        FlashLight();
+        ~FlashLight()override;
+        void Load() override;
+        bool UnLoad() override;
+        bool OnTouchEvent(Pinetime::Applications::TouchEvents event) override;       
 
-        bool OnTouchEvent(Pinetime::Applications::TouchEvents event) override;
-        void Toggle();
-
-      private:
-        void SetIndicators();
-        void SetColors();
-
-        Pinetime::System::SystemTask& systemTask;
-        Controllers::BrightnessController& brightnessController;
-
+      private:     
+        uint32_t screenTimeout;
+        void toggle();
+        void setIndicators();
+        void setColors();
+        static void eventHandler(lv_obj_t* obj, lv_event_t event);
         Controllers::BrightnessController::Levels brightnessLevel = Controllers::BrightnessController::Levels::High;
 
         lv_obj_t* flashLight;

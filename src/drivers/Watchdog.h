@@ -19,7 +19,7 @@ namespace Pinetime {
     class Watchdog {
     public:
       /// Indicates the reasons of a reset of the MCU
-      enum class ResetReason { ResetPin, Watchdog, SoftReset, CpuLockup, SystemOff, LpComp, DebugInterface, NFC, HardReset };
+      enum class ResetReason : uint8_t { ResetPin, Watchdog, SoftReset, CpuLockup, SystemOff, LpComp, DebugInterface, NFC, HardReset };
 
       /// Behaviours of the watchdog when the CPU is sleeping
       enum class SleepBehaviour : uint8_t {

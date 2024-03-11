@@ -1,25 +1,17 @@
-#include "displayapp/screens/settings/SettingDisplay.h"
-#include <lvgl/lvgl.h>
-#include "displayapp/DisplayApp.h"
-#include "displayapp/Messages.h"
+#include "SettingDisplay.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/Styles.h"
-#include "displayapp/screens/Screen.h"
 #include "displayapp/screens/Symbols.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<SettingDisplay*>(obj->user_data);
-    screen->UpdateSelected(obj, event);
-  }
-}
-
 constexpr std::array<uint16_t, 6> SettingDisplay::options;
 
-SettingDisplay::SettingDisplay(Pinetime::Applications::DisplayApp* app, Pinetime::Controllers::Settings& settingsController)
-  : app {app}, settingsController {settingsController} {
+SettingDisplay::SettingDisplay() : Screen(Apps::SettingDisplay) {
+}
 
+void SettingDisplay::Load() {
+  running = true;
   lv_obj_t* container1 = lv_cont_create(lv_scr_act(), nullptr);
 
   lv_obj_set_style_local_bg_opa(container1, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
@@ -49,29 +41,41 @@ SettingDisplay::SettingDisplay(Pinetime::Applications::DisplayApp* app, Pinetime
     snprintf(buffer, sizeof(buffer), "%2" PRIu16 "s", options[i] / 1000);
     lv_checkbox_set_text(cbOption[i], buffer);
     cbOption[i]->user_data = this;
-    lv_obj_set_event_cb(cbOption[i], event_handler);
+    lv_obj_set_event_cb(cbOption[i], event_handlerGoal);
     SetRadioButtonStyle(cbOption[i]);
 
-    if (settingsController.GetScreenTimeOut() == options[i]) {
+    if (System::SystemTask::displayApp->settingsController.GetScreenTimeOut() == options[i]) {
       lv_checkbox_set_checked(cbOption[i], true);
     }
   }
 }
 
-SettingDisplay::~SettingDisplay() {
-  lv_obj_clean(lv_scr_act());
-  settingsController.SaveSettings();
+bool SettingDisplay::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
-void SettingDisplay::UpdateSelected(lv_obj_t* object, lv_event_t event) {
-  if (event == LV_EVENT_CLICKED) {
-    for (unsigned int i = 0; i < options.size(); i++) {
-      if (object == cbOption[i]) {
-        lv_checkbox_set_checked(cbOption[i], true);
-        settingsController.SetScreenTimeOut(options[i]);
-      } else {
-        lv_checkbox_set_checked(cbOption[i], false);
-      }
+SettingDisplay::~SettingDisplay() {
+  UnLoad();
+  System::SystemTask::displayApp->settingsController.SaveSettings();
+}
+
+void SettingDisplay::updateSelected(lv_obj_t* object) {
+  for (unsigned int i = 0; i < options.size(); i++) {
+    if (object == cbOption[i]) {
+      lv_checkbox_set_checked(cbOption[i], true);
+      System::SystemTask::displayApp->settingsController.SetScreenTimeOut(options[i]);
+    } else {
+      lv_checkbox_set_checked(cbOption[i], false);
     }
+  }
+}
+
+void SettingDisplay::event_handlerGoal(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<SettingDisplay*>(obj->user_data)->updateSelected(obj);
   }
 }

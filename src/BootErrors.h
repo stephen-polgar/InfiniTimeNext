@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Pinetime {
   namespace System {
-    enum class BootErrors {
+    enum class BootErrors : uint8_t {
       None,
-      TouchController,
+      TouchController
     };
   }
 }

@@ -1,9 +1,9 @@
 #pragma once
-#include <cstdint>
-#include <bitset>
+
 #include "components/brightness/BrightnessController.h"
 #include "components/fs/FS.h"
 #include "displayapp/apps/Apps.h"
+#include <bitset>
 
 namespace Pinetime {
   namespace Controllers {
@@ -12,7 +12,6 @@ namespace Pinetime {
       enum class ClockType : uint8_t { H24, H12 };
       enum class WeatherFormat : uint8_t { Metric, Imperial };
       enum class Notification : uint8_t { On, Off, Sleep };
-      enum class ChimesOption : uint8_t { None, Hours, HalfHours };
       enum class WakeUpMode : uint8_t { SingleTap = 0, DoubleTap = 1, RaiseWrist = 2, Shake = 3, LowerWrist = 4 };
       enum class Colors : uint8_t {
         White,
@@ -36,14 +35,6 @@ namespace Pinetime {
       };
       enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
       enum class PTSWeather : uint8_t { On, Off };
-
-      struct PineTimeStyle {
-        Colors ColorTime = Colors::Teal;
-        Colors ColorBar = Colors::Teal;
-        Colors ColorBG = Colors::Black;
-        PTSGaugeStyle gaugeStyle = PTSGaugeStyle::Full;
-        PTSWeather weatherEnable = PTSWeather::Off;
-      };
 
       struct WatchFaceInfineat {
         bool showSideCover = true;
@@ -71,47 +62,6 @@ namespace Pinetime {
         return settings.watchFace;
       };
 
-      void SetChimeOption(ChimesOption chimeOption) {
-        if (chimeOption != settings.chimesOption) {
-          settingsChanged = true;
-        }
-        settings.chimesOption = chimeOption;
-      };
-
-      ChimesOption GetChimeOption() const {
-        return settings.chimesOption;
-      };
-
-      void SetPTSColorTime(Colors colorTime) {
-        if (colorTime != settings.PTS.ColorTime)
-          settingsChanged = true;
-        settings.PTS.ColorTime = colorTime;
-      };
-
-      Colors GetPTSColorTime() const {
-        return settings.PTS.ColorTime;
-      };
-
-      void SetPTSColorBar(Colors colorBar) {
-        if (colorBar != settings.PTS.ColorBar)
-          settingsChanged = true;
-        settings.PTS.ColorBar = colorBar;
-      };
-
-      Colors GetPTSColorBar() const {
-        return settings.PTS.ColorBar;
-      };
-
-      void SetPTSColorBG(Colors colorBG) {
-        if (colorBG != settings.PTS.ColorBG)
-          settingsChanged = true;
-        settings.PTS.ColorBG = colorBG;
-      };
-
-      Colors GetPTSColorBG() const {
-        return settings.PTS.ColorBG;
-      };
-
       void SetInfineatShowSideCover(bool show) {
         if (show != settings.watchFaceInfineat.showSideCover) {
           settings.watchFaceInfineat.showSideCover = show;
@@ -132,26 +82,6 @@ namespace Pinetime {
 
       int GetInfineatColorIndex() const {
         return settings.watchFaceInfineat.colorIndex;
-      };
-
-      void SetPTSGaugeStyle(PTSGaugeStyle gaugeStyle) {
-        if (gaugeStyle != settings.PTS.gaugeStyle)
-          settingsChanged = true;
-        settings.PTS.gaugeStyle = gaugeStyle;
-      };
-
-      PTSGaugeStyle GetPTSGaugeStyle() const {
-        return settings.PTS.gaugeStyle;
-      };
-
-      void SetPTSWeather(PTSWeather weatherEnable) {
-        if (weatherEnable != settings.PTS.weatherEnable)
-          settingsChanged = true;
-        settings.PTS.weatherEnable = weatherEnable;
-      };
-
-      PTSWeather GetPTSWeather() const {
-        return settings.PTS.weatherEnable;
       };
 
       void SetAppMenu(uint8_t menu) {
@@ -271,6 +201,17 @@ namespace Pinetime {
         settings.stepsGoal = goal;
       };
 
+      uint32_t GetStepLength() const {
+        return settings.stepLength;
+      };
+
+      void SetStepLength(uint32_t stepLength) {
+        if (stepLength != settings.stepLength) {
+          settingsChanged = true;
+        }
+        settings.stepLength = stepLength;
+      };
+
       uint32_t GetStepsGoal() const {
         return settings.stepsGoal;
       };
@@ -290,7 +231,7 @@ namespace Pinetime {
 
       struct SettingsData {
         uint32_t version = settingsVersion;
-        uint32_t stepsGoal = 10000;
+        uint32_t stepsGoal = 10000, stepLength = 40;
         uint32_t screenTimeOut = 15000;
 
         ClockType clockType = ClockType::H24;
@@ -298,9 +239,6 @@ namespace Pinetime {
         Notification notificationStatus = Notification::On;
 
         Pinetime::Applications::WatchFace watchFace = Pinetime::Applications::WatchFace::Digital;
-        ChimesOption chimesOption = ChimesOption::None;
-
-        PineTimeStyle PTS;
 
         WatchFaceInfineat watchFaceInfineat;
 

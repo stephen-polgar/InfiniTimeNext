@@ -1,12 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <chrono>
-#include "displayapp/screens/Screen.h"
-#include <lvgl/src/lv_core/lv_style.h>
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <components/motion/MotionController.h>
-#include "displayapp/Controllers.h"
+#include "Screen.h"
 #include "displayapp/apps/Apps.h"
 
 namespace Pinetime {
@@ -15,13 +9,13 @@ namespace Pinetime {
 
       class Motion : public Screen {
       public:
-        Motion(Controllers::MotionController& motionController);
+        Motion();
         ~Motion() override;
-
+        void Load() override;
+        bool UnLoad() override;
         void Refresh() override;
 
       private:
-        Controllers::MotionController& motionController;
         lv_obj_t* chart;
         lv_chart_series_t* ser1;
         lv_chart_series_t* ser2;
@@ -38,8 +32,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Motion;
       static constexpr const char* icon = "M";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::Motion(controllers.motionController);
+      static Screens::Screen* Create() {
+        return new Screens::Motion();
       };
     };
   }

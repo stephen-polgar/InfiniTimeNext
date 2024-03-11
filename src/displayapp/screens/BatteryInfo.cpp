@@ -1,14 +1,18 @@
-#include "displayapp/screens/BatteryInfo.h"
-#include "displayapp/DisplayApp.h"
+#include "BatteryInfo.h"
+#include "systemtask/SystemTask.h"
 #include "components/battery/BatteryController.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-BatteryInfo::BatteryInfo(const Pinetime::Controllers::Battery& batteryController) : batteryController {batteryController} {
+BatteryInfo::BatteryInfo() : Screen(Apps::BatteryInfo) {
+}
 
-  batteryPercent = batteryController.PercentRemaining();
-  batteryVoltage = batteryController.Voltage();
+void BatteryInfo::Load() {
+  running = true;
+  auto* batteryController = &System::SystemTask::displayApp->batteryController;
+  batteryPercent = batteryController->PercentRemaining();
+  batteryVoltage = batteryController->Voltage();
 
   charging_bar = lv_bar_create(lv_scr_act(), nullptr);
   lv_obj_set_size(charging_bar, 200, 15);
@@ -42,17 +46,25 @@ BatteryInfo::BatteryInfo(const Pinetime::Controllers::Battery& batteryController
   Refresh();
 }
 
+bool BatteryInfo::UnLoad() {
+  if (running) {
+    running = false;
+    lv_task_del(taskRefresh);
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 BatteryInfo::~BatteryInfo() {
-  lv_task_del(taskRefresh);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void BatteryInfo::Refresh() {
+  auto* batteryController = &System::SystemTask::displayApp->batteryController;
+  batteryPercent = batteryController->PercentRemaining();
+  batteryVoltage = batteryController->Voltage();
 
-  batteryPercent = batteryController.PercentRemaining();
-  batteryVoltage = batteryController.Voltage();
-
-  if (batteryController.IsCharging()) {
+  if (batteryController->IsCharging()) {
     lv_obj_set_style_local_bg_color(charging_bar, LV_BAR_PART_INDIC, LV_STATE_DEFAULT, LV_COLOR_RED);
     lv_label_set_text_static(status, "Charging");
   } else if (batteryPercent == 100) {

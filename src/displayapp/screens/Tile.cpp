@@ -1,44 +1,21 @@
-#include "displayapp/screens/Tile.h"
-#include "displayapp/screens/BatteryIcon.h"
-#include "components/ble/BleController.h"
+#include "Tile.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
+
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void lv_update_task(struct _lv_task_t* task) {
-    auto* user_data = static_cast<Tile*>(task->user_data);
-    user_data->UpdateScreen();
-  }
-
-  void event_handler(lv_obj_t* obj, lv_event_t event) {
-    if (event != LV_EVENT_VALUE_CHANGED) {
-      return;
-    }
-
-    Tile* screen = static_cast<Tile*>(obj->user_data);
-    auto* eventDataPtr = (uint32_t*) lv_event_get_data();
-    uint32_t eventData = *eventDataPtr;
-    screen->OnValueChangedEvent(obj, eventData);
-  }
+Tile::Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications)
+  : screenID {screenID}, applications {std::move(applications)}, pageIndicator(screenID, numScreens) {
+  taskUpdate = NULL;
 }
 
-Tile::Tile(uint8_t screenID,
-           uint8_t numScreens,
-           DisplayApp* app,
-           Controllers::Settings& settingsController,
-           const Controllers::Battery& batteryController,
-           const Controllers::Ble& bleController,
-           Controllers::DateTime& dateTimeController,
-           std::array<Applications, 6>& applications)
-  : app {app}, dateTimeController {dateTimeController}, pageIndicator(screenID, numScreens), statusIcons(batteryController, bleController) {
-
-  settingsController.SetAppMenu(screenID);
-
+void Tile::Load() {
+  running = true;
+  System::SystemTask::displayApp->settingsController.SetAppMenu(screenID);
   statusIcons.Create();
   lv_obj_align(statusIcons.GetObject(), lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, -8, 0);
 
-  // Time
   label_time = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_time, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
@@ -81,28 +58,42 @@ Tile::Tile(uint8_t screenID,
   }
 
   btnm1->user_data = this;
-  lv_obj_set_event_cb(btnm1, event_handler);
+  lv_obj_set_event_cb(btnm1, [](lv_obj_t* obj, lv_event_t event) {
+    if (event == LV_EVENT_VALUE_CHANGED) {
+      Tile* screen = static_cast<Tile*>(obj->user_data);
+      auto* eventDataPtr = (uint32_t*) lv_event_get_data();
+      uint32_t eventData = *eventDataPtr;
+      screen->onValueChangedEvent(obj, eventData);
+    }
+  });
 
-  taskUpdate = lv_task_create(lv_update_task, 5000, LV_TASK_PRIO_MID, this);
+  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
 
-  UpdateScreen();
+  Refresh();
+}
+
+bool Tile::UnLoad() {
+  if (taskUpdate) {
+    running = false;
+    lv_task_del(taskUpdate);
+    taskUpdate = NULL;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
 Tile::~Tile() {
-  lv_task_del(taskUpdate);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
-void Tile::UpdateScreen() {
-  lv_label_set_text(label_time, dateTimeController.FormattedTime().c_str());
+void Tile::Refresh() {
+  lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
   statusIcons.Update();
 }
 
-void Tile::OnValueChangedEvent(lv_obj_t* obj, uint32_t buttonId) {
-  if (obj != btnm1) {
-    return;
+void Tile::onValueChangedEvent(lv_obj_t* obj, uint32_t buttonId) {
+  if (obj == btnm1) {
+    System::SystemTask::displayApp->StartApp(apps[buttonId]);
+    running = false;
   }
-
-  app->StartApp(apps[buttonId], DisplayApp::FullRefreshDirections::Up);
-  running = false;
 }

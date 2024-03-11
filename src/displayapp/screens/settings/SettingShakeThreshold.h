@@ -1,31 +1,24 @@
 #pragma once
 
-#include <cstdint>
-#include <lvgl/lvgl.h>
-#include "components/settings/Settings.h"
 #include "displayapp/screens/Screen.h"
-#include <components/motion/MotionController.h>
-#include "systemtask/SystemTask.h"
 
 namespace Pinetime {
-
   namespace Applications {
     namespace Screens {
 
       class SettingShakeThreshold : public Screen {
       public:
-        SettingShakeThreshold(Pinetime::Controllers::Settings& settingsController,
-                              Controllers::MotionController& motionController,
-                              System::SystemTask& systemTask);
+        SettingShakeThreshold();
 
         ~SettingShakeThreshold() override;
-        void Refresh() override;
-        void UpdateSelected(lv_obj_t* object, lv_event_t event);
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        Controllers::Settings& settingsController;
-        Controllers::MotionController& motionController;
-        System::SystemTask& systemTask;
+        void Refresh() override;
+        uint32_t screenTimeout;
+        void updateSelected(lv_obj_t* object);
+        static void event_handler(lv_obj_t* obj, lv_event_t event);
         uint8_t calibrating;
         bool EnableForCal;
         uint32_t vDecay, vCalTime;

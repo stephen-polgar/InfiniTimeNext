@@ -1,20 +1,15 @@
-#include "displayapp/screens/settings/SettingSteps.h"
-#include <lvgl/lvgl.h>
-#include "displayapp/DisplayApp.h"
+#include "SettingSteps.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void event_handler(lv_obj_t* obj, lv_event_t event) {
-    SettingSteps* screen = static_cast<SettingSteps*>(obj->user_data);
-    screen->UpdateSelected(obj, event);
-  }
+SettingSteps::SettingSteps() : Screen(Apps::SettingSteps) {
 }
 
-SettingSteps::SettingSteps(Pinetime::Controllers::Settings& settingsController) : settingsController {settingsController} {
-
+void SettingSteps::Load() {
+  running = true;
   lv_obj_t* container1 = lv_cont_create(lv_scr_act(), nullptr);
 
   lv_obj_set_style_local_bg_opa(container1, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
@@ -38,44 +33,61 @@ SettingSteps::SettingSteps(Pinetime::Controllers::Settings& settingsController) 
   lv_label_set_align(icon, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(icon, title, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
-  stepValue = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
-  lv_label_set_text_fmt(stepValue, "%lu", settingsController.GetStepsGoal());
-  lv_label_set_align(stepValue, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_CENTER, 0, -20);
+  stepGoal = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_set_style_local_text_font(stepGoal, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+  lv_label_set_text_fmt(stepGoal, "%lu", System::SystemTask::displayApp->settingsController.GetStepsGoal());
+  lv_label_set_align(stepGoal, LV_LABEL_ALIGN_CENTER);
+  lv_obj_align(stepGoal, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 50);
 
-  static constexpr uint8_t btnWidth = 115;
-  static constexpr uint8_t btnHeight = 80;
-
-  btnPlus = lv_btn_create(lv_scr_act(), nullptr);
-  btnPlus->user_data = this;
-  lv_obj_set_size(btnPlus, btnWidth, btnHeight);
-  lv_obj_align(btnPlus, lv_scr_act(), LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-  lv_obj_set_style_local_bg_color(btnPlus, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
-  lv_obj_t* lblPlus = lv_label_create(btnPlus, nullptr);
-  lv_obj_set_style_local_text_font(lblPlus, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
-  lv_label_set_text_static(lblPlus, "+");
-  lv_obj_set_event_cb(btnPlus, event_handler);
+  static constexpr uint8_t btnSize = 40;
 
   btnMinus = lv_btn_create(lv_scr_act(), nullptr);
   btnMinus->user_data = this;
-  lv_obj_set_size(btnMinus, btnWidth, btnHeight);
-  lv_obj_set_event_cb(btnMinus, event_handler);
-  lv_obj_align(btnMinus, lv_scr_act(), LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_obj_set_size(btnMinus, btnSize, btnSize);
+  lv_obj_set_event_cb(btnMinus, event_handlerGoal);
+  lv_obj_align(btnMinus, stepGoal, LV_ALIGN_OUT_LEFT_MID, -10, 0);
   lv_obj_set_style_local_bg_color(btnMinus, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
   lv_obj_t* lblMinus = lv_label_create(btnMinus, nullptr);
-  lv_obj_set_style_local_text_font(lblMinus, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
-  lv_label_set_text_static(lblMinus, "-");
+  lv_obj_set_style_local_text_font(lblMinus, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
+  lv_label_set_text_static(lblMinus, "<");
+
+  btnPlus = lv_btn_create(lv_scr_act(), btnMinus);
+  lv_obj_align(btnPlus, stepGoal, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+  lv_obj_t* lblPlus = lv_label_create(btnPlus, lblMinus);
+  lv_label_set_text_static(lblPlus, ">");
+
+  title = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_text_static(title, "Step length [cm]");
+  lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
+  lv_obj_align(title, stepGoal, LV_ALIGN_OUT_BOTTOM_MID, 0, 40);
+
+  stepLengt = lv_label_create(lv_scr_act(), stepGoal);
+  lv_label_set_text_fmt(stepLengt, "%lu", System::SystemTask::displayApp->settingsController.GetStepLength());
+  lv_obj_align(stepLengt, title, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+
+  btnM = lv_btn_create(lv_scr_act(), btnMinus);
+  lblMinus = lv_label_create(btnM, lblMinus);
+  lv_obj_set_event_cb(btnM, event_handlerLength);
+  lv_obj_align(btnM, stepLengt, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+  btnP = lv_btn_create(lv_scr_act(), btnM);
+  lv_obj_align(btnP, stepLengt, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+  lv_label_create(btnP, lblPlus);
+}
+
+bool SettingSteps::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
 SettingSteps::~SettingSteps() {
-  lv_obj_clean(lv_scr_act());
-  settingsController.SaveSettings();
+  UnLoad();
+  System::SystemTask::displayApp->settingsController.SaveSettings();
 }
 
-void SettingSteps::UpdateSelected(lv_obj_t* object, lv_event_t event) {
-  uint32_t value = settingsController.GetStepsGoal();
-
+void SettingSteps::updateGoal(lv_obj_t* object, lv_event_t event) {
   int valueChange = 0;
   if (event == LV_EVENT_SHORT_CLICKED) {
     valueChange = 500;
@@ -85,15 +97,51 @@ void SettingSteps::UpdateSelected(lv_obj_t* object, lv_event_t event) {
     return;
   }
 
+  uint32_t value = System::SystemTask::displayApp->settingsController.GetStepsGoal();
+  if (value < 1000 || value > 500000)
+    value = 10000;
+
   if (object == btnPlus) {
     value += valueChange;
   } else if (object == btnMinus) {
     value -= valueChange;
   }
 
-  if (value >= 1000 && value <= 500000) {
-    settingsController.SetStepsGoal(value);
-    lv_label_set_text_fmt(stepValue, "%lu", settingsController.GetStepsGoal());
-    lv_obj_realign(stepValue);
+  System::SystemTask::displayApp->settingsController.SetStepsGoal(value);
+  lv_label_set_text_fmt(stepGoal, "%lu", value);
+  lv_obj_realign(stepGoal);
+}
+
+void SettingSteps::updateLength(lv_obj_t* object, lv_event_t event) {
+
+  int valueChange = 0;
+  if (event == LV_EVENT_SHORT_CLICKED) {
+    valueChange = 1;
+  } else if (event == LV_EVENT_LONG_PRESSED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
+    valueChange = 10;
+  } else {
+    return;
   }
+
+  uint32_t value = System::SystemTask::displayApp->settingsController.GetStepLength();
+  if (value > 100 || value < 10)
+    value = 40;
+
+  if (object == btnP) {
+    value += valueChange;
+  } else if (object == btnM) {
+    value -= valueChange;
+  }
+
+  System::SystemTask::displayApp->settingsController.SetStepLength(value);
+  lv_label_set_text_fmt(stepLengt, "%lu", value);
+  lv_obj_realign(stepLengt);
+}
+
+void SettingSteps::event_handlerGoal(lv_obj_t* obj, lv_event_t event) {
+  (static_cast<SettingSteps*>(obj->user_data))->updateGoal(obj, event);
+}
+
+void SettingSteps::event_handlerLength(lv_obj_t* obj, lv_event_t event) {
+  (static_cast<SettingSteps*>(obj->user_data))->updateLength(obj, event);
 }

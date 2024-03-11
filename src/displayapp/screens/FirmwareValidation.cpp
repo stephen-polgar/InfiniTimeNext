@@ -1,21 +1,16 @@
-#include "displayapp/screens/FirmwareValidation.h"
-#include <lvgl/lvgl.h>
+#include "FirmwareValidation.h"
 #include "Version.h"
-#include "components/firmwarevalidator/FirmwareValidator.h"
-#include "displayapp/DisplayApp.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void ButtonEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<FirmwareValidation*>(obj->user_data);
-    screen->OnButtonEvent(obj, event);
-  }
+FirmwareValidation::FirmwareValidation(Controllers::FirmwareValidator& validator)
+  : Screen(Apps::FirmwareValidation), validator {validator} {
 }
 
-FirmwareValidation::FirmwareValidation(Pinetime::Controllers::FirmwareValidator& validator) : validator {validator} {
-  labelVersion = lv_label_create(lv_scr_act(), nullptr);
+void FirmwareValidation::Load() {
+  running = true;
+  lv_obj_t* labelVersion = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_fmt(labelVersion,
                         "Version : %lu.%lu.%lu\n"
                         "ShortRef : %s",
@@ -25,7 +20,7 @@ FirmwareValidation::FirmwareValidation(Pinetime::Controllers::FirmwareValidator&
                         Version::GitCommitHash());
   lv_obj_align(labelVersion, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
-  labelIsValidated = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_t* labelIsValidated = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_align(labelIsValidated, labelVersion, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
   lv_label_set_recolor(labelIsValidated, true);
   lv_label_set_long_mode(labelIsValidated, LV_LABEL_LONG_BREAK);
@@ -41,10 +36,10 @@ FirmwareValidation::FirmwareValidation(Pinetime::Controllers::FirmwareValidator&
     buttonValidate->user_data = this;
     lv_obj_set_size(buttonValidate, 115, 50);
     lv_obj_align(buttonValidate, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
-    lv_obj_set_event_cb(buttonValidate, ButtonEventHandler);
+    lv_obj_set_event_cb(buttonValidate, buttonEventHandler);
     lv_obj_set_style_local_bg_color(buttonValidate, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::highlight);
 
-    labelButtonValidate = lv_label_create(buttonValidate, nullptr);
+    lv_obj_t* labelButtonValidate = lv_label_create(buttonValidate, nullptr);
     lv_label_set_text_static(labelButtonValidate, "Validate");
 
     buttonReset = lv_btn_create(lv_scr_act(), nullptr);
@@ -52,22 +47,35 @@ FirmwareValidation::FirmwareValidation(Pinetime::Controllers::FirmwareValidator&
     lv_obj_set_size(buttonReset, 115, 50);
     lv_obj_align(buttonReset, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
     lv_obj_set_style_local_bg_color(buttonReset, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
-    lv_obj_set_event_cb(buttonReset, ButtonEventHandler);
+    lv_obj_set_event_cb(buttonReset, buttonEventHandler);
 
-    labelButtonReset = lv_label_create(buttonReset, nullptr);
+    lv_obj_t* labelButtonReset = lv_label_create(buttonReset, nullptr);
     lv_label_set_text_static(labelButtonReset, "Reset");
   }
 }
 
-FirmwareValidation::~FirmwareValidation() {
-  lv_obj_clean(lv_scr_act());
+bool FirmwareValidation::UnLoad() {
+  if (buttonReset) {
+    buttonReset = NULL;
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
-void FirmwareValidation::OnButtonEvent(lv_obj_t* object, lv_event_t event) {
-  if (object == buttonValidate && event == LV_EVENT_CLICKED) {
-    validator.Validate();
-    running = false;
-  } else if (object == buttonReset && event == LV_EVENT_CLICKED) {
+FirmwareValidation::~FirmwareValidation() {
+  UnLoad();
+}
+
+void FirmwareValidation::onButtonEvent(lv_obj_t* object) {
+  if (object == buttonValidate) {
+    validator.Validate();   
+  } else if (object == buttonReset) {
     validator.Reset();
   }
+   running = false;
+}
+
+void FirmwareValidation::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) static_cast<FirmwareValidation*>(obj->user_data)->onButtonEvent(obj);
 }

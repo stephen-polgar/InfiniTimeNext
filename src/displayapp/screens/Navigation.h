@@ -17,14 +17,11 @@
 */
 #pragma once
 
-#include <FreeRTOS.h>
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <string>
-#include "displayapp/screens/Screen.h"
-#include <array>
+#include "Screen.h"
 #include "displayapp/apps/Apps.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
+#include <string>
+
 
 namespace Pinetime {
   namespace Controllers {
@@ -36,11 +33,12 @@ namespace Pinetime {
     namespace Screens {
       class Navigation : public Screen {
       public:
-        explicit Navigation(Pinetime::Controllers::NavigationService& nav);
+        explicit Navigation();
         ~Navigation() override;
-
+        void Load() override;
+        bool UnLoad() override;
         void Refresh() override;
-        static bool IsAvailable(Pinetime::Controllers::FS& filesystem);
+        static bool IsAvailable(Controllers::FS& filesystem);
 
       private:
         lv_obj_t* imgFlag;
@@ -48,12 +46,10 @@ namespace Pinetime {
         lv_obj_t* txtManDist;
         lv_obj_t* barProgress;
 
-        Pinetime::Controllers::NavigationService& navService;
-
         std::string flag;
         std::string narrative;
         std::string manDist;
-        int progress = 0;
+        int progress;
 
         lv_task_t* taskRefresh;
       };
@@ -64,8 +60,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Navigation;
       static constexpr const char* icon = Screens::Symbols::map;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::Navigation(*controllers.navigationService);
+      static Screens::Screen* Create() {
+        return new Screens::Navigation();
       };
     };
   }

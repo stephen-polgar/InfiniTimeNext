@@ -41,12 +41,12 @@ namespace Pinetime {
     class NimbleController {
 
     public:
-      NimbleController(Pinetime::System::SystemTask& systemTask,
+      NimbleController(System::SystemTask& systemTask,
                        Ble& bleController,
                        DateTime& dateTimeController,
                        NotificationManager& notificationManager,
                        Battery& batteryController,
-                       Pinetime::Drivers::SpiNorFlash& spiNorFlash,
+                       Drivers::SpiNorFlash& spiNorFlash,
                        HeartRateController& heartRateController,
                        MotionController& motionController,
                        FS& fs);

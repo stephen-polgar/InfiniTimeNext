@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose Debug or Release")
 
-project(pinetime VERSION 1.14.0 LANGUAGES C CXX ASM)
+project(pinetime VERSION 1.14.1 LANGUAGES C CXX ASM)
+
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 20)
@@ -14,6 +15,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(NRF_TARGET "nrf52")
+set(ARM_NONE_EABI_TOOLCHAIN_PATH $ENV{ARM_NONE_EABI_TOOLCHAIN_PATH})
+set(NRF5_SDK_PATH $ENV{NRF5_SDK_PATH})
+set(BUILD_DFU true)
 
 if (NOT ARM_NONE_EABI_TOOLCHAIN_PATH)
   message(FATAL_ERROR "The path to the toolchain (arm-none-eabi) must be specified on the command line (add -DARM_NONE_EABI_TOOLCHAIN_PATH=<path>")

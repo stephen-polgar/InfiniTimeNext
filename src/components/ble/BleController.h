@@ -8,8 +8,8 @@ namespace Pinetime {
     class Ble {
     public:
       using BleAddress = std::array<uint8_t, 6>;
-      enum class FirmwareUpdateStates { Idle, Running, Validated, Error };
-      enum class AddressTypes { Public, Random, RPA_Public, RPA_Random };
+      enum class FirmwareUpdateStates : uint8_t { Idle, Running, Validated, Error };
+      enum class AddressTypes : uint8_t { Public, Random, RPA_Public, RPA_Random };
 
       Ble() = default;
       bool IsConnected() const;

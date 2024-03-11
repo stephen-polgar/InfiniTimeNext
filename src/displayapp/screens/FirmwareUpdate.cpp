@@ -1,12 +1,13 @@
 #include "displayapp/screens/FirmwareUpdate.h"
-#include <lvgl/lvgl.h>
-#include "components/ble/BleController.h"
 #include "displayapp/DisplayApp.h"
 
 using namespace Pinetime::Applications::Screens;
 
-FirmwareUpdate::FirmwareUpdate(const Pinetime::Controllers::Ble& bleController) : bleController {bleController} {
+FirmwareUpdate::FirmwareUpdate(const Controllers::Ble& bleController) : Screen(Apps::FirmwareUpdate), bleController {bleController} {
+}
 
+void FirmwareUpdate::Load() {
+  running = true;
   titleLabel = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(titleLabel, "Firmware update");
   lv_obj_align(titleLabel, nullptr, LV_ALIGN_IN_TOP_MID, 0, 50);
@@ -26,15 +27,23 @@ FirmwareUpdate::FirmwareUpdate(const Pinetime::Controllers::Ble& bleController) 
   startTime = xTaskGetTickCount();
 }
 
+bool FirmwareUpdate::UnLoad() {
+  if (running) {
+    running = false;
+    lv_task_del(taskRefresh);
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 FirmwareUpdate::~FirmwareUpdate() {
-  lv_task_del(taskRefresh);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void FirmwareUpdate::Refresh() {
   switch (bleController.State()) {
     default:
-    case Pinetime::Controllers::Ble::FirmwareUpdateStates::Idle:
+    case Controllers::Ble::FirmwareUpdateStates::Idle:
       // This condition makes sure that the app is exited if somehow it got
       // launched without a firmware update. This should never happen.
       if (state != States::Error) {
@@ -46,19 +55,19 @@ void FirmwareUpdate::Refresh() {
         running = false;
       }
       break;
-    case Pinetime::Controllers::Ble::FirmwareUpdateStates::Running:
+    case Controllers::Ble::FirmwareUpdateStates::Running:
       if (state != States::Running) {
         state = States::Running;
       }
       DisplayProgression();
       break;
-    case Pinetime::Controllers::Ble::FirmwareUpdateStates::Validated:
+    case Controllers::Ble::FirmwareUpdateStates::Validated:
       if (state != States::Validated) {
         UpdateValidated();
         state = States::Validated;
       }
       break;
-    case Pinetime::Controllers::Ble::FirmwareUpdateStates::Error:
+    case Controllers::Ble::FirmwareUpdateStates::Error:
       if (state != States::Error) {
         UpdateError();
         state = States::Error;

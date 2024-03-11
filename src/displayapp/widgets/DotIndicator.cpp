@@ -1,5 +1,5 @@
 #include "displayapp/widgets/DotIndicator.h"
-#include "displayapp/InfiniTimeTheme.h"
+
 
 using namespace Pinetime::Applications::Widgets;
 

@@ -21,7 +21,7 @@ namespace Pinetime {
       void Init();
 
       int OnFSServiceRequested(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context);
-      void NotifyFSRaw(uint16_t connectionHandle);
+      //void NotifyFSRaw(uint16_t connectionHandle);
 
     private:
       Pinetime::System::SystemTask& systemTask;

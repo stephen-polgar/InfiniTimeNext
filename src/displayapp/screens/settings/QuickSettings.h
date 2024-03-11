@@ -1,13 +1,6 @@
 #pragma once
 
-#include <cstdint>
 #include "displayapp/screens/Screen.h"
-#include <lvgl/lvgl.h>
-#include "components/datetime/DateTimeController.h"
-#include "components/brightness/BrightnessController.h"
-#include "components/motor/MotorController.h"
-#include "components/settings/Settings.h"
-#include "components/battery/BatteryController.h"
 #include "displayapp/widgets/StatusIcons.h"
 
 namespace Pinetime {
@@ -17,26 +10,23 @@ namespace Pinetime {
 
       class QuickSettings : public Screen {
       public:
-        QuickSettings(DisplayApp* app,
-                      const Pinetime::Controllers::Battery& batteryController,
-                      Controllers::DateTime& dateTimeController,
-                      Controllers::BrightnessController& brightness,
-                      Controllers::MotorController& motorController,
-                      Pinetime::Controllers::Settings& settingsController,
-                      const Controllers::Ble& bleController);
+        QuickSettings();
 
         ~QuickSettings() override;
-
+        void Load() override;
+        bool UnLoad() override;
         void OnButtonEvent(lv_obj_t* object);
 
-        void UpdateScreen();
-
       private:
-        DisplayApp* app;
-        Controllers::DateTime& dateTimeController;
-        Controllers::BrightnessController& brightness;
-        Controllers::MotorController& motorController;
-        Controllers::Settings& settingsController;
+        enum class ButtonState : lv_state_t {
+          NotificationsOn = LV_STATE_CHECKED,
+          NotificationsOff = LV_STATE_DEFAULT,
+          Sleep = 0x40,
+        };
+
+        void Refresh() override;
+
+        static void ButtonEventHandler(lv_obj_t* obj, lv_event_t event);
 
         lv_task_t* taskUpdate;
         lv_obj_t* label_time;

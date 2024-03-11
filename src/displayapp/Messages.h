@@ -3,7 +3,7 @@
 
 namespace Pinetime {
   namespace Applications {
-    namespace Display {
+    namespace Display {    
       enum class Messages : uint8_t {
         GoToSleep,
         GoToRunning,
@@ -21,10 +21,9 @@ namespace Pinetime {
         RestoreBrightness,
         ShowPairingKey,
         AlarmTriggered,
-        Chime,
         BleRadioEnableToggle,
-        OnChargingEvent,
-      };
+        OnChargingEvent
+      };     
     }
   }
 }

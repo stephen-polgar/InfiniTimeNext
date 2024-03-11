@@ -1,10 +1,12 @@
 #include "displayapp/widgets/StatusIcons.h"
 #include "displayapp/screens/Symbols.h"
+#include "components/battery/BatteryController.h"
+#include "components/ble/BleController.h"
+#include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Applications::Widgets;
 
-StatusIcons::StatusIcons(const Controllers::Battery& batteryController, const Controllers::Ble& bleController)
-  : batteryIcon(true), batteryController {batteryController}, bleController {bleController} {
+StatusIcons::StatusIcons() : batteryIcon(true) {
 }
 
 void StatusIcons::Create() {
@@ -23,25 +25,28 @@ void StatusIcons::Create() {
   batteryIcon.Create(container);
 
   lv_obj_align(container, nullptr, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+  update = true;
 }
 
 void StatusIcons::Update() {
-  powerPresent = batteryController.IsPowerPresent();
-  if (powerPresent.IsUpdated()) {
+  auto * app = System::SystemTask::displayApp;
+  powerPresent = app->batteryController.IsPowerPresent();
+  if (update || powerPresent.IsUpdated()) {
     lv_obj_set_hidden(batteryPlug, !powerPresent.Get());
   }
 
-  batteryPercentRemaining = batteryController.PercentRemaining();
-  if (batteryPercentRemaining.IsUpdated()) {
+  batteryPercentRemaining = app->batteryController.PercentRemaining();
+  if (update || batteryPercentRemaining.IsUpdated()) {
     auto batteryPercent = batteryPercentRemaining.Get();
     batteryIcon.SetBatteryPercentage(batteryPercent);
   }
 
-  bleState = bleController.IsConnected();
-  bleRadioEnabled = bleController.IsRadioEnabled();
-  if (bleState.IsUpdated() || bleRadioEnabled.IsUpdated()) {
+  bleState = app->bleController.IsConnected();
+  bleRadioEnabled = app->bleController.IsRadioEnabled();
+  if (update || bleState.IsUpdated() || bleRadioEnabled.IsUpdated()) {
     lv_obj_set_hidden(bleIcon, !bleState.Get());
   }
 
   lv_obj_realign(container);
+  update = false;
 }

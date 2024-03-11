@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <lvgl/lvgl.h>
-#include "components/settings/Settings.h"
 #include "displayapp/screens/Screen.h"
 
 namespace Pinetime {
@@ -12,17 +9,17 @@ namespace Pinetime {
 
       class SettingSteps : public Screen {
       public:
-        SettingSteps(Pinetime::Controllers::Settings& settingsController);
+        SettingSteps();
         ~SettingSteps() override;
-
-        void UpdateSelected(lv_obj_t* object, lv_event_t event);
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        Controllers::Settings& settingsController;
-
-        lv_obj_t* stepValue;
-        lv_obj_t* btnPlus;
-        lv_obj_t* btnMinus;
+        void updateGoal(lv_obj_t* object, lv_event_t event);
+        void updateLength(lv_obj_t* object, lv_event_t event);
+        static void event_handlerGoal(lv_obj_t* obj, lv_event_t event);
+        static void event_handlerLength(lv_obj_t* obj, lv_event_t event);
+        lv_obj_t *stepGoal, *stepLengt, *btnPlus, *btnMinus, *btnM, *btnP;
       };
     }
   }

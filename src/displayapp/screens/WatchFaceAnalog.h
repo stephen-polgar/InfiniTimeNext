@@ -1,41 +1,26 @@
 #pragma once
 
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include "displayapp/screens/Screen.h"
-#include "components/datetime/DateTimeController.h"
-#include "components/battery/BatteryController.h"
-#include "components/ble/BleController.h"
-#include "components/ble/NotificationManager.h"
-#include "displayapp/screens/BatteryIcon.h"
+#include "Screen.h"
+#include "BatteryIcon.h"
 #include "utility/DirtyValue.h"
+#include "components/fs/FS.h"
+#include <chrono>
 
 namespace Pinetime {
-  namespace Controllers {
-    class Settings;
-    class Battery;
-    class Ble;
-    class NotificationManager;
-  }
-
+  
   namespace Applications {
     namespace Screens {
 
       class WatchFaceAnalog : public Screen {
       public:
-        WatchFaceAnalog(Controllers::DateTime& dateTimeController,
-                        const Controllers::Battery& batteryController,
-                        const Controllers::Ble& bleController,
-                        Controllers::NotificationManager& notificationManager,
-                        Controllers::Settings& settingsController);
-
+        WatchFaceAnalog();
         ~WatchFaceAnalog() override;
-
-        void Refresh() override;
-
+       
+        void Load() override; 
+        bool UnLoad() override; 
+        
       private:
+        void Refresh() override;
         uint8_t sHour, sMinute, sSecond;
 
         Utility::DirtyValue<uint8_t> batteryPercentRemaining {0};
@@ -76,15 +61,8 @@ namespace Pinetime {
 
         BatteryIcon batteryIcon;
 
-        const Controllers::DateTime& dateTimeController;
-        const Controllers::Battery& batteryController;
-        const Controllers::Ble& bleController;
-        Controllers::NotificationManager& notificationManager;
-        Controllers::Settings& settingsController;
-
         void UpdateClock();
-        void SetBatteryIcon();
-
+       
         lv_task_t* taskRefresh;
       };
     }
@@ -94,15 +72,11 @@ namespace Pinetime {
       static constexpr WatchFace watchFace = WatchFace::Analog;
       static constexpr const char* name = "Analog face";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::WatchFaceAnalog(controllers.dateTimeController,
-                                            controllers.batteryController,
-                                            controllers.bleController,
-                                            controllers.notificationManager,
-                                            controllers.settingsController);
+      static Screens::Screen* Create() {
+        return new Screens::WatchFaceAnalog();
       };
 
-      static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {
+      static bool IsAvailable(Controllers::FS& /*filesystem*/) {
         return true;
       }
     };

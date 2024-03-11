@@ -1,20 +1,21 @@
-#include "displayapp/screens/Steps.h"
-#include <lvgl/lvgl.h>
-#include "displayapp/DisplayApp.h"
+#include "Steps.h"
+#include "displayapp/screens/settings/SettingSteps.h"
+#include "components/motion/MotionController.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
+
 
 using namespace Pinetime::Applications::Screens;
 
-static void lap_event_handler(lv_obj_t* obj, lv_event_t event) {
-  auto* steps = static_cast<Steps*>(obj->user_data);
-  steps->lapBtnEventHandler(event);
+
+Steps::Steps() : Screen(Apps::Steps) {
 }
 
-Steps::Steps(Controllers::MotionController& motionController, Controllers::Settings& settingsController)
-  : motionController {motionController}, settingsController {settingsController} {
-
-  stepsArc = lv_arc_create(lv_scr_act(), nullptr);
-
+void Steps::Load() {
+  running = true;
+  stepsArc = lv_arc_create(lv_scr_act(), NULL);
+  stepsArc->user_data = this;
+  lv_obj_set_event_cb(stepsArc, set_event_handler);
   lv_obj_set_style_local_bg_opa(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, LV_OPA_0);
   lv_obj_set_style_local_line_color(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, Colors::bgAlt);
   lv_obj_set_style_local_border_width(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, 2);
@@ -23,75 +24,95 @@ Steps::Steps(Controllers::MotionController& motionController, Controllers::Setti
   lv_arc_set_end_angle(stepsArc, 200);
   lv_obj_set_size(stepsArc, 240, 240);
   lv_arc_set_range(stepsArc, 0, 500);
-  lv_obj_align(stepsArc, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align(stepsArc, NULL, LV_ALIGN_CENTER, 0, 0);
 
-  stepsCount = motionController.NbSteps();
-  currentTripSteps = stepsCount - motionController.GetTripSteps();
+  stepsCount = System::SystemTask::displayApp->motionController.NbSteps();
+  currentTripSteps = stepsCount - System::SystemTask::displayApp->motionController.GetTripSteps();
 
-  lv_arc_set_value(stepsArc, int16_t(500 * stepsCount / settingsController.GetStepsGoal()));
+  lv_arc_set_value(stepsArc, int16_t(500 * stepsCount / System::SystemTask::displayApp->settingsController.GetStepsGoal()));
 
-  lSteps = lv_label_create(lv_scr_act(), nullptr);
+  lSteps = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lSteps, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
   lv_obj_set_style_local_text_font(lSteps, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_fmt(lSteps, "%li", stepsCount);
-  lv_obj_align(lSteps, nullptr, LV_ALIGN_CENTER, 0, -40);
+  lv_obj_align(lSteps, NULL, LV_ALIGN_CENTER, 0, -40);
 
-  lv_obj_t* lstepsL = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_t* lstepsL = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lstepsL, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::lightGray);
   lv_label_set_text_static(lstepsL, "Steps");
   lv_obj_align(lstepsL, lSteps, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
 
-  lv_obj_t* lstepsGoal = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_t* lstepsGoal = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lstepsGoal, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_CYAN);
-  lv_label_set_text_fmt(lstepsGoal, "Goal: %5lu", settingsController.GetStepsGoal());
+  lv_label_set_text_fmt(lstepsGoal, "Goal: %5lu", System::SystemTask::displayApp->settingsController.GetStepsGoal());
   lv_label_set_align(lstepsGoal, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lstepsGoal, lSteps, LV_ALIGN_OUT_BOTTOM_MID, 0, 40);
 
-  resetBtn = lv_btn_create(lv_scr_act(), nullptr);
+  resetBtn = lv_btn_create(lv_scr_act(), NULL);
   resetBtn->user_data = this;
   lv_obj_set_event_cb(resetBtn, lap_event_handler);
   lv_obj_set_size(resetBtn, 120, 50);
   lv_obj_set_style_local_radius(resetBtn, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_RADIUS_CIRCLE);
   lv_obj_set_style_local_bg_color(resetBtn, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
   lv_obj_align(resetBtn, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, 0);
-  resetButtonLabel = lv_label_create(resetBtn, nullptr);
+  resetButtonLabel = lv_label_create(resetBtn, NULL);
   lv_label_set_text_static(resetButtonLabel, "Reset");
 
-  currentTripSteps = motionController.GetTripSteps();
+  currentTripSteps = System::SystemTask::displayApp->motionController.GetTripSteps();
 
-  tripLabel = lv_label_create(lv_scr_act(), nullptr);
+  tripLabel = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(tripLabel, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);
-  lv_label_set_text_fmt(tripLabel, "Trip: %5li", currentTripSteps);
-  lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, 0, 20);
+  setTrip(currentTripSteps);
+  lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, -12, 20);
 
   taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_MID, this);
 }
 
+bool Steps::UnLoad() {
+  if (running) {
+    lv_task_del(taskRefresh);
+    lv_obj_clean(lv_scr_act());
+    running = false;
+  }
+  return true;
+}
+
 Steps::~Steps() {
-  lv_task_del(taskRefresh);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void Steps::Refresh() {
-  stepsCount = motionController.NbSteps();
-  currentTripSteps = motionController.GetTripSteps();
+  stepsCount = System::SystemTask::displayApp->motionController.NbSteps();
+  currentTripSteps = System::SystemTask::displayApp->motionController.GetTripSteps();
 
   lv_label_set_text_fmt(lSteps, "%li", stepsCount);
-  lv_obj_align(lSteps, nullptr, LV_ALIGN_CENTER, 0, -40);
+  lv_obj_align(lSteps, NULL, LV_ALIGN_CENTER, 0, -40);
 
-  if (currentTripSteps < 100000) {
-    lv_label_set_text_fmt(tripLabel, "Trip: %5li", currentTripSteps);
-  } else {
-    lv_label_set_text_fmt(tripLabel, "Trip: 99999+");
-  }
-  lv_arc_set_value(stepsArc, int16_t(500 * stepsCount / settingsController.GetStepsGoal()));
+  setTrip(currentTripSteps);
+  lv_arc_set_value(stepsArc, int16_t(500 * stepsCount / System::SystemTask::displayApp->settingsController.GetStepsGoal()));
 }
 
-void Steps::lapBtnEventHandler(lv_event_t event) {
-  if (event != LV_EVENT_CLICKED) {
-    return;
-  }
-  stepsCount = motionController.NbSteps();
-  motionController.ResetTrip();
+void Steps::setTrip(uint32_t currentTripSteps) {
+  lv_label_set_text_fmt(tripLabel,
+                        "Trip: %5li m",
+                        currentTripSteps * System::SystemTask::displayApp->settingsController.GetStepLength() / 100);
+}
+
+void Steps::lapBtnClicked() {
+  stepsCount = System::SystemTask::displayApp->motionController.NbSteps();
+ System::SystemTask::displayApp->motionController.ResetTrip();
   Refresh();
+  // lv_label_set_text_static(resetButtonLabel, "Reset 1");
+}
+
+void Steps::lap_event_handler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<Steps*>(obj->user_data)->lapBtnClicked();
+  }
+}
+
+void Steps::set_event_handler(lv_obj_t*, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+     System::SystemTask::displayApp->StartApp(new Screens::SettingSteps());   
+  }
 }

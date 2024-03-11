@@ -1,5 +1,4 @@
-#include "displayapp/screens/BatteryIcon.h"
-#include <cstdint>
+#include "BatteryIcon.h"
 #include "displayapp/screens/Symbols.h"
 #include "displayapp/icons/battery/batteryicon.c"
 #include "displayapp/InfiniTimeTheme.h"

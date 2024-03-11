@@ -43,7 +43,7 @@ void DisplayApp::Process(void* instance) {
 
   app->InitHw();
   while (true) {
-    app->Refresh();
+    app->refresh();
   }
 }
 
@@ -51,7 +51,7 @@ void DisplayApp::InitHw() {
   DisplayLogo(colorWhite);
 }
 
-void DisplayApp::Refresh() {
+void DisplayApp::refresh() {
   Display::Messages msg;
   if (xQueueReceive(msgQueue, &msg, 200)) {
     switch (msg) {

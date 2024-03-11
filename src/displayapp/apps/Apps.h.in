@@ -14,21 +14,17 @@ namespace Pinetime {
       NotificationsPreview,
       Notifications,
       Timer,
+      TimerSet,
       Alarm,
+      AlarmSet,
       FlashLight,
       BatteryInfo,
-      Music,
-      Paint,
-      Paddle,
-      Twos,
+      Music,      
       HeartRate,
       Navigation,
-      StopWatch,
-      Metronome,
+      StopWatch,    
       Motion,
-      Steps,
-      Dice,
-      Weather,
+      Steps,      
       PassKey,
       QuickSettings,
       Settings,
@@ -38,20 +34,18 @@ namespace Pinetime {
       SettingDisplay,
       SettingWakeUp,
       SettingSteps,
-      SettingSetDateTime,
-      SettingChimes,
+      SettingSetDateTime,    
       SettingShakeThreshold,
       SettingBluetooth,
-      Error
+      Error,
+      Weather
     };
 
     enum class WatchFace : uint8_t {
       Digital,
-      Analog,
-      PineTimeStyle,
-      Terminal,
-      Infineat,
-      CasioStyleG7710,
+      Analog,   
+      Terminal,   
+      CasioStyleG7710
     };
 
     template <Apps>

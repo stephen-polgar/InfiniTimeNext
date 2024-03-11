@@ -1,50 +1,51 @@
-#include "displayapp/screens/Notifications.h"
-#include "displayapp/DisplayApp.h"
+#include "Notifications.h"
 #include "components/ble/MusicService.h"
 #include "components/ble/AlertNotificationService.h"
-#include "displayapp/screens/Symbols.h"
-#include <algorithm>
+#include "systemtask/SystemTask.h"
+#include "Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 extern lv_font_t jetbrains_mono_extrabold_compressed;
 extern lv_font_t jetbrains_mono_bold_20;
 
-Notifications::Notifications(DisplayApp* app,
-                             Pinetime::Controllers::NotificationManager& notificationManager,
-                             Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                             Pinetime::Controllers::MotorController& motorController,
-                             System::SystemTask& systemTask,
-                             Modes mode)
-  : app {app},
-    notificationManager {notificationManager},
-    alertNotificationService {alertNotificationService},
-    motorController {motorController},
-    systemTask {systemTask},
-    mode {mode} {
+Notifications::Notifications(Pinetime::Controllers::AlertNotificationService& alertNotificationService, Apps id)
+  : Screen(id), alertNotificationService {alertNotificationService} {
+}
 
-  notificationManager.ClearNewNotificationFlag();
-  auto notification = notificationManager.GetLastNotification();
+void Notifications::Load() {
+  timeoutLine = NULL;
+  validDisplay = false;
+  afterDismissNextMessageFromAbove = false;
+  interacted = true;
+  timeoutLinePoints[0] = {0, 1};
+  timeoutLinePoints[1] = {239, 1};
+  dismissingNotification = false;
+
+  running = true;
+
+  auto* notificationManager = &System::SystemTask::displayApp->notificationManager;
+  notificationManager->ClearNewNotificationFlag();
+  auto notification = notificationManager->GetLastNotification();
   if (notification.valid) {
     currentId = notification.id;
     currentItem = std::make_unique<NotificationItem>(notification.Title(),
                                                      notification.Message(),
                                                      1,
                                                      notification.category,
-                                                     notificationManager.NbNotifications(),
-                                                     alertNotificationService,
-                                                     motorController);
+                                                     notificationManager->NbNotifications(),
+                                                     alertNotificationService);
     validDisplay = true;
   } else {
-    currentItem = std::make_unique<NotificationItem>(alertNotificationService, motorController);
+    currentItem = std::make_unique<NotificationItem>(alertNotificationService);
     validDisplay = false;
   }
-  if (mode == Modes::Preview) {
-    systemTask.PushMessage(System::Messages::DisableSleeping);
+  if (Id == Apps::NotificationsPreview) {
+    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
     if (notification.category == Controllers::NotificationManager::Categories::IncomingCall) {
-      motorController.StartRinging();
+      System::SystemTask::displayApp->motorController.StartRinging();
     } else {
-      motorController.RunForDuration(35);
+      System::SystemTask::displayApp->motorController.RunForDuration(35);
     }
 
     timeoutLine = lv_line_create(lv_scr_act(), nullptr);
@@ -61,16 +62,25 @@ Notifications::Notifications(DisplayApp* app,
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
+bool Notifications::UnLoad() {
+  if (taskRefresh) {
+    running = false;
+    lv_task_del(taskRefresh);
+    taskRefresh = NULL;
+    // make sure we stop any vibrations before exiting
+    System::SystemTask::displayApp->motorController.StopRinging();
+    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 Notifications::~Notifications() {
-  lv_task_del(taskRefresh);
-  // make sure we stop any vibrations before exiting
-  motorController.StopRinging();
-  systemTask.PushMessage(System::Messages::EnableSleeping);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void Notifications::Refresh() {
-  if (mode == Modes::Preview && timeoutLine != nullptr) {
+  if (Id == Apps::NotificationsPreview && timeoutLine) {
     TickType_t tick = xTaskGetTickCount();
     int32_t pos = LV_HOR_RES - ((tick - timeoutTickCountStart) / (timeoutLength / LV_HOR_RES));
     if (pos <= 0) {
@@ -80,15 +90,15 @@ void Notifications::Refresh() {
       lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
     }
 
-  } else if (mode == Modes::Preview && dismissingNotification) {
+  } else if (Id == Apps::NotificationsPreview && dismissingNotification) {
     running = false;
-    currentItem = std::make_unique<NotificationItem>(alertNotificationService, motorController);
+    currentItem = std::make_unique<NotificationItem>(alertNotificationService);
 
   } else if (dismissingNotification) {
     dismissingNotification = false;
-    auto notification = notificationManager.Get(currentId);
+    auto notification = System::SystemTask::displayApp->notificationManager.Get(currentId);
     if (!notification.valid) {
-      notification = notificationManager.GetLastNotification();
+      notification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
     }
     currentId = notification.id;
 
@@ -96,24 +106,24 @@ void Notifications::Refresh() {
       validDisplay = false;
     }
 
-    currentItem.reset(nullptr);
+    currentItem.reset();
     if (afterDismissNextMessageFromAbove) {
-      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Down);
+      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
     } else {
-      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
+      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
     }
 
     if (validDisplay) {
-      Controllers::NotificationManager::Notification::Idx currentIdx = notificationManager.IndexOf(currentId);
+      Controllers::NotificationManager::Notification::Idx currentIdx =
+        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       currentItem = std::make_unique<NotificationItem>(notification.Title(),
                                                        notification.Message(),
                                                        currentIdx + 1,
                                                        notification.category,
-                                                       notificationManager.NbNotifications(),
-                                                       alertNotificationService,
-                                                       motorController);
+                                                       System::SystemTask::displayApp->notificationManager.NbNotifications(),
+                                                       alertNotificationService);
     } else {
-      currentItem = std::make_unique<NotificationItem>(alertNotificationService, motorController);
+      currentItem = std::make_unique<NotificationItem>(alertNotificationService);
     }
   }
 
@@ -121,17 +131,17 @@ void Notifications::Refresh() {
 }
 
 void Notifications::OnPreviewInteraction() {
-  systemTask.PushMessage(System::Messages::EnableSleeping);
-  motorController.StopRinging();
-  if (timeoutLine != nullptr) {
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+  System::SystemTask::displayApp->motorController.StopRinging();
+  if (timeoutLine) {
     lv_obj_del(timeoutLine);
     timeoutLine = nullptr;
   }
 }
 
 void Notifications::DismissToBlack() {
-  currentItem.reset(nullptr);
-  app->SetFullRefresh(DisplayApp::FullRefreshDirections::RightAnim);
+  currentItem.reset();
+  System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::RightAnim);
   // create black transition screen to let the notification dismiss to blackness
   lv_obj_t* blackBox = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_size(blackBox, LV_HOR_RES, LV_VER_RES);
@@ -140,8 +150,8 @@ void Notifications::DismissToBlack() {
 }
 
 void Notifications::OnPreviewDismiss() {
-  notificationManager.Dismiss(currentId);
-  if (timeoutLine != nullptr) {
+  System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
+  if (timeoutLine) {
     lv_obj_del(timeoutLine);
     timeoutLine = nullptr;
   }
@@ -149,7 +159,7 @@ void Notifications::OnPreviewDismiss() {
 }
 
 bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  if (mode != Modes::Normal) {
+  if (Id == Apps::NotificationsPreview) {
     if (!interacted && event == TouchEvents::Tap) {
       interacted = true;
       OnPreviewInteraction();
@@ -164,10 +174,10 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   switch (event) {
     case Pinetime::Applications::TouchEvents::SwipeRight:
       if (validDisplay) {
-        auto previousMessage = notificationManager.GetPrevious(currentId);
-        auto nextMessage = notificationManager.GetNext(currentId);
+        auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
+        auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
         afterDismissNextMessageFromAbove = previousMessage.valid;
-        notificationManager.Dismiss(currentId);
+        System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
         if (previousMessage.valid) {
           currentId = previousMessage.id;
         } else if (nextMessage.valid) {
@@ -182,9 +192,9 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
     case Pinetime::Applications::TouchEvents::SwipeDown: {
       Controllers::NotificationManager::Notification previousNotification;
       if (validDisplay) {
-        previousNotification = notificationManager.GetPrevious(currentId);
+        previousNotification = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
       } else {
-        previousNotification = notificationManager.GetLastNotification();
+        previousNotification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
       }
 
       if (!previousNotification.valid) {
@@ -192,25 +202,25 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       }
 
       currentId = previousNotification.id;
-      Controllers::NotificationManager::Notification::Idx currentIdx = notificationManager.IndexOf(currentId);
+      Controllers::NotificationManager::Notification::Idx currentIdx =
+        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       validDisplay = true;
-      currentItem.reset(nullptr);
-      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Down);
+      currentItem.reset();
+      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
       currentItem = std::make_unique<NotificationItem>(previousNotification.Title(),
                                                        previousNotification.Message(),
                                                        currentIdx + 1,
                                                        previousNotification.category,
-                                                       notificationManager.NbNotifications(),
-                                                       alertNotificationService,
-                                                       motorController);
+                                                       System::SystemTask::displayApp->notificationManager.NbNotifications(),
+                                                       alertNotificationService);
     }
       return true;
     case Pinetime::Applications::TouchEvents::SwipeUp: {
       Controllers::NotificationManager::Notification nextNotification;
       if (validDisplay) {
-        nextNotification = notificationManager.GetNext(currentId);
+        nextNotification = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
       } else {
-        nextNotification = notificationManager.GetLastNotification();
+        nextNotification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
       }
 
       if (!nextNotification.valid) {
@@ -219,17 +229,17 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       }
 
       currentId = nextNotification.id;
-      Controllers::NotificationManager::Notification::Idx currentIdx = notificationManager.IndexOf(currentId);
+      Controllers::NotificationManager::Notification::Idx currentIdx =
+        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       validDisplay = true;
-      currentItem.reset(nullptr);
-      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
+      currentItem.reset();
+      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
       currentItem = std::make_unique<NotificationItem>(nextNotification.Title(),
                                                        nextNotification.Message(),
                                                        currentIdx + 1,
                                                        nextNotification.category,
-                                                       notificationManager.NbNotifications(),
-                                                       alertNotificationService,
-                                                       motorController);
+                                                       System::SystemTask::displayApp->notificationManager.NbNotifications(),
+                                                       alertNotificationService);
     }
       return true;
     default:
@@ -244,15 +254,13 @@ namespace {
   }
 }
 
-Notifications::NotificationItem::NotificationItem(Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                                                  Pinetime::Controllers::MotorController& motorController)
+Notifications::NotificationItem::NotificationItem(Pinetime::Controllers::AlertNotificationService& alertNotificationService)
   : NotificationItem("Notification",
                      "No notification to display",
                      0,
                      Controllers::NotificationManager::Categories::Unknown,
                      0,
-                     alertNotificationService,
-                     motorController) {
+                     alertNotificationService) {
 }
 
 Notifications::NotificationItem::NotificationItem(const char* title,
@@ -260,9 +268,8 @@ Notifications::NotificationItem::NotificationItem(const char* title,
                                                   uint8_t notifNr,
                                                   Controllers::NotificationManager::Categories category,
                                                   uint8_t notifNb,
-                                                  Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                                                  Pinetime::Controllers::MotorController& motorController)
-  : alertNotificationService {alertNotificationService}, motorController {motorController} {
+                                                  Pinetime::Controllers::AlertNotificationService& alertNotificationService)
+  : alertNotificationService {alertNotificationService} {
   container = lv_cont_create(lv_scr_act(), nullptr);
   lv_obj_set_size(container, LV_HOR_RES, LV_VER_RES);
   lv_obj_set_style_local_bg_color(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
@@ -287,7 +294,7 @@ Notifications::NotificationItem::NotificationItem(const char* title,
 
   lv_obj_t* alert_type = lv_label_create(container, nullptr);
   lv_obj_set_style_local_text_color(alert_type, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
-  if (title == nullptr) {
+  if (!title) {
     lv_label_set_text_static(alert_type, "Notification");
   } else {
     // copy title to label and replace newlines with spaces
@@ -356,7 +363,7 @@ void Notifications::NotificationItem::OnCallButtonEvent(lv_obj_t* obj, lv_event_
     return;
   }
 
-  motorController.StopRinging();
+  System::SystemTask::displayApp->motorController.StopRinging();
 
   if (obj == bt_accept) {
     alertNotificationService.AcceptIncomingCall();

@@ -15,10 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "displayapp/screens/Music.h"
-#include "displayapp/screens/Symbols.h"
-#include <cstdint>
-#include "displayapp/DisplayApp.h"
+#include "Music.h"
+#include "systemtask/SystemTask.h"
 #include "components/ble/MusicService.h"
 #include "displayapp/icons/music/disc.c"
 #include "displayapp/icons/music/disc_f_1.c"
@@ -26,9 +24,8 @@
 
 using namespace Pinetime::Applications::Screens;
 
-static void event_handler(lv_obj_t* obj, lv_event_t event) {
-  Music* screen = static_cast<Music*>(obj->user_data);
-  screen->OnObjectEvent(obj, event);
+void Music::event_handler(lv_obj_t* obj, lv_event_t event) {
+  (static_cast<Music*>(obj->user_data))->onObjectEvent(obj, event);
 }
 
 /**
@@ -47,64 +44,68 @@ inline void lv_img_set_src_arr(lv_obj_t* img, const lv_img_dsc_t* src_img) {
  *
  * TODO: Investigate Apple Media Service and AVRCPv1.6 support for seamless integration
  */
-Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
-  lv_obj_t* label;
+Music::Music() : Screen(Apps::Music) {
+}
 
+void Music::Load() {
+  running = true;
+  totalLength = 0;
+  lastIncrement = 0;
   lv_style_init(&btn_style);
   lv_style_set_radius(&btn_style, LV_STATE_DEFAULT, 20);
   lv_style_set_bg_color(&btn_style, LV_STATE_DEFAULT, LV_COLOR_AQUA);
   lv_style_set_bg_opa(&btn_style, LV_STATE_DEFAULT, LV_OPA_50);
 
-  btnVolDown = lv_btn_create(lv_scr_act(), nullptr);
+  btnVolDown = lv_btn_create(lv_scr_act(), NULL);
   btnVolDown->user_data = this;
   lv_obj_set_event_cb(btnVolDown, event_handler);
   lv_obj_set_size(btnVolDown, 76, 76);
-  lv_obj_align(btnVolDown, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_obj_align(btnVolDown, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
   lv_obj_add_style(btnVolDown, LV_STATE_DEFAULT, &btn_style);
-  label = lv_label_create(btnVolDown, nullptr);
+  lv_obj_t* label = lv_label_create(btnVolDown, NULL);
   lv_label_set_text_static(label, Symbols::volumDown);
   lv_obj_set_hidden(btnVolDown, true);
 
-  btnVolUp = lv_btn_create(lv_scr_act(), nullptr);
+  btnVolUp = lv_btn_create(lv_scr_act(), NULL);
   btnVolUp->user_data = this;
   lv_obj_set_event_cb(btnVolUp, event_handler);
   lv_obj_set_size(btnVolUp, 76, 76);
-  lv_obj_align(btnVolUp, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+  lv_obj_align(btnVolUp, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
   lv_obj_add_style(btnVolUp, LV_STATE_DEFAULT, &btn_style);
-  label = lv_label_create(btnVolUp, nullptr);
+  label = lv_label_create(btnVolUp, NULL);
   lv_label_set_text_static(label, Symbols::volumUp);
   lv_obj_set_hidden(btnVolUp, true);
 
-  btnPrev = lv_btn_create(lv_scr_act(), nullptr);
+  btnPrev = lv_btn_create(lv_scr_act(), NULL);
   btnPrev->user_data = this;
   lv_obj_set_event_cb(btnPrev, event_handler);
   lv_obj_set_size(btnPrev, 76, 76);
-  lv_obj_align(btnPrev, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_obj_align(btnPrev, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
   lv_obj_add_style(btnPrev, LV_STATE_DEFAULT, &btn_style);
-  label = lv_label_create(btnPrev, nullptr);
+  label = lv_label_create(btnPrev, NULL);
   lv_label_set_text_static(label, Symbols::stepBackward);
 
-  btnNext = lv_btn_create(lv_scr_act(), nullptr);
+  btnNext = lv_btn_create(lv_scr_act(), NULL);
   btnNext->user_data = this;
   lv_obj_set_event_cb(btnNext, event_handler);
   lv_obj_set_size(btnNext, 76, 76);
-  lv_obj_align(btnNext, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+  lv_obj_align(btnNext, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
   lv_obj_add_style(btnNext, LV_STATE_DEFAULT, &btn_style);
-  label = lv_label_create(btnNext, nullptr);
+  label = lv_label_create(btnNext, NULL);
   lv_label_set_text_static(label, Symbols::stepForward);
 
-  btnPlayPause = lv_btn_create(lv_scr_act(), nullptr);
+  btnPlayPause = lv_btn_create(lv_scr_act(), NULL);
   btnPlayPause->user_data = this;
   lv_obj_set_event_cb(btnPlayPause, event_handler);
   lv_obj_set_size(btnPlayPause, 76, 76);
-  lv_obj_align(btnPlayPause, nullptr, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  lv_obj_align(btnPlayPause, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
   lv_obj_add_style(btnPlayPause, LV_STATE_DEFAULT, &btn_style);
-  txtPlayPause = lv_label_create(btnPlayPause, nullptr);
+  txtPlayPause = lv_label_create(btnPlayPause, NULL);
   lv_label_set_text_static(txtPlayPause, Symbols::play);
 
-  txtTrackDuration = lv_label_create(lv_scr_act(), nullptr);
+  txtTrackDuration = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_long_mode(txtTrackDuration, LV_LABEL_LONG_SROLL);
-  lv_obj_align(txtTrackDuration, nullptr, LV_ALIGN_IN_TOP_LEFT, 12, 20);
+  lv_obj_align(txtTrackDuration, NULL, LV_ALIGN_IN_TOP_LEFT, 12, 20);
   lv_label_set_text_static(txtTrackDuration, "--:--/--:--");
   lv_label_set_align(txtTrackDuration, LV_ALIGN_IN_LEFT_MID);
   lv_obj_set_width(txtTrackDuration, LV_HOR_RES);
@@ -112,44 +113,53 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   constexpr uint8_t FONT_HEIGHT = 12;
   constexpr uint8_t LINE_PAD = 15;
   constexpr int8_t MIDDLE_OFFSET = -25;
-  txtArtist = lv_label_create(lv_scr_act(), nullptr);
+  txtArtist = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_long_mode(txtArtist, LV_LABEL_LONG_SROLL_CIRC);
-  lv_obj_align(txtArtist, nullptr, LV_ALIGN_IN_LEFT_MID, 12, MIDDLE_OFFSET + 1 * FONT_HEIGHT);
+  lv_obj_align(txtArtist, NULL, LV_ALIGN_IN_LEFT_MID, 12, MIDDLE_OFFSET + 1 * FONT_HEIGHT);
   lv_label_set_align(txtArtist, LV_ALIGN_IN_LEFT_MID);
   lv_obj_set_width(txtArtist, LV_HOR_RES - 12);
   lv_label_set_text_static(txtArtist, "Artist Name");
 
-  txtTrack = lv_label_create(lv_scr_act(), nullptr);
+  txtTrack = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_long_mode(txtTrack, LV_LABEL_LONG_SROLL_CIRC);
-  lv_obj_align(txtTrack, nullptr, LV_ALIGN_IN_LEFT_MID, 12, MIDDLE_OFFSET + 2 * FONT_HEIGHT + LINE_PAD);
+  lv_obj_align(txtTrack, NULL, LV_ALIGN_IN_LEFT_MID, 12, MIDDLE_OFFSET + 2 * FONT_HEIGHT + LINE_PAD);
 
   lv_label_set_align(txtTrack, LV_ALIGN_IN_LEFT_MID);
   lv_obj_set_width(txtTrack, LV_HOR_RES - 12);
   lv_label_set_text_static(txtTrack, "This is a very long getTrack name");
 
   /** Init animation */
-  imgDisc = lv_img_create(lv_scr_act(), nullptr);
+  imgDisc = lv_img_create(lv_scr_act(), NULL);
   lv_img_set_src_arr(imgDisc, &disc);
-  lv_obj_align(imgDisc, nullptr, LV_ALIGN_IN_TOP_RIGHT, -15, 15);
+  lv_obj_align(imgDisc, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 15);
 
-  imgDiscAnim = lv_img_create(lv_scr_act(), nullptr);
+  imgDiscAnim = lv_img_create(lv_scr_act(), NULL);
   lv_img_set_src_arr(imgDiscAnim, &disc_f_1);
-  lv_obj_align(imgDiscAnim, nullptr, LV_ALIGN_IN_TOP_RIGHT, -15 - 32, 15);
+  lv_obj_align(imgDiscAnim, NULL, LV_ALIGN_IN_TOP_RIGHT, -15 - 32, 15);
 
   frameB = false;
 
-  musicService.event(Controllers::MusicService::EVENT_MUSIC_OPEN);
+  System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_OPEN);
 
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
+bool Music::UnLoad() {
+  if (running) {
+    running = false;
+    lv_task_del(taskRefresh);
+    lv_style_reset(&btn_style);
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 Music::~Music() {
-  lv_task_del(taskRefresh);
-  lv_style_reset(&btn_style);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void Music::Refresh() {
+  auto& musicService = System::SystemTask::displayApp->systemTask->nimble().music();
   if (artist != musicService.getArtist()) {
     artist = musicService.getArtist();
     lv_label_set_text(txtArtist, artist.data());
@@ -170,12 +180,12 @@ void Music::Refresh() {
 
   if (currentPosition != musicService.getProgress()) {
     currentPosition = musicService.getProgress();
-    UpdateLength();
+    updateLength();
   }
 
   if (totalLength != musicService.getTrackLength()) {
     totalLength = musicService.getTrackLength();
-    UpdateLength();
+    updateLength();
   }
 
   if (playing) {
@@ -201,7 +211,7 @@ void Music::Refresh() {
   }
 }
 
-void Music::UpdateLength() {
+void Music::updateLength() {
   if (totalLength > (99 * 60 * 60)) {
     lv_label_set_text_static(txtTrackDuration, "Inf/Inf");
   } else if (totalLength > (99 * 60)) {
@@ -221,8 +231,9 @@ void Music::UpdateLength() {
   }
 }
 
-void Music::OnObjectEvent(lv_obj_t* obj, lv_event_t event) {
+void Music::onObjectEvent(lv_obj_t* obj, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
+    auto& musicService = System::SystemTask::displayApp->systemTask->nimble().music();
     if (obj == btnVolDown) {
       musicService.event(Controllers::MusicService::EVENT_MUSIC_VOLDOWN);
     } else if (obj == btnVolUp) {
@@ -248,7 +259,7 @@ void Music::OnObjectEvent(lv_obj_t* obj, lv_event_t event) {
   }
 }
 
-bool Music::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
+bool Music::OnTouchEvent(Applications::TouchEvents event) {
   switch (event) {
     case TouchEvents::SwipeUp: {
       lv_obj_set_hidden(btnVolDown, false);
@@ -269,11 +280,11 @@ bool Music::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       return false;
     }
     case TouchEvents::SwipeLeft: {
-      musicService.event(Controllers::MusicService::EVENT_MUSIC_NEXT);
+      System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_NEXT);
       return true;
     }
     case TouchEvents::SwipeRight: {
-      musicService.event(Controllers::MusicService::EVENT_MUSIC_PREV);
+      System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_PREV);
       return true;
     }
     default: {

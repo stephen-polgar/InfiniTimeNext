@@ -54,6 +54,11 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
-    }
+        "typeinfo": "cpp",
+        "compare": "cpp",
+        "list": "cpp",
+        "ranges": "cpp"
+    },
+    "cmake.configureOnOpen": false, 
+    "cmake.options.statusBarVisibility": "visible"
 }

@@ -1,25 +1,17 @@
-#include "displayapp/screens/settings/SettingWakeUp.h"
-#include <lvgl/lvgl.h>
-#include "displayapp/DisplayApp.h"
-#include "displayapp/screens/Screen.h"
+#include "SettingWakeUp.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
-#include "components/settings/Settings.h"
 #include "displayapp/screens/Styles.h"
 
 using namespace Pinetime::Applications::Screens;
 
 constexpr std::array<SettingWakeUp::Option, 5> SettingWakeUp::options;
 
-namespace {
-  void event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<SettingWakeUp*>(obj->user_data);
-    if (event == LV_EVENT_VALUE_CHANGED) {
-      screen->UpdateSelected(obj);
-    }
-  }
+SettingWakeUp::SettingWakeUp() : Screen(Apps::SettingWakeUp) {
 }
 
-SettingWakeUp::SettingWakeUp(Pinetime::Controllers::Settings& settingsController) : settingsController {settingsController} {
+void SettingWakeUp::Load() {
+  running = true;
   lv_obj_t* container1 = lv_cont_create(lv_scr_act(), nullptr);
 
   lv_obj_set_style_local_bg_opa(container1, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
@@ -46,7 +38,7 @@ SettingWakeUp::SettingWakeUp(Pinetime::Controllers::Settings& settingsController
   for (unsigned int i = 0; i < options.size(); i++) {
     cbOption[i] = lv_checkbox_create(container1, nullptr);
     lv_checkbox_set_text(cbOption[i], options[i].name);
-    if (settingsController.isWakeUpModeOn(static_cast<Controllers::Settings::WakeUpMode>(i))) {
+    if (System::SystemTask::displayApp->settingsController.isWakeUpModeOn(static_cast<Controllers::Settings::WakeUpMode>(i))) {
       lv_checkbox_set_checked(cbOption[i], true);
     }
     cbOption[i]->user_data = this;
@@ -54,17 +46,31 @@ SettingWakeUp::SettingWakeUp(Pinetime::Controllers::Settings& settingsController
   }
 }
 
-SettingWakeUp::~SettingWakeUp() {
-  lv_obj_clean(lv_scr_act());
-  settingsController.SaveSettings();
+bool SettingWakeUp::UnLoad() {
+  if (running) { 
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
-void SettingWakeUp::UpdateSelected(lv_obj_t* object) {
+SettingWakeUp::~SettingWakeUp() {
+  UnLoad();
+  System::SystemTask::displayApp->settingsController.SaveSettings();
+}
+
+void SettingWakeUp::event_handler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_VALUE_CHANGED) {
+    (static_cast<SettingWakeUp*>(obj->user_data))->updateSelected(obj);
+  }
+}
+
+void SettingWakeUp::updateSelected(lv_obj_t* object) {
   // Find the index of the checkbox that triggered the event
   for (size_t i = 0; i < options.size(); i++) {
     if (cbOption[i] == object) {
-      bool currentState = settingsController.isWakeUpModeOn(options[i].wakeUpMode);
-      settingsController.setWakeUpMode(options[i].wakeUpMode, !currentState);
+      bool currentState = System::SystemTask::displayApp->settingsController.isWakeUpModeOn(options[i].wakeUpMode);
+      System::SystemTask::displayApp->settingsController.setWakeUpMode(options[i].wakeUpMode, !currentState);
       break;
     }
   }
@@ -72,7 +78,7 @@ void SettingWakeUp::UpdateSelected(lv_obj_t* object) {
   // Update checkbox according to current wakeup modes.
   // This is needed because we can have extra logic when setting or unsetting wakeup modes,
   // for example, when setting SingleTap, DoubleTap is unset and vice versa.
-  auto modes = settingsController.getWakeUpModes();
+  auto modes = System::SystemTask::displayApp->settingsController.getWakeUpModes();
   for (size_t i = 0; i < options.size(); ++i) {
     lv_checkbox_set_checked(cbOption[i], modes[i]);
   }

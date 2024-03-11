@@ -134,7 +134,7 @@ namespace Pinetime {
         PacketReceiptNotification = 0x11
       };
 
-      enum class ErrorCodes {
+      enum class ErrorCodes : uint8_t {
         NoError = 0x01,
         InvalidState = 0x02,
         NotSupported = 0x03,

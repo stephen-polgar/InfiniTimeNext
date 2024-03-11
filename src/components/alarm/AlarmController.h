@@ -1,26 +1,9 @@
-/*  Copyright (C) 2021 mruss77, Florian
-
-    This file is part of InfiniTime.
-
-    InfiniTime is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    InfiniTime is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 #pragma once
 
 #include <FreeRTOS.h>
 #include <timers.h>
-#include <cstdint>
-#include "components/datetime/DateTimeController.h"
+#include <chrono>
+#include <vector>
 
 namespace Pinetime {
   namespace System {
@@ -29,48 +12,63 @@ namespace Pinetime {
 
   namespace Controllers {
     class AlarmController {
-    public:
-      AlarmController(Controllers::DateTime& dateTimeController);
 
-      void Init(System::SystemTask* systemTask);
+    public:
+      enum class AlarmState : uint8_t { Not_Set, Set, Alerting };
+
+      struct RecurType {
+        bool Sun = true, Mon = true, Tue = true, Wed = true, Thu = true, Fri = true, Sat = true, Once = false;
+      };
+
+      AlarmController();
+      ~AlarmController();
+
       void SetAlarmTime(uint8_t alarmHr, uint8_t alarmMin);
       void ScheduleAlarm();
       void DisableAlarm();
-      void SetOffAlarmNow();
+      void alarmEvent();
       uint32_t SecondsToAlarm() const;
       void StopAlerting();
-      enum class AlarmState { Not_Set, Set, Alerting };
-      enum class RecurType { None, Daily, Weekdays };
 
       uint8_t Hours() const {
-        return hours;
+        return t.hours;
       }
 
       uint8_t Minutes() const {
-        return minutes;
+        return t.minutes;
       }
 
       AlarmState State() const {
-        return state;
+        return t.state;
       }
 
       RecurType Recurrence() const {
-        return recurrence;
+        return t.recurrence;
       }
 
-      void SetRecurrence(RecurType recurType) {
-        recurrence = recurType;
+      void SetRecurrence(RecurType recurrence) {
+        t.recurrence = recurrence;
       }
+
+      static constexpr uint8_t MaxElements = 4;
+      static std::vector<AlarmController*> alarmControllers;
+      static void Init();
+      static void Save();
 
     private:
-      Controllers::DateTime& dateTimeController;
-      System::SystemTask* systemTask = nullptr;
+      struct timeData {
+        uint8_t hours = 7;
+        uint8_t minutes = 0;
+        AlarmState state = AlarmState::Not_Set;
+        RecurType recurrence;
+        std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> alarmTime;       
+      } t;
+
+      AlarmController(timeData& time);
+      bool hasMoreAlarmSet();
+      void createTimer();
       TimerHandle_t alarmTimer;
-      uint8_t hours = 7;
-      uint8_t minutes = 0;
-      std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> alarmTime;
-      AlarmState state = AlarmState::Not_Set;
-      RecurType recurrence = RecurType::None;
+      static const char* fileName;
     };
   }
 }

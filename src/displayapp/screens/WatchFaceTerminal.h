@@ -1,41 +1,24 @@
 #pragma once
 
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include <displayapp/Controllers.h>
-#include "displayapp/screens/Screen.h"
-#include "components/datetime/DateTimeController.h"
+#include "Screen.h"
+#include "components/fs/FS.h"
 #include "utility/DirtyValue.h"
+#include <chrono>
+
 
 namespace Pinetime {
-  namespace Controllers {
-    class Settings;
-    class Battery;
-    class Ble;
-    class NotificationManager;
-    class HeartRateController;
-    class MotionController;
-  }
-
-  namespace Applications {
+   namespace Applications {
     namespace Screens {
 
       class WatchFaceTerminal : public Screen {
       public:
-        WatchFaceTerminal(Controllers::DateTime& dateTimeController,
-                          const Controllers::Battery& batteryController,
-                          const Controllers::Ble& bleController,
-                          Controllers::NotificationManager& notificationManager,
-                          Controllers::Settings& settingsController,
-                          Controllers::HeartRateController& heartRateController,
-                          Controllers::MotionController& motionController);
+        WatchFaceTerminal();
         ~WatchFaceTerminal() override;
-
-        void Refresh() override;
+        void Load() override; 
+        bool UnLoad() override; 
 
       private:
+       void Refresh() override;
         Utility::DirtyValue<int> batteryPercentRemaining {};
         Utility::DirtyValue<bool> powerPresent {};
         Utility::DirtyValue<bool> bleState {};
@@ -57,15 +40,7 @@ namespace Pinetime {
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
         lv_obj_t* connectState;
-
-        Controllers::DateTime& dateTimeController;
-        const Controllers::Battery& batteryController;
-        const Controllers::Ble& bleController;
-        Controllers::NotificationManager& notificationManager;
-        Controllers::Settings& settingsController;
-        Controllers::HeartRateController& heartRateController;
-        Controllers::MotionController& motionController;
-
+     
         lv_task_t* taskRefresh;
       };
     }
@@ -75,14 +50,8 @@ namespace Pinetime {
       static constexpr WatchFace watchFace = WatchFace::Terminal;
       static constexpr const char* name = "Terminal";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::WatchFaceTerminal(controllers.dateTimeController,
-                                              controllers.batteryController,
-                                              controllers.bleController,
-                                              controllers.notificationManager,
-                                              controllers.settingsController,
-                                              controllers.heartRateController,
-                                              controllers.motionController);
+      static Screens::Screen* Create() {
+        return new Screens::WatchFaceTerminal();
       };
 
       static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {

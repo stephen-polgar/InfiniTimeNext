@@ -1,28 +1,19 @@
-#include "displayapp/screens/List.h"
-#include "displayapp/DisplayApp.h"
-#include "displayapp/screens/Symbols.h"
+#include "List.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void ButtonEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<List*>(obj->user_data);
-    screen->OnButtonEvent(obj, event);
-  }
+List::List(uint8_t screenID, uint8_t numScreens, std::array<Applications, MAXLISTITEMS>& applications)
+  : screenID {screenID}, applications {std::move(applications)}, pageIndicator(screenID, numScreens) {
 }
 
-List::List(uint8_t screenID,
-           uint8_t numScreens,
-           DisplayApp* app,
-           Controllers::Settings& settingsController,
-           std::array<Applications, MAXLISTITEMS>& applications)
-  : app {app}, settingsController {settingsController}, pageIndicator(screenID, numScreens) {
-
+void List::Load() {
+  loaded = running = true;
   // Set the background to Black
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0, 0, 0));
 
-  settingsController.SetSettingsMenu(screenID);
+  System::SystemTask::displayApp->settingsController.SetSettingsMenu(screenID);
 
   pageIndicator.Create();
 
@@ -48,7 +39,7 @@ List::List(uint8_t screenID,
       lv_obj_set_style_local_bg_color(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
       lv_obj_set_width(itemApps[i], LV_HOR_RES - 8);
       lv_obj_set_height(itemApps[i], btnHeight);
-      lv_obj_set_event_cb(itemApps[i], ButtonEventHandler);
+      lv_obj_set_event_cb(itemApps[i], buttonEventHandler);
       lv_btn_set_layout(itemApps[i], LV_LAYOUT_OFF);
       itemApps[i]->user_data = this;
       lv_obj_set_style_local_clip_corner(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, true);
@@ -68,18 +59,31 @@ List::List(uint8_t screenID,
   }
 }
 
-List::~List() {
-  lv_obj_clean(lv_scr_act());
+bool List::UnLoad() {
+  if (loaded) {
+    loaded = running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
-void List::OnButtonEvent(lv_obj_t* object, lv_event_t event) {
+List::~List() {
+  UnLoad();
+}
+
+void List::onButtonEvent(lv_obj_t* object, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
     for (int i = 0; i < MAXLISTITEMS; i++) {
       if (apps[i] != Apps::None && object == itemApps[i]) {
-        app->StartApp(apps[i], DisplayApp::FullRefreshDirections::Up);
+        System::SystemTask::displayApp->StartApp(apps[i]);
         running = false;
         return;
       }
     }
   }
 }
+
+void List::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
+  (static_cast<List*>(obj->user_data))->onButtonEvent(obj, event);
+}
+

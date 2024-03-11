@@ -1,8 +1,5 @@
-#include "displayapp/screens/settings/SettingSetDate.h"
-#include "displayapp/screens/settings/SettingSetDateTime.h"
-#include <lvgl/lvgl.h>
-#include <nrf_log.h>
-#include "displayapp/DisplayApp.h"
+#include "SettingSetDate.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
 
 using namespace Pinetime::Applications::Screens;
@@ -12,18 +9,6 @@ namespace {
   constexpr int16_t POS_X_MONTH = 0;
   constexpr int16_t POS_X_YEAR = 72;
   constexpr int16_t POS_Y_TEXT = -6;
-
-  void event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* screen = static_cast<SettingSetDate*>(obj->user_data);
-    if (event == LV_EVENT_CLICKED) {
-      screen->HandleButtonPress();
-    }
-  }
-
-  void ValueChangedHandler(void* userData) {
-    auto* screen = static_cast<SettingSetDate*>(userData);
-    screen->CheckDay();
-  }
 
   int MaximumDayOfMonth(uint8_t month, uint16_t year) {
     switch (month) {
@@ -45,10 +30,13 @@ namespace {
   }
 }
 
-SettingSetDate::SettingSetDate(Pinetime::Controllers::DateTime& dateTimeController,
-                               Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
-  : dateTimeController {dateTimeController}, settingSetDateTime {settingSetDateTime} {
+SettingSetDate::SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
+  : settingSetDateTime {settingSetDateTime} {
+}
 
+void SettingSetDate::Load() {
+  running = true;
+  dotIndicator.Create();
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current date");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -63,18 +51,19 @@ SettingSetDate::SettingSetDate(Pinetime::Controllers::DateTime& dateTimeControll
 
   dayCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
   dayCounter.Create();
-  dayCounter.SetValue(dateTimeController.Day());
+  auto* dc = &System::SystemTask::displayApp->dateTimeController;
+  dayCounter.SetValue(dc->Day());
   lv_obj_align(dayCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_DAY, POS_Y_TEXT);
 
   monthCounter.EnableMonthMode();
   monthCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
   monthCounter.Create();
-  monthCounter.SetValue(static_cast<int>(dateTimeController.Month()));
+  monthCounter.SetValue(static_cast<int>(dc->Month()));
   lv_obj_align(monthCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_MONTH, POS_Y_TEXT);
 
   yearCounter.SetValueChangedEventCallback(this, ValueChangedHandler);
   yearCounter.Create();
-  yearCounter.SetValue(dateTimeController.Year());
+  yearCounter.SetValue(dc->Year());
   lv_obj_align(yearCounter.GetObject(), nullptr, LV_ALIGN_CENTER, POS_X_YEAR, POS_Y_TEXT);
 
   btnSetTime = lv_btn_create(lv_scr_act(), nullptr);
@@ -87,21 +76,40 @@ SettingSetDate::SettingSetDate(Pinetime::Controllers::DateTime& dateTimeControll
   lv_obj_set_event_cb(btnSetTime, event_handler);
 }
 
-SettingSetDate::~SettingSetDate() {
-  lv_obj_clean(lv_scr_act());
+bool SettingSetDate::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }
 
-void SettingSetDate::HandleButtonPress() {
+SettingSetDate::~SettingSetDate() {
+  UnLoad();
+}
+
+void SettingSetDate::handleButtonPress() {
   const uint16_t yearValue = yearCounter.GetValue();
   const uint8_t monthValue = monthCounter.GetValue();
   const uint8_t dayValue = dayCounter.GetValue();
-  NRF_LOG_INFO("Setting date (manually) to %04d-%02d-%02d", yearValue, monthValue, dayValue);
-  dateTimeController
-    .SetTime(yearValue, monthValue, dayValue, dateTimeController.Hours(), dateTimeController.Minutes(), dateTimeController.Seconds());
+  // NRF_LOG_INFO("Setting date (manually) to %04d-%02d-%02d", yearValue, monthValue, dayValue);
+  auto* dc = &System::SystemTask::displayApp->dateTimeController;
+  dc->SetTime(yearValue, monthValue, dayValue, dc->Hours(), dc->Minutes(), dc->Seconds());
   settingSetDateTime.Advance();
 }
 
-void SettingSetDate::CheckDay() {
+void SettingSetDate::checkDay() {
   const int maxDay = MaximumDayOfMonth(monthCounter.GetValue(), yearCounter.GetValue());
   dayCounter.SetMax(maxDay);
 }
+
+
+  void SettingSetDate::event_handler(lv_obj_t* obj, lv_event_t event) {   
+    if (event == LV_EVENT_CLICKED) {
+      static_cast<SettingSetDate*>(obj->user_data)->handleButtonPress();
+    }
+  }
+
+  void SettingSetDate::ValueChangedHandler(void* userData) {
+    static_cast<SettingSetDate*>(userData)->checkDay();
+  }

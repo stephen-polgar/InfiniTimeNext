@@ -98,13 +98,12 @@ Pinetime::Applications::HeartRateTask heartRateApp(heartRateSensor, heartRateCon
 
 Pinetime::Controllers::FS fs {spiNorFlash};
 Pinetime::Controllers::Settings settingsController {fs};
-Pinetime::Controllers::MotorController motorController {};
+Pinetime::Controllers::MotorController motorController;
 
 Pinetime::Controllers::DateTime dateTimeController {settingsController};
 Pinetime::Drivers::Watchdog watchdog;
 Pinetime::Controllers::NotificationManager notificationManager;
 Pinetime::Controllers::MotionController motionController;
-Pinetime::Controllers::AlarmController alarmController {dateTimeController};
 Pinetime::Controllers::TouchHandler touchHandler;
 Pinetime::Controllers::ButtonHandler buttonHandler;
 Pinetime::Controllers::BrightnessController brightnessController {};
@@ -120,31 +119,17 @@ Pinetime::Applications::DisplayApp displayApp(lcd,
                                               settingsController,
                                               motorController,
                                               motionController,
-                                              alarmController,
                                               brightnessController,
                                               touchHandler,
                                               fs);
-
 Pinetime::System::SystemTask systemTask(spi,
                                         spiNorFlash,
-                                        twiMaster,
-                                        touchPanel,
-                                        batteryController,
-                                        bleController,
-                                        dateTimeController,
-                                        alarmController,
-                                        watchdog,
-                                        notificationManager,
+                                        twiMaster,                                       
                                         heartRateSensor,
-                                        motionController,
                                         motionSensor,
-                                        settingsController,
-                                        heartRateController,
-                                        displayApp,
                                         heartRateApp,
-                                        fs,
-                                        touchHandler,
-                                        buttonHandler);
+                                        buttonHandler,
+                                        &displayApp);
 int mallocFailedCount = 0;
 int stackOverflowCount = 0;
 extern "C" {

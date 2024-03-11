@@ -1,34 +1,26 @@
 #pragma once
 
-#include <cstdint>
-#include <chrono>
-#include "displayapp/screens/Screen.h"
-#include "systemtask/SystemTask.h"
+#include "Screen.h"
+#include "components/heartrate/HeartRateController.h"
 #include "Symbols.h"
-#include <lvgl/src/lv_core/lv_style.h>
-#include <lvgl/src/lv_core/lv_obj.h>
 
 namespace Pinetime {
-  namespace Controllers {
-    class HeartRateController;
-  }
-
-  namespace Applications {
+   namespace Applications {
     namespace Screens {
 
       class HeartRate : public Screen {
       public:
-        HeartRate(Controllers::HeartRateController& HeartRateController, System::SystemTask& systemTask);
+        HeartRate();
         ~HeartRate() override;
-
-        void Refresh() override;
-
-        void OnStartStopEvent(lv_event_t event);
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        Controllers::HeartRateController& heartRateController;
-        Pinetime::System::SystemTask& systemTask;
         void UpdateStartStopButton(bool isRunning);
+        void Refresh() override;
+        void onStartStopEvent();
+        static void btnStartStopEventHandler(lv_obj_t* obj, lv_event_t event);
+        static const char* toString(Controllers::HeartRateController::States s);
         lv_obj_t* label_hr;
         lv_obj_t* label_bpm;
         lv_obj_t* label_status;
@@ -44,8 +36,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::HeartRate;
       static constexpr const char* icon = Screens::Symbols::heartBeat;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::HeartRate(controllers.heartRateController, *controllers.systemTask);
+      static Screens::Screen* Create() {
+        return new Screens::HeartRate();
       };
     };
   }

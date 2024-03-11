@@ -1,223 +1,15 @@
-#include <FreeRTOS.h>
-#include <algorithm>
-#include <task.h>
-#include "displayapp/screens/SystemInfo.h"
-#include <lvgl/lvgl.h>
-#include "displayapp/DisplayApp.h"
-#include "displayapp/screens/Label.h"
+#include "SystemInfo.h"
 #include "Version.h"
 #include "BootloaderVersion.h"
-#include "components/battery/BatteryController.h"
-#include "components/ble/BleController.h"
-#include "components/brightness/BrightnessController.h"
-#include "components/datetime/DateTimeController.h"
-#include "components/motion/MotionController.h"
-#include "drivers/Watchdog.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  const char* ToString(const Pinetime::Controllers::MotionController::DeviceTypes deviceType) {
-    switch (deviceType) {
-      case Pinetime::Controllers::MotionController::DeviceTypes::BMA421:
-        return "BMA421";
-      case Pinetime::Controllers::MotionController::DeviceTypes::BMA425:
-        return "BMA425";
-      case Pinetime::Controllers::MotionController::DeviceTypes::Unknown:
-        return "???";
-    }
-    return "???";
-  }
-}
-
-SystemInfo::SystemInfo(Pinetime::Applications::DisplayApp* app,
-                       Pinetime::Controllers::DateTime& dateTimeController,
-                       const Pinetime::Controllers::Battery& batteryController,
-                       Pinetime::Controllers::BrightnessController& brightnessController,
-                       const Pinetime::Controllers::Ble& bleController,
-                       const Pinetime::Drivers::Watchdog& watchdog,
-                       Pinetime::Controllers::MotionController& motionController,
-                       const Pinetime::Drivers::Cst816S& touchPanel)
-  : app {app},
-    dateTimeController {dateTimeController},
-    batteryController {batteryController},
-    brightnessController {brightnessController},
-    bleController {bleController},
-    watchdog {watchdog},
-    motionController {motionController},
-    touchPanel {touchPanel},
-    screens {app,
-             0,
-             {[this]() -> std::unique_ptr<Screen> {
-                return CreateScreen1();
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return CreateScreen2();
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return CreateScreen3();
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return CreateScreen4();
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return CreateScreen5();
-              }},
-             Screens::ScreenListModes::UpDown} {
-}
-
-SystemInfo::~SystemInfo() {
-  lv_obj_clean(lv_scr_act());
-}
-
-bool SystemInfo::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  return screens.OnTouchEvent(event);
-}
-
-std::unique_ptr<Screen> SystemInfo::CreateScreen1() {
-  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_recolor(label, true);
-  lv_label_set_text_fmt(label,
-                        "#FFFF00 InfiniTime#\n\n"
-                        "#808080 Version# %ld.%ld.%ld\n"
-                        "#808080 Short Ref# %s\n"
-                        "#808080 Build date#\n"
-                        "%s\n"
-                        "%s\n\n"
-                        "#808080 Bootloader# %s",
-                        Version::Major(),
-                        Version::Minor(),
-                        Version::Patch(),
-                        Version::GitCommitHash(),
-                        __DATE__,
-                        __TIME__,
-                        BootloaderVersion::VersionString());
-  lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  return std::make_unique<Screens::Label>(0, 5, label);
-}
-
-std::unique_ptr<Screen> SystemInfo::CreateScreen2() {
-  auto batteryPercent = batteryController.PercentRemaining();
-  const auto* resetReason = [this]() {
-    switch (watchdog.GetResetReason()) {
-      case Drivers::Watchdog::ResetReason::Watchdog:
-        return "wtdg";
-      case Drivers::Watchdog::ResetReason::HardReset:
-        return "hardr";
-      case Drivers::Watchdog::ResetReason::NFC:
-        return "nfc";
-      case Drivers::Watchdog::ResetReason::SoftReset:
-        return "softr";
-      case Drivers::Watchdog::ResetReason::CpuLockup:
-        return "cpulock";
-      case Drivers::Watchdog::ResetReason::SystemOff:
-        return "off";
-      case Drivers::Watchdog::ResetReason::LpComp:
-        return "lpcomp";
-      case Drivers::Watchdog::ResetReason::DebugInterface:
-        return "dbg";
-      case Drivers::Watchdog::ResetReason::ResetPin:
-        return "rst";
-      default:
-        return "?";
-    }
-  }();
-
-  // uptime
-  static constexpr uint32_t secondsInADay = 60 * 60 * 24;
-  static constexpr uint32_t secondsInAnHour = 60 * 60;
-  static constexpr uint32_t secondsInAMinute = 60;
-  uint32_t uptimeSeconds = dateTimeController.Uptime().count();
-  uint32_t uptimeDays = (uptimeSeconds / secondsInADay);
-  uptimeSeconds = uptimeSeconds % secondsInADay;
-  uint32_t uptimeHours = uptimeSeconds / secondsInAnHour;
-  uptimeSeconds = uptimeSeconds % secondsInAnHour;
-  uint32_t uptimeMinutes = uptimeSeconds / secondsInAMinute;
-  uptimeSeconds = uptimeSeconds % secondsInAMinute;
-  // TODO handle more than 100 days of uptime
-
-#ifndef TARGET_DEVICE_NAME
-  #define TARGET_DEVICE_NAME "UNKNOWN"
-#endif
-
-  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_recolor(label, true);
-  lv_label_set_text_fmt(label,
-                        "#808080 Date# %04d-%02d-%02d\n"
-                        "#808080 Time# %02d:%02d:%02d\n"
-                        "#808080 Uptime#\n %02lud %02lu:%02lu:%02lu\n"
-                        "#808080 Battery# %d%%/%03imV\n"
-                        "#808080 Backlight# %s\n"
-                        "#808080 Last reset# %s\n"
-                        "#808080 Accel.# %s\n"
-                        "#808080 Touch.# %x.%x.%x\n"
-                        "#808080 Model# %s",
-                        dateTimeController.Year(),
-                        static_cast<uint8_t>(dateTimeController.Month()),
-                        dateTimeController.Day(),
-                        dateTimeController.Hours(),
-                        dateTimeController.Minutes(),
-                        dateTimeController.Seconds(),
-                        uptimeDays,
-                        uptimeHours,
-                        uptimeMinutes,
-                        uptimeSeconds,
-                        batteryPercent,
-                        batteryController.Voltage(),
-                        brightnessController.ToString(),
-                        resetReason,
-                        ToString(motionController.DeviceType()),
-                        touchPanel.GetChipId(),
-                        touchPanel.GetVendorId(),
-                        touchPanel.GetFwVersion(),
-                        TARGET_DEVICE_NAME);
-  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  return std::make_unique<Screens::Label>(1, 5, label);
-}
-
 extern int mallocFailedCount;
 extern int stackOverflowCount;
-std::unique_ptr<Screen> SystemInfo::CreateScreen3() {
-  lv_mem_monitor_t mon;
-  lv_mem_monitor(&mon);
 
-  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_recolor(label, true);
-  const auto& bleAddr = bleController.Address();
-  lv_label_set_text_fmt(label,
-                        "#808080 BLE MAC#\n"
-                        " %02x:%02x:%02x:%02x:%02x:%02x"
-                        "\n"
-                        "\n"
-                        "#808080 Memory heap#\n"
-                        " #808080 Free# %d\n"
-                        " #808080 Min free# %d\n"
-                        " #808080 Alloc err# %d\n"
-                        " #808080 Ovrfl err# %d\n",
-                        bleAddr[5],
-                        bleAddr[4],
-                        bleAddr[3],
-                        bleAddr[2],
-                        bleAddr[1],
-                        bleAddr[0],
-                        xPortGetFreeHeapSize(),
-                        xPortGetMinimumEverFreeHeapSize(),
-                        mallocFailedCount,
-                        stackOverflowCount);
-  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  return std::make_unique<Screens::Label>(2, 5, label);
-}
-
-bool SystemInfo::sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs) {
-  return lhs.xTaskNumber < rhs.xTaskNumber;
-}
-
-std::unique_ptr<Screen> SystemInfo::CreateScreen4() {
-  static constexpr uint8_t maxTaskCount = 9;
-  TaskStatus_t tasksStatus[maxTaskCount];
-
+void SystemInfo::TasksScreen::Load() {
+  Label::Load();
   lv_obj_t* infoTask = lv_table_create(lv_scr_act(), nullptr);
   lv_table_set_col_cnt(infoTask, 4);
   lv_table_set_row_cnt(infoTask, maxTaskCount + 1);
@@ -268,22 +60,154 @@ std::unique_ptr<Screen> SystemInfo::CreateScreen4() {
     }
     lv_table_set_cell_value(infoTask, i + 1, 3, buffer);
   }
-  return std::make_unique<Screens::Label>(3, 5, infoTask);
 }
 
-std::unique_ptr<Screen> SystemInfo::CreateScreen5() {
+void SystemInfo::HardverScreen::Load() {
+#ifndef TARGET_DEVICE_NAME
+  #define TARGET_DEVICE_NAME "UNKNOWN"
+#endif
+  Label::Load();
+  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_recolor(label, true);
+  lv_label_set_text_fmt(label,
+                        "#808080 Uptime#\n %02lud %02lu:%02lu:%02lu\n"
+                        "#808080 Last reset# %s\n"
+                        "#808080 Accel.# %s\n"
+                        "#808080 Touch.# %x.%x.%x\n"
+                        "#808080 Model# %s\n"
+                        "#808080 BLE MAC#\n"
+                        " %02x:%02x:%02x:%02x:%02x:%02x",
+                        uptimeDays,
+                        uptimeHours,
+                        uptimeMinutes,
+                        uptimeSeconds,
+                        resetReason,
+                        toString(System::SystemTask::displayApp->motionController.DeviceType()),
+                        System::SystemTask::displayApp->touchPanel.GetChipId(),
+                        System::SystemTask::displayApp->touchPanel.GetVendorId(),
+                        System::SystemTask::displayApp->touchPanel.GetFwVersion(),
+                        TARGET_DEVICE_NAME,
+                        bleAddr[5],
+                        bleAddr[4],
+                        bleAddr[3],
+                        bleAddr[2],
+                        bleAddr[1],
+                        bleAddr[0]);
+  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+}
+
+class FirmwareScreen : public Label {
+public:
+  FirmwareScreen(uint8_t screenID) : Label(screenID, SystemInfo::screenNumber) {
+  }
+
+  void Load() override {
+    Label::Load();
+    lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
+    lv_label_set_recolor(label, true);
+    lv_label_set_text_fmt(label,
+                          "#FFFF00 InfiniTimeNext#\n\n"
+                          "#808080 Custom V.# %ld.%ld.%ld\n"
+                          "#808080 Short Ref# %s\n"
+                          "#808080 Build date#\n"
+                          "%s\n"
+                          "%s\n\n"
+                          "#808080 Bootloader# %s",
+                          Pinetime::Version::Major(),
+                          Pinetime::Version::Minor(),
+                          Pinetime::Version::Patch(),
+                          Pinetime::Version::GitCommitHash(),
+                          __DATE__,
+                          __TIME__,
+                          Pinetime::BootloaderVersion::VersionString());
+    lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
+    lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+  }
+};
+
+SystemInfo::SystemInfo()
+  : Screen(Apps::SysInfo),
+    screens {{[this]() -> std::unique_ptr<Screen> {
+                return std::make_unique<MemoryInfo>(0);
+              },
+              [this]() -> std::unique_ptr<Screen> {
+                return std::make_unique<TasksScreen>(1);
+              },
+              [this]() -> std::unique_ptr<Screen> {
+                return std::make_unique<HardverScreen>(2);
+              },
+              [this]() -> std::unique_ptr<Screen> {
+                return std::make_unique<FirmwareScreen>(3);
+              },
+              [this]() -> std::unique_ptr<Screen> {
+                return std::make_unique<LicenseScreen>(4);
+              }}} {
+}
+
+void SystemInfo::Load() {
+  running = true;
+  screens.Load();
+}
+
+bool SystemInfo::UnLoad() {
+  if (running) {
+    running = false;
+    screens.UnLoad();
+  }
+  return true;
+}
+
+SystemInfo::~SystemInfo() {
+  UnLoad();
+}
+
+bool SystemInfo::OnTouchEvent(Applications::TouchEvents event) {
+  return screens.OnTouchEvent(event);
+}
+
+const char* SystemInfo::toString(const Controllers::MotionController::DeviceTypes deviceType) {
+  switch (deviceType) {
+    case Controllers::MotionController::DeviceTypes::BMA421:
+      return "BMA421";
+    case Controllers::MotionController::DeviceTypes::BMA425:
+      return "BMA425";
+    case Controllers::MotionController::DeviceTypes::Unknown:
+      return "???";
+  }
+  return "???";
+}
+
+void SystemInfo::MemoryInfo::Load() {
+  Label::Load();
+  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_recolor(label, true);
+  lv_label_set_text_fmt(label,
+                        "\t#808080 Memory heap#\n"
+                        " #808080 Free# %d\n"
+                        " #808080 Min free# %d\n"
+                        " #808080 Alloc err# %d\n"
+                        " #808080 Ovrfl err# %d\n",
+                        xPortGetFreeHeapSize(),
+                        xPortGetMinimumEverFreeHeapSize(),
+                        mallocFailedCount,
+                        stackOverflowCount);
+  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+}
+
+bool SystemInfo::sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs) {
+  return lhs.xTaskNumber < rhs.xTaskNumber;
+}
+
+void SystemInfo::LicenseScreen::Load() {
+  Label::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_static(label,
-                           "Software Licensed\n"
-                           "under the terms of\n"
-                           "the GNU General\n"
-                           "Public License v3\n"
-                           "#808080 Source code#\n"
-                           "#FFFF00 https://github.com/#\n"
-                           "#FFFF00 InfiniTimeOrg/#\n"
-                           "#FFFF00 InfiniTime#");
+                           "GNU General Public\n"
+                           "License v3\n\n"
+                           "#FFFF00 https://github.com/\n"
+                           "#FFFF00 stephen-polgar/\n"
+                           "#FFFF00 InfiniTimeNext");
   lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  return std::make_unique<Screens::Label>(4, 5, label);
 }

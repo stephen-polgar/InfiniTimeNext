@@ -15,7 +15,7 @@ namespace Pinetime {
   namespace Controllers {
     class HeartRateController {
     public:
-      enum class States { Stopped, NotEnoughData, NoTouch, Running };
+      enum class States : uint8_t { Stopped, NotEnoughData, NoTouch, Running };
 
       HeartRateController() = default;
       void Start();

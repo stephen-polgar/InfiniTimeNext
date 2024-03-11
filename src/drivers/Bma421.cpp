@@ -45,7 +45,7 @@ Bma421::Bma421(TwiMaster& twiMaster, uint8_t twiAddress) : twiMaster {twiMaster}
 }
 
 void Bma421::Init() {
-  if (not isResetOk)
+  if (!isResetOk)
     return; // Call SoftReset (and reset TWI device) first!
 
   auto ret = bma423_init(&bma);
@@ -109,7 +109,7 @@ void Bma421::Write(uint8_t registerAddress, const uint8_t* data, size_t size) {
 }
 
 Bma421::Values Bma421::Process() {
-  if (not isOk)
+  if (! isOk)
     return {};
   struct bma4_accel rawData;
   struct bma4_accel data;

@@ -17,36 +17,30 @@
 */
 #pragma once
 
+#include "Screen.h"
 #include <FreeRTOS.h>
-#include <lvgl/src/lv_core/lv_obj.h>
+#include <portmacro_cmsis.h>
 #include <string>
-#include "displayapp/screens/Screen.h"
 #include "displayapp/apps/Apps.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
 
 namespace Pinetime {
-  namespace Controllers {
-    class MusicService;
-  }
-
   namespace Applications {
     namespace Screens {
       class Music : public Screen {
       public:
-        Music(Pinetime::Controllers::MusicService& music);
-
+        Music();
         ~Music() override;
-
-        void Refresh() override;
-
-        void OnObjectEvent(lv_obj_t* obj, lv_event_t event);
+        bool OnTouchEvent(TouchEvents event) override;
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        bool OnTouchEvent(TouchEvents event) override;
+        void Refresh() override;
 
-        void UpdateLength();
-
+        void onObjectEvent(lv_obj_t* obj, lv_event_t event);
+        void updateLength();
+        static void event_handler(lv_obj_t* obj, lv_event_t event);
         lv_obj_t* btnPrev;
         lv_obj_t* btnPlayPause;
         lv_obj_t* btnNext;
@@ -65,18 +59,16 @@ namespace Pinetime {
         /** For the spinning disc animation */
         bool frameB;
 
-        Pinetime::Controllers::MusicService& musicService;
-
         std::string artist;
         std::string album;
         std::string track;
 
         /** Total length in seconds */
-        int totalLength = 0;
+        int totalLength;
         /** Current position in seconds */
         int currentPosition;
         /** Last time an animation update or timer was incremented */
-        TickType_t lastIncrement = 0;
+        TickType_t lastIncrement;
 
         bool playing;
 
@@ -91,8 +83,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Music;
       static constexpr const char* icon = Screens::Symbols::music;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::Music(*controllers.musicService);
+      static Screens::Screen* Create() {
+        return new Screens::Music();
       };
     };
   }

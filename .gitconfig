@@ -3,3 +3,7 @@
     autocrlf = input
 [apply]
     whitespace = fix
+
+[user]
+	email = polgar.istvan@proton.me
+	name = github.com 

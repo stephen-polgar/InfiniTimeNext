@@ -1,11 +1,11 @@
 #include "displayapp/LittleVgl.h"
-#include "displayapp/InfiniTimeTheme.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
 #include "drivers/St7789.h"
 #include "littlefs/lfs.h"
 #include "components/fs/FS.h"
+#include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Components;
 

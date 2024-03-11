@@ -1,11 +1,11 @@
-#include "displayapp/screens/WatchFaceAnalog.h"
-#include <cmath>
-#include <lvgl/lvgl.h>
-#include "displayapp/screens/BatteryIcon.h"
-#include "displayapp/screens/BleIcon.h"
-#include "displayapp/screens/Symbols.h"
+#include "WatchFaceAnalog.h"
+#include "systemtask/SystemTask.h"
+#include "components/ble/NotificationManager.h"
+#include "components/motion/MotionController.h"
+#include "components/battery/BatteryController.h"
+#include "components/ble/BleController.h"
 #include "displayapp/screens/NotificationIcon.h"
-#include "components/settings/Settings.h"
+#include "Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
@@ -41,88 +41,82 @@ namespace {
 
 }
 
-WatchFaceAnalog::WatchFaceAnalog(Controllers::DateTime& dateTimeController,
-                                 const Controllers::Battery& batteryController,
-                                 const Controllers::Ble& bleController,
-                                 Controllers::NotificationManager& notificationManager,
-                                 Controllers::Settings& settingsController)
-  : currentDateTime {{}},
-    batteryIcon(true),
-    dateTimeController {dateTimeController},
-    batteryController {batteryController},
-    bleController {bleController},
-    notificationManager {notificationManager},
-    settingsController {settingsController} {
+WatchFaceAnalog::WatchFaceAnalog() : currentDateTime {{}}, batteryIcon(true), Screen(Apps::Clock) {
+}
 
+void WatchFaceAnalog::Load() {
   sHour = 99;
   sMinute = 99;
   sSecond = 99;
 
-  minor_scales = lv_linemeter_create(lv_scr_act(), nullptr);
+  minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);
   lv_linemeter_set_angle_offset(minor_scales, 180);
   lv_obj_set_size(minor_scales, 240, 240);
-  lv_obj_align(minor_scales, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align(minor_scales, NULL, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_style_local_bg_opa(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_style_local_scale_width(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 4);
   lv_obj_set_style_local_scale_end_line_width(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 1);
   lv_obj_set_style_local_scale_end_color(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_GRAY);
 
-  major_scales = lv_linemeter_create(lv_scr_act(), nullptr);
+  major_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(major_scales, 300, 11);
   lv_linemeter_set_angle_offset(major_scales, 180);
   lv_obj_set_size(major_scales, 240, 240);
-  lv_obj_align(major_scales, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align(major_scales, NULL, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_style_local_bg_opa(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_style_local_scale_width(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 6);
   lv_obj_set_style_local_scale_end_line_width(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 4);
   lv_obj_set_style_local_scale_end_color(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
 
-  large_scales = lv_linemeter_create(lv_scr_act(), nullptr);
+  large_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(large_scales, 180, 3);
   lv_linemeter_set_angle_offset(large_scales, 180);
   lv_obj_set_size(large_scales, 240, 240);
-  lv_obj_align(large_scales, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align(large_scales, NULL, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_style_local_bg_opa(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_style_local_scale_width(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 20);
   lv_obj_set_style_local_scale_end_line_width(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 4);
   lv_obj_set_style_local_scale_end_color(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_AQUA);
 
-  twelve = lv_label_create(lv_scr_act(), nullptr);
+  twelve = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_align(twelve, LV_LABEL_ALIGN_CENTER);
   lv_label_set_text_static(twelve, "12");
   lv_obj_set_pos(twelve, 110, 10);
   lv_obj_set_style_local_text_color(twelve, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_AQUA);
 
   batteryIcon.Create(lv_scr_act());
-  lv_obj_align(batteryIcon.GetObject(), nullptr, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+  lv_obj_align(batteryIcon.GetObject(), NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 
-  plugIcon = lv_label_create(lv_scr_act(), nullptr);
+  plugIcon = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_text_static(plugIcon, Symbols::plug);
-  lv_obj_align(plugIcon, nullptr, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+  lv_obj_align(plugIcon, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 
-  bleIcon = lv_label_create(lv_scr_act(), nullptr);
+  bleIcon = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_text_static(bleIcon, "");
-  lv_obj_align(bleIcon, nullptr, LV_ALIGN_IN_TOP_RIGHT, -30, 0);
+  lv_obj_align(bleIcon, NULL, LV_ALIGN_IN_TOP_RIGHT, -30, 0);
 
-  notificationIcon = lv_label_create(lv_scr_act(), nullptr);
+  notificationIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
   lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(false));
-  lv_obj_align(notificationIcon, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+  lv_obj_align(notificationIcon, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
   // Date - Day / Week day
 
-  label_date_day = lv_label_create(lv_scr_act(), nullptr);
+  label_date_day = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(label_date_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
-  lv_label_set_text_fmt(label_date_day, "%s\n%02i", dateTimeController.DayOfWeekShortToString(), dateTimeController.Day());
+  lv_label_set_text_fmt(label_date_day,
+                        "%s\n%02i",
+                        System::SystemTask::displayApp->dateTimeController.DayOfWeekShortToString(),
+                        System::SystemTask::displayApp->dateTimeController.Day());
   lv_label_set_align(label_date_day, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(label_date_day, nullptr, LV_ALIGN_CENTER, 50, 0);
+  lv_obj_align(label_date_day, NULL, LV_ALIGN_CENTER, 50, 0);
 
-  minute_body = lv_line_create(lv_scr_act(), nullptr);
-  minute_body_trace = lv_line_create(lv_scr_act(), nullptr);
-  hour_body = lv_line_create(lv_scr_act(), nullptr);
-  hour_body_trace = lv_line_create(lv_scr_act(), nullptr);
-  second_body = lv_line_create(lv_scr_act(), nullptr);
+  minute_body = lv_line_create(lv_scr_act(), NULL);
+  minute_body_trace = lv_line_create(lv_scr_act(), NULL);
+  hour_body = lv_line_create(lv_scr_act(), NULL);
+  hour_body_trace = lv_line_create(lv_scr_act(), NULL);
+  second_body = lv_line_create(lv_scr_act(), NULL);
 
   lv_style_init(&second_line_style);
   lv_style_set_line_width(&second_line_style, LV_STATE_DEFAULT, 3);
@@ -159,22 +153,29 @@ WatchFaceAnalog::WatchFaceAnalog(Controllers::DateTime& dateTimeController,
   Refresh();
 }
 
+bool WatchFaceAnalog::UnLoad() {
+  if (running) {   
+    lv_task_del(taskRefresh);
+    running = false;
+    lv_obj_clean(lv_scr_act());
+    lv_style_reset(&hour_line_style);
+    lv_style_reset(&hour_line_style_trace);
+    lv_style_reset(&minute_line_style);
+    lv_style_reset(&minute_line_style_trace);
+    lv_style_reset(&second_line_style);    
+  }
+  return true;
+}
+
 WatchFaceAnalog::~WatchFaceAnalog() {
-  lv_task_del(taskRefresh);
-
-  lv_style_reset(&hour_line_style);
-  lv_style_reset(&hour_line_style_trace);
-  lv_style_reset(&minute_line_style);
-  lv_style_reset(&minute_line_style_trace);
-  lv_style_reset(&second_line_style);
-
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void WatchFaceAnalog::UpdateClock() {
-  uint8_t hour = dateTimeController.Hours();
-  uint8_t minute = dateTimeController.Minutes();
-  uint8_t second = dateTimeController.Seconds();
+  auto* dc = &System::SystemTask::displayApp->dateTimeController;
+  uint8_t hour = dc->Hours();
+  uint8_t minute = dc->Minutes();
+  uint8_t second = dc->Seconds();
 
   if (sMinute != minute) {
     auto const angle = minute * 6;
@@ -213,32 +214,28 @@ void WatchFaceAnalog::UpdateClock() {
   }
 }
 
-void WatchFaceAnalog::SetBatteryIcon() {
-  auto batteryPercent = batteryPercentRemaining.Get();
-  batteryIcon.SetBatteryPercentage(batteryPercent);
-}
-
 void WatchFaceAnalog::Refresh() {
-  isCharging = batteryController.IsCharging();
-  if (isCharging.IsUpdated()) {
+  auto* app = System::SystemTask::displayApp;
+  isCharging = app->batteryController.IsCharging();
+  if (!running || isCharging.IsUpdated()) {
     if (isCharging.Get()) {
       lv_obj_set_hidden(batteryIcon.GetObject(), true);
       lv_obj_set_hidden(plugIcon, false);
     } else {
       lv_obj_set_hidden(batteryIcon.GetObject(), false);
       lv_obj_set_hidden(plugIcon, true);
-      SetBatteryIcon();
+    batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
     }
   }
   if (!isCharging.Get()) {
-    batteryPercentRemaining = batteryController.PercentRemaining();
-    if (batteryPercentRemaining.IsUpdated()) {
-      SetBatteryIcon();
+    batteryPercentRemaining = app->batteryController.PercentRemaining();
+    if (!running || batteryPercentRemaining.IsUpdated()) {
+     batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
     }
   }
 
-  bleState = bleController.IsConnected();
-  if (bleState.IsUpdated()) {
+  bleState = app->bleController.IsConnected();
+  if (!running || bleState.IsUpdated()) {
     if (bleState.Get()) {
       lv_label_set_text_static(bleIcon, Symbols::bluetooth);
     } else {
@@ -246,19 +243,18 @@ void WatchFaceAnalog::Refresh() {
     }
   }
 
-  notificationState = notificationManager.AreNewNotificationsAvailable();
-
-  if (notificationState.IsUpdated()) {
+  notificationState = app->notificationManager.AreNewNotificationsAvailable();
+  if (!running || notificationState.IsUpdated()) {
     lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(notificationState.Get()));
   }
 
-  currentDateTime = dateTimeController.CurrentDateTime();
-  if (currentDateTime.IsUpdated()) {
+  currentDateTime = app->dateTimeController.CurrentDateTime();
+  if (!running || currentDateTime.IsUpdated()) {
     UpdateClock();
-
     currentDate = std::chrono::time_point_cast<days>(currentDateTime.Get());
-    if (currentDate.IsUpdated()) {
-      lv_label_set_text_fmt(label_date_day, "%s\n%02i", dateTimeController.DayOfWeekShortToString(), dateTimeController.Day());
+    if (!running || currentDate.IsUpdated()) {
+      lv_label_set_text_fmt(label_date_day, "%s\n%02i", app->dateTimeController.DayOfWeekShortToString(), app->dateTimeController.Day());
     }
   }
+   running = true;
 }

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include "displayapp/screens/Screen.h"
-#include <lvgl/lvgl.h>
+#include "Screen.h"
 
 namespace Pinetime {
   namespace Controllers {
@@ -14,13 +12,13 @@ namespace Pinetime {
 
       class BatteryInfo : public Screen {
       public:
-        BatteryInfo(const Pinetime::Controllers::Battery& batteryController);
-        ~BatteryInfo() override;
-
-        void Refresh() override;
+        BatteryInfo();
+        ~BatteryInfo()override;
+        void Load() override;
+        bool UnLoad() override;      
 
       private:
-        const Pinetime::Controllers::Battery& batteryController;
+       void Refresh() override;   
 
         lv_obj_t* voltage;
         lv_obj_t* percent;

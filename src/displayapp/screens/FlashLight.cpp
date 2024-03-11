@@ -1,24 +1,16 @@
-#include "displayapp/screens/FlashLight.h"
-#include "displayapp/DisplayApp.h"
+#include "FlashLight.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  void EventHandler(lv_obj_t* obj, lv_event_t event) {
-    if (event == LV_EVENT_CLICKED) {
-      auto* screen = static_cast<FlashLight*>(obj->user_data);
-      screen->Toggle();
-    }
-  }
+FlashLight::FlashLight() : Screen(Apps::FlashLight) {
 }
 
-FlashLight::FlashLight(System::SystemTask& systemTask, Controllers::BrightnessController& brightnessController)
-  : systemTask {systemTask}, brightnessController {brightnessController} {
-
-  brightnessController.Set(Controllers::BrightnessController::Levels::Low);
-
+void FlashLight::Load() {
+  running = true;
+  System::SystemTask::displayApp->brightnessController.Set(Controllers::BrightnessController::Levels::Low);
   flashLight = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(flashLight, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
   lv_label_set_text_static(flashLight, Symbols::flashlight);
@@ -34,8 +26,8 @@ FlashLight::FlashLight(System::SystemTask& systemTask, Controllers::BrightnessCo
   lv_obj_align(indicators[0], indicators[1], LV_ALIGN_OUT_LEFT_MID, -8, 0);
   lv_obj_align(indicators[2], indicators[1], LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
-  SetIndicators();
-  SetColors();
+  setIndicators();
+  setColors();
 
   backgroundAction = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_long_mode(backgroundAction, LV_LABEL_LONG_CROP);
@@ -44,18 +36,28 @@ FlashLight::FlashLight(System::SystemTask& systemTask, Controllers::BrightnessCo
   lv_label_set_text_static(backgroundAction, "");
   lv_obj_set_click(backgroundAction, true);
   backgroundAction->user_data = this;
-  lv_obj_set_event_cb(backgroundAction, EventHandler);
+  lv_obj_set_event_cb(backgroundAction, eventHandler);
+  screenTimeout = System::SystemTask::displayApp->settingsController.GetScreenTimeOut();
+  System::SystemTask::displayApp->settingsController.SetScreenTimeOut(60000);
+  // System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
+}
 
-  systemTask.PushMessage(Pinetime::System::Messages::DisableSleeping);
+bool FlashLight::UnLoad() {
+  if (running) {
+    // System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+    System::SystemTask::displayApp->settingsController.SetScreenTimeOut(screenTimeout);
+    running = false;
+    lv_obj_clean(lv_scr_act());
+    lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  }
+  return true;
 }
 
 FlashLight::~FlashLight() {
-  lv_obj_clean(lv_scr_act());
-  lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  systemTask.PushMessage(Pinetime::System::Messages::EnableSleeping);
+  UnLoad();
 }
 
-void FlashLight::SetColors() {
+void FlashLight::setColors() {
   lv_color_t bgColor = isOn ? LV_COLOR_WHITE : LV_COLOR_BLACK;
   lv_color_t fgColor = isOn ? Colors::lightGray : LV_COLOR_WHITE;
 
@@ -68,7 +70,7 @@ void FlashLight::SetColors() {
   }
 }
 
-void FlashLight::SetIndicators() {
+void FlashLight::setIndicators() {
   using namespace Pinetime::Controllers;
 
   if (brightnessLevel == BrightnessController::Levels::High) {
@@ -83,13 +85,13 @@ void FlashLight::SetIndicators() {
   }
 }
 
-void FlashLight::Toggle() {
+void FlashLight::toggle() {
   isOn = !isOn;
-  SetColors();
+  setColors();
   if (isOn) {
-    brightnessController.Set(brightnessLevel);
+    System::SystemTask::displayApp->brightnessController.Set(brightnessLevel);
   } else {
-    brightnessController.Set(Controllers::BrightnessController::Levels::Low);
+    System::SystemTask::displayApp->brightnessController.Set(Controllers::BrightnessController::Levels::Low);
   }
 }
 
@@ -98,9 +100,9 @@ bool FlashLight::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
 
   auto SetState = [this]() {
     if (isOn) {
-      brightnessController.Set(brightnessLevel);
+      System::SystemTask::displayApp->brightnessController.Set(brightnessLevel);
     }
-    SetIndicators();
+    setIndicators();
   };
 
   if (event == TouchEvents::SwipeLeft) {
@@ -123,6 +125,11 @@ bool FlashLight::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
     }
     return true;
   }
-
   return false;
+}
+
+void FlashLight::eventHandler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<FlashLight*>(obj->user_data)->toggle();
+  }
 }

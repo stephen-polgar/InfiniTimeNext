@@ -1,15 +1,9 @@
 #pragma once
 
-#include <lvgl/lvgl.h>
-#include <cstdint>
-#include <memory>
-#include "displayapp/screens/Screen.h"
-#include "displayapp/apps/Apps.h"
-#include "components/datetime/DateTimeController.h"
-#include "components/settings/Settings.h"
-#include "components/battery/BatteryController.h"
+#include "Screen.h"
 #include "displayapp/widgets/PageIndicator.h"
 #include "displayapp/widgets/StatusIcons.h"
+#include <array>
 
 namespace Pinetime {
   namespace Applications {
@@ -22,28 +16,23 @@ namespace Pinetime {
           bool enabled;
         };
 
-        explicit Tile(uint8_t screenID,
-                      uint8_t numScreens,
-                      DisplayApp* app,
-                      Controllers::Settings& settingsController,
-                      const Controllers::Battery& batteryController,
-                      const Controllers::Ble& bleController,
-                      Controllers::DateTime& dateTimeController,
-                      std::array<Applications, 6>& applications);
+        explicit Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications);
 
         ~Tile() override;
-
-        void UpdateScreen();
-        void OnValueChangedEvent(lv_obj_t* obj, uint32_t buttonId);
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        DisplayApp* app;
-        Controllers::DateTime& dateTimeController;
+        void Refresh() override;
+
+        void onValueChangedEvent(lv_obj_t* obj, uint32_t buttonId);
 
         lv_task_t* taskUpdate;
 
         lv_obj_t* label_time;
         lv_obj_t* btnm1;
+        uint8_t screenID;
+        std::array<Applications, 6> applications;
 
         Widgets::PageIndicator pageIndicator;
         Widgets::StatusIcons statusIcons;

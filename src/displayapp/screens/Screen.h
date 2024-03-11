@@ -1,25 +1,17 @@
 #pragma once
 
-#include <cstdint>
+#include "displayapp/apps/Apps.h"
 #include "displayapp/TouchEvents.h"
 #include <lvgl/lvgl.h>
 
 namespace Pinetime {
   namespace Applications {
-    class DisplayApp;
-
     namespace Screens {
       class Screen {
-      private:
-        virtual void Refresh() {
-        }
-
       public:
-        explicit Screen() = default;
+        enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
 
         virtual ~Screen() = default;
-
-        static void RefreshTaskCallback(lv_task_t* task);
 
         bool IsRunning() const {
           return running;
@@ -27,6 +19,13 @@ namespace Pinetime {
 
         /** @return false if the button hasn't been handled by the app, true if it has been handled */
         virtual bool OnButtonPushed() {
+          return false;
+        }
+
+        virtual void Load() {
+        }
+
+        virtual bool UnLoad() {
           return false;
         }
 
@@ -40,8 +39,17 @@ namespace Pinetime {
           return false;
         }
 
+        Apps Id;
+        FullRefreshDirections direction = FullRefreshDirections::None;
+
       protected:
-        bool running = true;
+        explicit Screen(Apps Id = Apps::None);
+        bool running = false;
+        static void RefreshTaskCallback(lv_task_t* task);
+
+      private:
+        virtual void Refresh() {
+        }
       };
     }
   }

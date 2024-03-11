@@ -33,8 +33,6 @@
 
 #include "components/datetime/DateTimeController.h"
 
-int WeatherCallback(uint16_t connHandle, uint16_t attrHandle, struct ble_gatt_access_ctxt* ctxt, void* arg);
-
 namespace Pinetime {
   namespace Controllers {
 
@@ -43,8 +41,6 @@ namespace Pinetime {
       explicit SimpleWeatherService(const DateTime& dateTimeController);
 
       void Init();
-
-      int OnCommand(struct ble_gatt_access_ctxt* ctxt);
 
       static constexpr uint8_t MaxNbForecastDays = 5;
 
@@ -113,9 +109,16 @@ namespace Pinetime {
       }
 
     private:
-      // 00050000-78fc-48fe-8e23-433b3a1942d0
-      static constexpr ble_uuid128_t BaseUuid() {
-        return CharUuid(0x00, 0x00);
+      enum class MessageType : uint8_t { CurrentWeather, Forecast, Unknown };
+      MessageType getMessageType(const uint8_t* data);
+      uint64_t ToUInt64(const uint8_t* data);
+      int16_t ToInt16(const uint8_t* data);
+   
+      SimpleWeatherService::CurrentWeather CreateCurrentWeather(const uint8_t* dataBuffer);
+      SimpleWeatherService::Forecast CreateForecast(const uint8_t* dataBuffer);
+
+      static uint8_t getVersion(const uint8_t* dataBuffer) {
+        return dataBuffer[1];
       }
 
       // 0005yyxx-78fc-48fe-8e23-433b3a1942d0
@@ -124,12 +127,15 @@ namespace Pinetime {
                               .value = {0xd0, 0x42, 0x19, 0x3a, 0x3b, 0x43, 0x23, 0x8e, 0xfe, 0x48, 0xfc, 0x78, y, x, 0x05, 0x00}};
       }
 
-      ble_uuid128_t weatherUuid {BaseUuid()};
+      // 00050000-78fc-48fe-8e23-433b3a1942d0
+      const ble_uuid128_t weatherUuid = CharUuid(0x00, 0x00);
+      const ble_uuid128_t weatherDataCharUuid {CharUuid(0x00, 0x01)};
 
-      ble_uuid128_t weatherDataCharUuid {CharUuid(0x00, 0x01)};
-
+      int onCommand(struct ble_gatt_access_ctxt* ctxt);
+      static int weatherCallback(uint16_t /*connHandle*/, uint16_t /*attrHandle*/, struct ble_gatt_access_ctxt* ctxt, void* arg);
+      uint16_t eventHandle {};
       const struct ble_gatt_chr_def characteristicDefinition[2] = {{.uuid = &weatherDataCharUuid.u,
-                                                                    .access_cb = WeatherCallback,
+                                                                    .access_cb = weatherCallback,
                                                                     .arg = this,
                                                                     .flags = BLE_GATT_CHR_F_WRITE,
                                                                     .val_handle = &eventHandle},
@@ -138,9 +144,7 @@ namespace Pinetime {
         {.type = BLE_GATT_SVC_TYPE_PRIMARY, .uuid = &weatherUuid.u, .characteristics = characteristicDefinition},
         {0}};
 
-      uint16_t eventHandle {};
-
-      const Pinetime::Controllers::DateTime& dateTimeController;
+      const Controllers::DateTime& dateTimeController;
 
       std::optional<CurrentWeather> currentWeather;
       std::optional<Forecast> forecast;

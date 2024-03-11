@@ -1,33 +1,26 @@
 #pragma once
 
-#include <cstdint>
-#include <lvgl/lvgl.h>
-#include "displayapp/screens/Screen.h"
+#include "Screen.h"
 #include "components/ble/SimpleWeatherService.h"
-#include "displayapp/apps/Apps.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
 #include "utility/DirtyValue.h"
 
 namespace Pinetime {
-
-  namespace Controllers {
-    class Settings;
-  }
-
   namespace Applications {
     namespace Screens {
 
       class Weather : public Screen {
       public:
-        Weather(Controllers::Settings& settingsController, Controllers::SimpleWeatherService& weatherService);
+        Weather();
         ~Weather() override;
-
-        void Refresh() override;
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        Controllers::Settings& settingsController;
-        Controllers::SimpleWeatherService& weatherService;
+        void Refresh() override;
+        lv_color_t temperatureColor(int16_t temperature);
+        uint8_t temperatureStyle(int16_t temperature);
+        int16_t roundTemperature(int16_t temp);
 
         Utility::DirtyValue<std::optional<Controllers::SimpleWeatherService::CurrentWeather>> currentWeather {};
         Utility::DirtyValue<std::optional<Controllers::SimpleWeatherService::Forecast>> currentForecast {};
@@ -48,8 +41,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Weather;
       static constexpr const char* icon = Screens::Symbols::cloudSunRain;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::Weather(controllers.settingsController, *controllers.weatherController);
+      static Screens::Screen* Create() {
+        return new Screens::Weather();
       };
     };
   }

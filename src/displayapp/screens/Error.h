@@ -11,11 +11,12 @@ namespace Pinetime {
       public:
         Error(System::BootErrors error);
         ~Error() override;
-
-        void ButtonEventHandler();
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        lv_obj_t* btnOk;
+        System::BootErrors error;
+        static void buttonEventCallback(lv_obj_t*, lv_event_t);
       };
     }
   }

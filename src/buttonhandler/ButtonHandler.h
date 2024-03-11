@@ -1,6 +1,6 @@
 #pragma once
 
-#include "buttonhandler/ButtonActions.h"
+#include "ButtonActions.h"
 #include "systemtask/SystemTask.h"
 #include <FreeRTOS.h>
 #include <timers.h>
@@ -14,6 +14,7 @@ namespace Pinetime {
       ButtonActions HandleEvent(Events event);
 
     private:
+      static void buttonTimerCallback(TimerHandle_t xTimer);
       enum class States : uint8_t { Idle, Pressed, Holding, LongHeld };
       TickType_t releaseTime = 0;
       TimerHandle_t buttonTimer;

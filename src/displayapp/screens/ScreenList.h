@@ -1,30 +1,36 @@
 #pragma once
 
+#include "Screen.h"
+#include "systemtask/SystemTask.h"
 #include <array>
 #include <functional>
-#include <memory>
-#include "displayapp/screens/Screen.h"
-#include "displayapp/DisplayApp.h"
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      enum class ScreenListModes { UpDown, RightLeft, LongPress };
+      enum class ScreenListModes : uint8_t { UpDown, RightLeft, LongPress };
 
-      template <size_t N>
+      template <uint8_t N>
       class ScreenList : public Screen {
       public:
-        ScreenList(DisplayApp* app,
-                   uint8_t initScreen,
-                   const std::array<std::function<std::unique_ptr<Screen>()>, N>&& screens,
-                   ScreenListModes mode)
-          : app {app},
-            initScreen {initScreen},
-            screens {std::move(screens)},
-            mode {mode},
-            screenIndex {initScreen},
-            current {this->screens[initScreen]()} {
+        ScreenList(const std::array<std::function<std::unique_ptr<Screen>()>, N>&& screens,
+                   uint8_t initScreen = 0,
+                   ScreenListModes mode = ScreenListModes::UpDown)
+          : screens {std::move(screens)}, screenIndex {initScreen}, mode {mode}, current {screens[initScreen]()} {
+        }
+
+        void Load() override {
+          running = true;
+          current->Load();
+        }
+
+        bool UnLoad() override {
+          if (running) {
+            running = false;
+            current->UnLoad();
+          }
+          return true;
         }
 
         ScreenList(const ScreenList&) = delete;
@@ -32,31 +38,29 @@ namespace Pinetime {
         ScreenList(ScreenList&&) = delete;
         ScreenList& operator=(ScreenList&&) = delete;
 
-        ~ScreenList() override {
-          lv_obj_clean(lv_scr_act());
+        ~ScreenList() {
+          UnLoad();
         }
 
         bool OnTouchEvent(TouchEvents event) override {
-
           if (mode == ScreenListModes::UpDown) {
             switch (event) {
               case TouchEvents::SwipeDown:
                 if (screenIndex > 0) {
-                  current.reset(nullptr);
-                  app->SetFullRefresh(DisplayApp::FullRefreshDirections::Down);
-                  screenIndex--;
-                  current = screens[screenIndex]();
+                  current.reset();
+                  System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
+                  current = screens[--screenIndex]();
+                  current->Load();
                   return true;
                 } else {
                   return false;
                 }
-
               case TouchEvents::SwipeUp:
                 if (screenIndex < screens.size() - 1) {
-                  current.reset(nullptr);
-                  app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
-                  screenIndex++;
-                  current = screens[screenIndex]();
+                  current.reset();
+                  System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
+                  current = screens[++screenIndex]();
+                  current->Load();
                 }
                 return true;
               default:
@@ -66,10 +70,10 @@ namespace Pinetime {
             switch (event) {
               case TouchEvents::SwipeRight:
                 if (screenIndex > 0) {
-                  current.reset(nullptr);
-                  app->SetFullRefresh(DisplayApp::FullRefreshDirections::None);
-                  screenIndex--;
-                  current = screens[screenIndex]();
+                  current.reset();
+                  System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::None);
+                  current = screens[--screenIndex]();
+                  current->Load();
                   return true;
                 } else {
                   return false;
@@ -77,10 +81,10 @@ namespace Pinetime {
 
               case TouchEvents::SwipeLeft:
                 if (screenIndex < screens.size() - 1) {
-                  current.reset(nullptr);
-                  app->SetFullRefresh(DisplayApp::FullRefreshDirections::None);
-                  screenIndex++;
-                  current = screens[screenIndex]();
+                  current.reset();
+                  System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::None);
+                  current = screens[++screenIndex]();
+                  current->Load();
                 }
                 return true;
               default:
@@ -92,22 +96,19 @@ namespace Pinetime {
             } else {
               screenIndex = 0;
             }
-            current.reset(nullptr);
-            app->SetFullRefresh(DisplayApp::FullRefreshDirections::None);
+            current.reset();
+            System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::None);
             current = screens[screenIndex]();
+            current->Load();
             return true;
           }
-
           return false;
         }
 
       private:
-        DisplayApp* app;
-        uint8_t initScreen = 0;
         const std::array<std::function<std::unique_ptr<Screen>()>, N> screens;
-        ScreenListModes mode = ScreenListModes::UpDown;
-
-        uint8_t screenIndex = 0;
+        ScreenListModes mode;
+        uint8_t screenIndex;
         std::unique_ptr<Screen> current;
       };
     }

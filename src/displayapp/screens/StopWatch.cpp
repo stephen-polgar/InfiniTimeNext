@@ -1,59 +1,53 @@
-#include "displayapp/screens/StopWatch.h"
 
-#include "displayapp/screens/Symbols.h"
+#include <FreeRTOS.h>
+#include "StopWatch.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
 
 using namespace Pinetime::Applications::Screens;
 
-namespace {
-  TimeSeparated_t convertTicksToTimeSegments(const TickType_t timeElapsed) {
-    // Centiseconds
-    const int timeElapsedCentis = timeElapsed * 100 / configTICK_RATE_HZ;
+States StopWatch::currentState = States::Init;
+TickType_t StopWatch::oldTimeElapsed;
+TickType_t StopWatch::blinkTime;
+int StopWatch::lapsDone;
+TickType_t StopWatch::startTime;
+TickType_t StopWatch::laps[maxLapCount + 1];
+TimeSeparated_t StopWatch::currentTimeSeparated;
 
-    const int hundredths = (timeElapsedCentis % 100);
-    const int secs = (timeElapsedCentis / 100) % 60;
-    const int mins = ((timeElapsedCentis / 100) / 60) % 60;
-    const int hours = ((timeElapsedCentis / 100) / 60) / 60;
-    return TimeSeparated_t {hours, mins, secs, hundredths};
-  }
+constexpr TickType_t blinkInterval = pdMS_TO_TICKS(1000);
 
-  void play_pause_event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* stopWatch = static_cast<StopWatch*>(obj->user_data);
-    if (event == LV_EVENT_CLICKED) {
-      stopWatch->playPauseBtnEventHandler();
-    }
-  }
-
-  void stop_lap_event_handler(lv_obj_t* obj, lv_event_t event) {
-    auto* stopWatch = static_cast<StopWatch*>(obj->user_data);
-    if (event == LV_EVENT_CLICKED) {
-      stopWatch->stopLapBtnEventHandler();
-    }
-  }
-
-  constexpr TickType_t blinkInterval = pdMS_TO_TICKS(1000);
+StopWatch::StopWatch() : Screen(Apps::StopWatch) {
 }
 
-StopWatch::StopWatch(System::SystemTask& systemTask) : systemTask {systemTask} {
+void StopWatch::Load() {
+  running = true;
+  if (currentState == States::Init) {
+    oldTimeElapsed = 0;
+    blinkTime = 0;
+    lapsDone = 0;
+  }
+  isHoursLabelUpdated = false;
+
   static constexpr uint8_t btnWidth = 115;
   static constexpr uint8_t btnHeight = 80;
-  btnPlayPause = lv_btn_create(lv_scr_act(), nullptr);
+  btnPlayPause = lv_btn_create(lv_scr_act(), NULL);
   btnPlayPause->user_data = this;
   lv_obj_set_event_cb(btnPlayPause, play_pause_event_handler);
   lv_obj_set_size(btnPlayPause, btnWidth, btnHeight);
   lv_obj_align(btnPlayPause, lv_scr_act(), LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-  txtPlayPause = lv_label_create(btnPlayPause, nullptr);
+  txtPlayPause = lv_label_create(btnPlayPause, NULL);
 
-  btnStopLap = lv_btn_create(lv_scr_act(), nullptr);
+  btnStopLap = lv_btn_create(lv_scr_act(), NULL);
   btnStopLap->user_data = this;
   lv_obj_set_event_cb(btnStopLap, stop_lap_event_handler);
   lv_obj_set_size(btnStopLap, btnWidth, btnHeight);
   lv_obj_align(btnStopLap, lv_scr_act(), LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
-  txtStopLap = lv_label_create(btnStopLap, nullptr);
-  lv_obj_set_state(btnStopLap, LV_STATE_DISABLED);
+  txtStopLap = lv_label_create(btnStopLap, NULL);
+  if (currentState != States::Halted)
+    lv_obj_set_state(btnStopLap, LV_STATE_DISABLED);
   lv_obj_set_state(txtStopLap, LV_STATE_DISABLED);
 
-  lapText = lv_label_create(lv_scr_act(), nullptr);
+  lapText = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lapText, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::lightGray);
   lv_label_set_text_static(lapText, "\n");
   lv_label_set_long_mode(lapText, LV_LABEL_LONG_BREAK);
@@ -61,26 +55,40 @@ StopWatch::StopWatch(System::SystemTask& systemTask) : systemTask {systemTask} {
   lv_obj_set_width(lapText, LV_HOR_RES_MAX);
   lv_obj_align(lapText, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -btnHeight);
 
-  msecTime = lv_label_create(lv_scr_act(), nullptr);
+  msecTime = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_text_static(msecTime, "00");
   lv_obj_set_style_local_text_color(msecTime, LV_LABEL_PART_MAIN, LV_STATE_DISABLED, Colors::lightGray);
   lv_obj_align(msecTime, lapText, LV_ALIGN_OUT_TOP_MID, 0, 0);
 
-  time = lv_label_create(lv_scr_act(), nullptr);
+  time = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_font(time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_76);
   lv_label_set_text_static(time, "00:00");
   lv_obj_set_style_local_text_color(time, LV_LABEL_PART_MAIN, LV_STATE_DISABLED, Colors::lightGray);
   lv_obj_align(time, msecTime, LV_ALIGN_OUT_TOP_MID, 0, 0);
-
-  SetInterfaceStopped();
-
+  if (currentState == States::Running) {
+    SetInterfaceRunning();
+    Refresh();
+  } else if (currentState == States::Init)
+    SetInterfaceStopped();
+  else {
+    SetInterfacePaused();
+    refresh(currentTimeSeparated);
+  }
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
+bool StopWatch::UnLoad() {
+  if (running) {
+    running = false;
+    lv_task_del(taskRefresh);
+    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 StopWatch::~StopWatch() {
-  lv_task_del(taskRefresh);
-  systemTask.PushMessage(Pinetime::System::Messages::EnableSleeping);
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 void StopWatch::SetInterfacePaused() {
@@ -135,7 +143,7 @@ void StopWatch::Start() {
   SetInterfaceRunning();
   startTime = xTaskGetTickCount();
   currentState = States::Running;
-  systemTask.PushMessage(Pinetime::System::Messages::DisableSleeping);
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
 }
 
 void StopWatch::Pause() {
@@ -145,25 +153,28 @@ void StopWatch::Pause() {
   oldTimeElapsed = laps[lapsDone];
   blinkTime = xTaskGetTickCount() + blinkInterval;
   currentState = States::Halted;
-  systemTask.PushMessage(Pinetime::System::Messages::EnableSleeping);
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+}
+
+void StopWatch::refresh(TimeSeparated_t& currentTimeSeparated) {
+  if (currentTimeSeparated.hours == 0) {
+    lv_label_set_text_fmt(time, "%02d:%02d", currentTimeSeparated.mins, currentTimeSeparated.secs);
+  } else {
+    lv_label_set_text_fmt(time, "%02d:%02d:%02d", currentTimeSeparated.hours, currentTimeSeparated.mins, currentTimeSeparated.secs);
+    if (!isHoursLabelUpdated) {
+      lv_obj_set_style_local_text_font(time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+      lv_obj_realign(time);
+      isHoursLabelUpdated = true;
+    }
+  }
+  lv_label_set_text_fmt(msecTime, "%02d", currentTimeSeparated.hundredths);
 }
 
 void StopWatch::Refresh() {
   if (currentState == States::Running) {
     laps[lapsDone] = oldTimeElapsed + xTaskGetTickCount() - startTime;
-
-    TimeSeparated_t currentTimeSeparated = convertTicksToTimeSegments(laps[lapsDone]);
-    if (currentTimeSeparated.hours == 0) {
-      lv_label_set_text_fmt(time, "%02d:%02d", currentTimeSeparated.mins, currentTimeSeparated.secs);
-    } else {
-      lv_label_set_text_fmt(time, "%02d:%02d:%02d", currentTimeSeparated.hours, currentTimeSeparated.mins, currentTimeSeparated.secs);
-      if (!isHoursLabelUpdated) {
-        lv_obj_set_style_local_text_font(time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
-        lv_obj_realign(time);
-        isHoursLabelUpdated = true;
-      }
-    }
-    lv_label_set_text_fmt(msecTime, "%02d", currentTimeSeparated.hundredths);
+    currentTimeSeparated = convertTicksToTimeSegments(laps[lapsDone]);
+    refresh(currentTimeSeparated);
   } else if (currentState == States::Halted) {
     const TickType_t currentTime = xTaskGetTickCount();
     if (currentTime > blinkTime) {
@@ -208,6 +219,29 @@ void StopWatch::stopLapBtnEventHandler() {
     }
   } else if (currentState == States::Halted) {
     Reset();
+  }
+}
+
+TimeSeparated_t StopWatch::convertTicksToTimeSegments(const TickType_t timeElapsed) {
+  // Centiseconds
+  const int timeElapsedCentis = timeElapsed * 100 / configTICK_RATE_HZ;
+
+  const int hundredths = (timeElapsedCentis % 100);
+  const int secs = (timeElapsedCentis / 100) % 60;
+  const int mins = ((timeElapsedCentis / 100) / 60) % 60;
+  const int hours = ((timeElapsedCentis / 100) / 60) / 60;
+  return TimeSeparated_t {hours, mins, secs, hundredths};
+}
+
+void StopWatch::play_pause_event_handler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<StopWatch*>(obj->user_data)->playPauseBtnEventHandler();
+  }
+}
+
+void StopWatch::stop_lap_event_handler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<StopWatch*>(obj->user_data)->stopLapBtnEventHandler();
   }
 }
 

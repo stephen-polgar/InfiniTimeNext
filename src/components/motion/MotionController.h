@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cstdint>
-
 #include <FreeRTOS.h>
-
 #include "drivers/Bma421.h"
 #include "components/ble/MotionService.h"
 #include "utility/CircularBuffer.h"
@@ -12,10 +9,10 @@ namespace Pinetime {
   namespace Controllers {
     class MotionController {
     public:
-      enum class DeviceTypes {
+      enum class DeviceTypes : uint8_t {
         Unknown,
         BMA421,
-        BMA425,
+        BMA425
       };
 
       void Update(int16_t x, int16_t y, int16_t z, uint32_t nbSteps);
@@ -58,11 +55,11 @@ namespace Pinetime {
 
       void Init(Pinetime::Drivers::Bma421::DeviceTypes types);
 
-      void SetService(Pinetime::Controllers::MotionService* service) {
+      void SetService(Controllers::MotionService* service) {
         this->service = service;
       }
 
-      Pinetime::Controllers::MotionService* GetService() const {
+      Controllers::MotionService* GetService() const {
         return service;
       }
 
@@ -97,7 +94,7 @@ namespace Pinetime {
       int32_t accumulatedSpeed = 0;
 
       DeviceTypes deviceType = DeviceTypes::Unknown;
-      Pinetime::Controllers::MotionService* service = nullptr;
+      Controllers::MotionService* service = nullptr;
     };
   }
 }

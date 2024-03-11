@@ -1,6 +1,6 @@
 #pragma once
 
-#include "components/ble/BleController.h"
+#include "Symbols.h"
 
 namespace Pinetime {
   namespace Applications {

@@ -1,14 +1,13 @@
-#include "buttonhandler/ButtonHandler.h"
+#include "ButtonHandler.h"
 
 using namespace Pinetime::Controllers;
 
-void ButtonTimerCallback(TimerHandle_t xTimer) {
-  auto* sysTask = static_cast<Pinetime::System::SystemTask*>(pvTimerGetTimerID(xTimer));
-  sysTask->PushMessage(Pinetime::System::Messages::HandleButtonTimerEvent);
+void ButtonHandler::buttonTimerCallback(TimerHandle_t xTimer) {
+  static_cast<Pinetime::System::SystemTask*>(pvTimerGetTimerID(xTimer))->PushMessage(Pinetime::System::Messages::HandleButtonTimerEvent);
 }
 
 void ButtonHandler::Init(Pinetime::System::SystemTask* systemTask) {
-  buttonTimer = xTimerCreate("buttonTimer", pdMS_TO_TICKS(200), pdFALSE, systemTask, ButtonTimerCallback);
+  buttonTimer = xTimerCreate("buttonTimer", pdMS_TO_TICKS(200), pdFALSE, systemTask, buttonTimerCallback);
 }
 
 ButtonActions ButtonHandler::HandleEvent(Events event) {

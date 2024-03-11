@@ -1,13 +1,9 @@
 #pragma once
 
-#include <lvgl/lvgl.h>
-#include <FreeRTOS.h>
-#include <cstdint>
-#include <memory>
-#include "displayapp/screens/Screen.h"
+#include "Screen.h"
 #include "components/ble/NotificationManager.h"
 #include "components/motor/MotorController.h"
-#include "systemtask/SystemTask.h"
+#include <memory>
 
 namespace Pinetime {
   namespace Controllers {
@@ -18,33 +14,31 @@ namespace Pinetime {
     namespace Screens {
 
       class Notifications : public Screen {
-      public:
-        enum class Modes { Normal, Preview };
-        explicit Notifications(DisplayApp* app,
-                               Pinetime::Controllers::NotificationManager& notificationManager,
-                               Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                               Pinetime::Controllers::MotorController& motorController,
-                               System::SystemTask& systemTask,
-                               Modes mode);
+      public:      
+        explicit Notifications(
+                               Controllers::AlertNotificationService& alertNotificationService,
+                               
+                               Apps id);
         ~Notifications() override;
 
+        void Load() override;
+        bool UnLoad() override;
+
         void Refresh() override;
-        bool OnTouchEvent(Pinetime::Applications::TouchEvents event) override;
+        bool OnTouchEvent(Applications::TouchEvents event) override;
         void DismissToBlack();
         void OnPreviewInteraction();
         void OnPreviewDismiss();
 
         class NotificationItem {
         public:
-          NotificationItem(Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                           Pinetime::Controllers::MotorController& motorController);
+          NotificationItem(Controllers::AlertNotificationService& alertNotificationService);
           NotificationItem(const char* title,
                            const char* msg,
                            uint8_t notifNr,
                            Controllers::NotificationManager::Categories,
                            uint8_t notifNb,
-                           Pinetime::Controllers::AlertNotificationService& alertNotificationService,
-                           Pinetime::Controllers::MotorController& motorController);
+                           Controllers::AlertNotificationService& alertNotificationService);
           ~NotificationItem();
 
           bool IsRunning() const {
@@ -62,34 +56,28 @@ namespace Pinetime {
           lv_obj_t* label_accept;
           lv_obj_t* label_mute;
           lv_obj_t* label_reject;
-          Pinetime::Controllers::AlertNotificationService& alertNotificationService;
-          Pinetime::Controllers::MotorController& motorController;
+          Controllers::AlertNotificationService& alertNotificationService;    
 
           bool running = true;
         };
 
       private:
-        DisplayApp* app;
-        Pinetime::Controllers::NotificationManager& notificationManager;
-        Pinetime::Controllers::AlertNotificationService& alertNotificationService;
-        Pinetime::Controllers::MotorController& motorController;
-        System::SystemTask& systemTask;
-        Modes mode = Modes::Normal;
+        Controllers::AlertNotificationService& alertNotificationService;            
         std::unique_ptr<NotificationItem> currentItem;
-        Pinetime::Controllers::NotificationManager::Notification::Id currentId;
-        bool validDisplay = false;
-        bool afterDismissNextMessageFromAbove = false;
+        Controllers::NotificationManager::Notification::Id currentId;
+        bool validDisplay;
+        bool afterDismissNextMessageFromAbove;
 
-        lv_point_t timeoutLinePoints[2] {{0, 1}, {239, 1}};
-        lv_obj_t* timeoutLine = nullptr;
+        lv_point_t timeoutLinePoints[2];
+        lv_obj_t* timeoutLine;
         TickType_t timeoutTickCountStart;
 
         static const TickType_t timeoutLength = pdMS_TO_TICKS(7000);
-        bool interacted = true;
+        bool interacted;
 
-        bool dismissingNotification = false;
+        bool dismissingNotification;
 
-        lv_task_t* taskRefresh;
+        lv_task_t* taskRefresh = NULL;
       };
     }
   }

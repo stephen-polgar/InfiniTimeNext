@@ -1,21 +1,14 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
-#include <lvgl/lvgl.h>
-
-#include <FreeRTOS.h>
-#include "portmacro_cmsis.h"
-
-#include "systemtask/SystemTask.h"
+#include "Screen.h"
+#include <portmacro_cmsis.h>
 #include "displayapp/apps/Apps.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-
-      enum class States { Init, Running, Halted };
+      enum class States : uint8_t { Init, Running, Halted };
 
       struct TimeSeparated_t {
         int hours;
@@ -26,15 +19,15 @@ namespace Pinetime {
 
       class StopWatch : public Screen {
       public:
-        explicit StopWatch(System::SystemTask& systemTask);
+        explicit StopWatch();
         ~StopWatch() override;
-        void Refresh() override;
-
-        void playPauseBtnEventHandler();
-        void stopLapBtnEventHandler();
+        void Load() override;
+        bool UnLoad() override;
         bool OnButtonPushed() override;
 
       private:
+        void refresh(TimeSeparated_t& currentTimeSeparated);
+        void Refresh() override;
         void SetInterfacePaused();
         void SetInterfaceRunning();
         void SetInterfaceStopped();
@@ -43,19 +36,25 @@ namespace Pinetime {
         void Start();
         void Pause();
 
-        Pinetime::System::SystemTask& systemTask;
-        States currentState = States::Init;
-        TickType_t startTime;
-        TickType_t oldTimeElapsed = 0;
-        TickType_t blinkTime = 0;
+        static TickType_t startTime;
+        static TimeSeparated_t convertTicksToTimeSegments(const TickType_t timeElapsed);
+        void playPauseBtnEventHandler();
+        void stopLapBtnEventHandler();
+        static void play_pause_event_handler(lv_obj_t* obj, lv_event_t event);
+        static void stop_lap_event_handler(lv_obj_t* obj, lv_event_t event);
         static constexpr int maxLapCount = 20;
-        TickType_t laps[maxLapCount + 1];
+        static TickType_t laps[];
         static constexpr int displayedLaps = 2;
-        int lapsDone = 0;
+
+        static TickType_t oldTimeElapsed;
+        static TickType_t blinkTime;
+        static States currentState;
+        static int lapsDone;
+        static TimeSeparated_t currentTimeSeparated;
+        bool isHoursLabelUpdated;
+
         lv_obj_t *time, *msecTime, *btnPlayPause, *btnStopLap, *txtPlayPause, *txtStopLap;
         lv_obj_t* lapText;
-        bool isHoursLabelUpdated = false;
-
         lv_task_t* taskRefresh;
       };
     }
@@ -65,8 +64,8 @@ namespace Pinetime {
       static constexpr Apps app = Apps::StopWatch;
       static constexpr const char* icon = Screens::Symbols::stopWatch;
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::StopWatch(*controllers.systemTask);
+      static Screens::Screen* Create() {
+        return new Screens::StopWatch();
       };
     };
   }

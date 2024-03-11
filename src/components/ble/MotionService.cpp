@@ -1,7 +1,7 @@
 #include "components/ble/MotionService.h"
 #include "components/motion/MotionController.h"
 #include "components/ble/NimbleController.h"
-#include <nrf_log.h>
+//#include <nrf_log.h>
 
 using namespace Pinetime::Controllers;
 
@@ -61,7 +61,7 @@ void MotionService::Init() {
 
 int MotionService::OnStepCountRequested(uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
   if (attributeHandle == stepCountHandle) {
-    NRF_LOG_INFO("Motion-stepcount : handle = %d", stepCountHandle);
+   // NRF_LOG_INFO("Motion-stepcount : handle = %d", stepCountHandle);
     uint32_t buffer = motionController.NbSteps();
 
     int res = os_mbuf_append(context->om, &buffer, 4);

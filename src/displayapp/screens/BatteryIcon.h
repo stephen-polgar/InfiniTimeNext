@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+
 #include <lvgl/src/lv_core/lv_obj.h>
 
 namespace Pinetime {
@@ -13,8 +13,7 @@ namespace Pinetime {
         void SetColor(lv_color_t);
         void SetBatteryPercentage(uint8_t percentage);
         lv_obj_t* GetObject();
-
-        static const char* GetUnknownIcon();
+     
         static const char* GetPlugIcon(bool isCharging);
 
       private:

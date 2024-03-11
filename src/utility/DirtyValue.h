@@ -11,22 +11,22 @@ namespace Pinetime {
       } // Use MIL and const-lvalue-ref
 
       bool IsUpdated() {
-        if (this->isUpdated) {
-          this->isUpdated = false;
+        if (isUpdated) {
+          isUpdated = false;
           return true;
         }
         return false;
       }
-
+    
       T const& Get() {
-        this->isUpdated = false;
+        isUpdated = false;
         return value;
       } // never expose a non-const lvalue-ref
 
       DirtyValue& operator=(const T& other) {
-        if (this->value != other) {
-          this->value = other;
-          this->isUpdated = true;
+        if (value != other) {
+          value = other;
+          isUpdated = true;
         }
         return *this;
       }

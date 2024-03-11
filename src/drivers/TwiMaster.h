@@ -8,7 +8,7 @@ namespace Pinetime {
   namespace Drivers {
     class TwiMaster {
     public:
-      enum class ErrorCodes { NoError, TransactionFailed };
+      enum class ErrorCodes : uint8_t { NoError, TransactionFailed };
 
       TwiMaster(NRF_TWIM_Type* module, uint32_t frequency, uint8_t pinSda, uint8_t pinScl);
 

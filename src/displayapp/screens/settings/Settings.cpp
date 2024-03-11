@@ -1,8 +1,4 @@
-#include "displayapp/screens/settings/Settings.h"
-#include <lvgl/lvgl.h>
-#include <functional>
-#include "displayapp/apps/Apps.h"
-#include "displayapp/DisplayApp.h"
+#include "Settings.h"
 
 using namespace Pinetime::Applications::Screens;
 
@@ -18,14 +14,25 @@ auto Settings::CreateScreenList() const {
   return screens;
 }
 
-Settings::Settings(Pinetime::Applications::DisplayApp* app, Pinetime::Controllers::Settings& settingsController)
-  : app {app},
-    settingsController {settingsController},
-    screens {app, settingsController.GetSettingsMenu(), CreateScreenList(), Screens::ScreenListModes::UpDown} {
+Settings::Settings() : Screen(Apps::Settings),
+   screens {CreateScreenList(), System::SystemTask::displayApp->settingsController.GetSettingsMenu()} {
+}
+
+void Settings::Load() {
+  running = true;
+  screens.Load();
+}
+
+bool Settings::UnLoad() {
+  if (running) {
+    running = false;
+    screens.UnLoad();
+  }
+  return true;
 }
 
 Settings::~Settings() {
-  lv_obj_clean(lv_scr_act());
+  UnLoad();
 }
 
 bool Settings::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
@@ -37,6 +44,5 @@ std::unique_ptr<Screen> Settings::CreateScreen(unsigned int screenNum) const {
   for (int i = 0; i < entriesPerScreen; i++) {
     screens[i] = entries[screenNum * entriesPerScreen + i];
   }
-
-  return std::make_unique<Screens::List>(screenNum, nScreens, app, settingsController, screens);
+  return std::make_unique<Screens::List>(screenNum, nScreens, screens);
 }

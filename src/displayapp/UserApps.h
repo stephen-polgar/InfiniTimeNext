@@ -1,19 +1,6 @@
 #pragma once
-#include "displayapp/apps/Apps.h"
-#include "Controllers.h"
 
-#include "displayapp/screens/Alarm.h"
-#include "displayapp/screens/Dice.h"
-#include "displayapp/screens/Timer.h"
-#include "displayapp/screens/Twos.h"
-#include "displayapp/screens/Tile.h"
-#include "displayapp/screens/ApplicationList.h"
-#include "displayapp/screens/WatchFaceDigital.h"
-#include "displayapp/screens/WatchFaceAnalog.h"
-#include "displayapp/screens/WatchFaceCasioStyleG7710.h"
-#include "displayapp/screens/WatchFaceInfineat.h"
-#include "displayapp/screens/WatchFacePineTimeStyle.h"
-#include "displayapp/screens/WatchFaceTerminal.h"
+#include "displayapp/apps/Apps.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -24,13 +11,13 @@ namespace Pinetime {
     struct AppDescription {
       Apps app;
       const char* icon;
-      Screens::Screen* (*create)(AppControllers& controllers);
+      Screens::Screen* (*create)();
     };
 
     struct WatchFaceDescription {
       WatchFace watchFace;
       const char* name;
-      Screens::Screen* (*create)(AppControllers& controllers);
+      Screens::Screen* (*create)();
       bool (*isAvailable)(Controllers::FS& fileSystem);
     };
 

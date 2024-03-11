@@ -5,6 +5,7 @@
 #include <drivers/SpiMaster.h>
 #include <bits/unique_ptr.h>
 #include <queue.h>
+#include "components/gfx/Gfx.h"
 #include "drivers/Cst816s.h"
 #include <drivers/Watchdog.h>
 #include <components/motor/MotorController.h>
@@ -78,7 +79,7 @@ namespace Pinetime {
       void DisplayLogo(uint16_t color);
       void DisplayOtaProgress(uint8_t percent, uint16_t color);
       void InitHw();
-      void Refresh();
+      void refresh();
       Pinetime::Drivers::St7789& lcd;
       const Controllers::Ble& bleController;
 

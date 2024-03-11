@@ -1,27 +1,24 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
-#include <lvgl/src/lv_core/lv_obj.h>
+#include "Screen.h"
+#include "components/ble/BleController.h"
 #include "FreeRTOS.h"
 
 namespace Pinetime {
-  namespace Controllers {
-    class Ble;
-  }
-
   namespace Applications {
     namespace Screens {
 
       class FirmwareUpdate : public Screen {
       public:
-        FirmwareUpdate(const Pinetime::Controllers::Ble& bleController);
+        FirmwareUpdate(const Controllers::Ble& bleController);
         ~FirmwareUpdate() override;
-
-        void Refresh() override;
+        void Load() override;
+        bool UnLoad() override;
 
       private:
-        enum class States { Idle, Running, Validated, Error };
-        const Pinetime::Controllers::Ble& bleController;
+        void Refresh() override;
+        enum class States : uint8_t { Idle, Running, Validated, Error };
+        const Controllers::Ble& bleController;
         lv_obj_t* bar1;
         lv_obj_t* percentLabel;
         lv_obj_t* titleLabel;

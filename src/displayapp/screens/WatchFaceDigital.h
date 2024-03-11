@@ -1,48 +1,30 @@
 #pragma once
 
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include "displayapp/screens/Screen.h"
-#include "components/datetime/DateTimeController.h"
+#include "Screen.h"
 #include "components/ble/SimpleWeatherService.h"
-#include "components/ble/BleController.h"
 #include "displayapp/widgets/StatusIcons.h"
 #include "utility/DirtyValue.h"
-#include "displayapp/apps/Apps.h"
+#include "components/fs/FS.h"
 
 namespace Pinetime {
-  namespace Controllers {
-    class Settings;
-    class Battery;
-    class Ble;
-    class NotificationManager;
-    class HeartRateController;
-    class MotionController;
-  }
-
   namespace Applications {
     namespace Screens {
 
       class WatchFaceDigital : public Screen {
       public:
-        WatchFaceDigital(Controllers::DateTime& dateTimeController,
-                         const Controllers::Battery& batteryController,
-                         const Controllers::Ble& bleController,
-                         Controllers::NotificationManager& notificationManager,
-                         Controllers::Settings& settingsController,
-                         Controllers::HeartRateController& heartRateController,
-                         Controllers::MotionController& motionController,
-                         Controllers::SimpleWeatherService& weather);
+        WatchFaceDigital();
         ~WatchFaceDigital() override;
 
-        void Refresh() override;
+        void Load() override;
+        bool UnLoad() override;
+
+        bool OnTouchEvent(uint16_t /*x*/, uint16_t /*y*/) override;
 
       private:
-        uint8_t displayedHour = -1;
-        uint8_t displayedMinute = -1;
-
+        void Refresh() override;
+        uint8_t displayedHour;
+        uint8_t displayedMinute;
+       
         Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
         Utility::DirtyValue<bool> powerPresent {};
         Utility::DirtyValue<bool> bleState {};
@@ -68,13 +50,6 @@ namespace Pinetime {
         lv_obj_t* weatherIcon;
         lv_obj_t* temperature;
 
-        Controllers::DateTime& dateTimeController;
-        Controllers::NotificationManager& notificationManager;
-        Controllers::Settings& settingsController;
-        Controllers::HeartRateController& heartRateController;
-        Controllers::MotionController& motionController;
-        Controllers::SimpleWeatherService& weatherService;
-
         lv_task_t* taskRefresh;
         Widgets::StatusIcons statusIcons;
       };
@@ -85,15 +60,8 @@ namespace Pinetime {
       static constexpr WatchFace watchFace = WatchFace::Digital;
       static constexpr const char* name = "Digital face";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::WatchFaceDigital(controllers.dateTimeController,
-                                             controllers.batteryController,
-                                             controllers.bleController,
-                                             controllers.notificationManager,
-                                             controllers.settingsController,
-                                             controllers.heartRateController,
-                                             controllers.motionController,
-                                             *controllers.weatherController);
+      static Screens::Screen* Create() {
+        return new Screens::WatchFaceDigital();
       };
 
       static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {
