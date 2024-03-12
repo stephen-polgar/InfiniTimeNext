@@ -10,13 +10,14 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
 ### Removed apps
  - Chimes 
  - All games
+ - Metronome
  - WatchFace: InfiniTime, PineTime
 ### Changes
 Now most system and user application constructors are empty and are used to create new "Screen" based objects with different parameters.
 Constructors do not load the screen. The watch screen are filled and cleaned by the Screen::Load() and Screen::UnLoad() functions.
 The utility/StaticStack.h are replaced with utility/ScreenStack.h which can store "Screen objects" with different parameters.
 And lots of small changes and optimizations.
-Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator.
+Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](releases) on watch.
  
 ![InfiniTime logo](doc/logo/infinitime-logo-small.jpg "InfiniTime Logo")
 
