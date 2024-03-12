@@ -17,7 +17,7 @@ Now most system and user application constructors are empty and are used to crea
 Constructors do not load the screen. The watch screen are filled and cleaned by the Screen::Load() and Screen::UnLoad() functions.
 The utility/StaticStack.h are replaced with utility/ScreenStack.h which can store "Screen objects" with different parameters.
 And lots of small changes and optimizations.
-Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](/stephen-polgar/InfiniTimeNext/releases) on watch.
+Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on watch.
  
 ![InfiniTime logo](doc/logo/infinitime-logo-small.jpg "InfiniTime Logo")
 
