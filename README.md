@@ -20,8 +20,6 @@ And lots of small changes and optimizations.
 ### Installations
 Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on watch.
  
-![InfiniTime logo](doc/logo/infinitime-logo-small.jpg "InfiniTime Logo")
-
 Fast open-source firmware for the [PineTime smartwatch](https://pine64.org/devices/pinetime/) with many features, written in modern C++.
 
 ## New to InfiniTime?
