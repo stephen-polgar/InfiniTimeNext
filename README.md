@@ -13,9 +13,9 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
  - Metronome
  - WatchFace: InfiniTime, PineTime
 ### Changes
-Now most system and user application constructors are empty and are used to create new "Screen" based objects with different parameters.
-Constructors do not load the screen. The watch screen are filled and cleaned by the Screen::Load() and Screen::UnLoad() functions.
-The utility/StaticStack.h are replaced with utility/ScreenStack.h which can store "Screen objects" with different parameters.
+[Now most system and user application constructors are empty and are used to create new "Screen" based objects with different parameters.
+Constructors do not load the screen. The watch screen are filled and cleaned by the Screen::Load() and Screen::UnLoad() methodss.
+The utility/StaticStack.h are replaced with utility/ScreenStack.h which can store "Screen objects" with different parameters.](doc/code/Apps.md)
 And lots of small changes and optimizations.
 ### Installations
 Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on [PineTime smartwatch](https://pine64.org/devices/pinetime/).
