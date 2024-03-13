@@ -19,7 +19,7 @@ Apps can be refreshed periodically and reacts to external events (touch or butto
 
 Every app class is declared inside the namespace `Pinetime::Applications::Screens` 
 and inherits
-from [`Pinetime::Applications::Screens::Screen`](https://github.com/InfiniTimeOrg/InfiniTime/blob/main/src/displayapp/screens/Screen.h).
+from [`Pinetime::Applications::Screens::Screen`](src/displayapp/screens/Screen.h).
 
 Each app defines its own constructor.
 The constructors mostly used to create new object with different parameters (ex: AlarmSet,...). The Screen::Lpad() method is responsible for initializing the UI of the app.
