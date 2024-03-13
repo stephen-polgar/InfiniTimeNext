@@ -22,8 +22,7 @@ and inherits
 from [`Pinetime::Applications::Screens::Screen`](https://github.com/InfiniTimeOrg/InfiniTime/blob/main/src/displayapp/screens/Screen.h).
 
 Each app defines its own constructor.
-The constructors mostly take references to InfiniTime `Controllers` (ex: Alarm, DateTime, BLE services, Settings,...)
-the app needs for its operations. The constructor is responsible for initializing the UI of the app.
+The constructors mostly used to create new object with different parameters (ex: AlarmSet,...). The Screen::Lpad() method is responsible for initializing the UI of the app.
 
 The **destructor** cleans up LVGL and restores any changes (for example re-enable sleeping).
 
@@ -50,8 +49,8 @@ without overflowing the system memory.
 
 ## Apps and watch faces initialization
 
-Apps are created by `DisplayApp` in `DisplayApp::LoadScreen()`.
-This method simply call the creates an instance of the class that corresponds to the app specified in parameters.
+The UI of the current app are loaded by `DisplayApp` in `DisplayApp::loadScreen()`.
+This method simply call the Screen::Load() method.
 
 The constructor of **system** apps is called directly. If the application is a **user** app,
 the corresponding `AppDescription` is first retrieved from `userApps`
@@ -77,11 +76,8 @@ struct AppTraits<Apps::Alarm> {
   static constexpr Apps app = Apps::Alarm;
   static constexpr const char* icon = Screens::Symbols::clock;
 
-  static Screens::Screen* Create(AppControllers& controllers) {
-    return new Screens::Alarm(controllers.alarmController,
-                              controllers.settingsController.GetClockType(),
-                              *controllers.systemTask,
-                              controllers.motorController);
+  static Screens::Screen* Create() {
+    return new Screens::Alarm();
   };
 };
 ```
@@ -101,12 +97,8 @@ Here is an example of `WatchFaceTraits`:
       static constexpr WatchFace watchFace = WatchFace::Analog;
       static constexpr const char* name = "Analog face";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::WatchFaceAnalog(controllers.dateTimeController,
-                                            controllers.batteryController,
-                                            controllers.bleController,
-                                            controllers.notificationManager,
-                                            controllers.settingsController);
+      static Screens::Screen* Create() {
+        return new Screens::WatchFaceAnalog();
       };
 
       static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {
@@ -143,7 +135,7 @@ namespace Pinetime {
     struct AppTraits<Apps:MyApp> {
       static constexpr Apps app = Apps::MyApp;
       static constexpr const char* icon = Screens::Symbol::myApp;
-      static Screens::Screens* Create(AppController& controllers) {
+      static Screens::Screens* Create() {
         return new Screens::MyApp();
       }
     };
@@ -158,16 +150,36 @@ MyApp.cpp:
 
 using namespace Pinetime::Applications::Screens;
 
+MyApp::MyApp(/* optional parameters */) {
+// optional parameters
+}
+
 MyApp::MyApp() {
+}
+
+MyApp::Load() {
+  running = true;
+ // using optional parameters to load if any
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "My test application");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(title, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
-MyApp::~MyApp() {
-  lv_obj_clean(lv_scr_act());
+MyApp::UnLoad()  {
+  if (running) {
+   running = false;
+   lv_obj_clean(lv_scr_act());
+  }
 }
+ 
+MyApp::~MyApp() {
+  UnLoad();
+}
+
+private:
+// optional parameters
+
 ```
 
 Both of these files should be in [displayapp/screens/](/src/displayapp/screens/).
