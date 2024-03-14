@@ -125,12 +125,12 @@ namespace Pinetime {
       class MyApp : public Screen {
       public:
         MyApp();
-        MyApp::MyApp(/* optional parameters */);
+        MyApp::MyApp(/* optional arguments */);
         void Load() override;
         bool UnLoad() override;
         ~MyApp() override;
        private:
-        // optional parameters
+        // optional arguments
       };
     }    
     template <>
@@ -153,8 +153,8 @@ MyApp.cpp:
 
 using namespace Pinetime::Applications::Screens;
 
-MyApp::MyApp(/* optional parameters */) : Screen(Apps::MyApp)  {
-// optional parameters
+MyApp::MyApp(/* optional arguments */) : Screen(Apps::MyApp)  {
+// optional arguments
 }
 
 MyApp::MyApp() : Screen(Apps::MyApp) {
@@ -162,7 +162,7 @@ MyApp::MyApp() : Screen(Apps::MyApp) {
 
 void MyApp::Load() {
   running = true;
- // using optional parameters for load if any
+ // using optional arguments for load if any
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "My test application");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
