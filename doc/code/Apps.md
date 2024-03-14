@@ -160,7 +160,7 @@ MyApp::MyApp(/* optional parameters */) {
 MyApp::MyApp() {
 }
 
-MyApp::Load() {
+void MyApp::Load() {
   running = true;
  // using optional parameters to load if any
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
@@ -174,11 +174,12 @@ MyApp::Load() {
   */
 }
 
-MyApp::UnLoad()  {
+bool MyApp::UnLoad()  {
   if (running) {
    running = false;
    lv_obj_clean(lv_scr_act());
   }
+  return true; // value of true enables this object to be stored in the ScreenStack
 }
  
 MyApp::~MyApp() {
