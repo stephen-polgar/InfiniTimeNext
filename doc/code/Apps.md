@@ -162,7 +162,7 @@ MyApp::MyApp() : Screen(Apps::MyApp) {
 
 void MyApp::Load() {
   running = true;
- // using optional parameters to load if any
+ // using optional parameters for load if any
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "My test application");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
