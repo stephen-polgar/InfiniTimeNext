@@ -1,3 +1,4 @@
+.gitconfig
 .idea/
 # Python virtual environment for DFU images
 .venv/
