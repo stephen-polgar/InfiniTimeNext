@@ -116,9 +116,7 @@ MyApp.h:
 ```cpp
 #pragma once
 
-#include "displayapp/Apps.h"
 #include "displayapp/screens/Screen.h"
-#include "displayapp/Controllers.h"
 #include "Symbols.h"
 
 namespace Pinetime {
@@ -147,6 +145,7 @@ MyApp.cpp:
 
 ```cpp
 #include "displayapp/screens/MyApp.h"
+#include "systemtask/SystemTask.h"  // for Controllers
 
 using namespace Pinetime::Applications::Screens;
 
@@ -164,6 +163,11 @@ MyApp::Load() {
   lv_label_set_text_static(title, "My test application");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(title, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+  /*
+   Controllers:
+   System::SystemTask::displayApp->settingsController , ....
+   System::SystemTask::displayApp->systemTask->nimble().weather() , ...
+  */
 }
 
 MyApp::UnLoad()  {
