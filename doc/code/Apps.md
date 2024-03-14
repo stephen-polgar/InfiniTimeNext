@@ -125,7 +125,9 @@ namespace Pinetime {
       class MyApp : public Screen {
       public:
         MyApp();
-        MyApp::MyApp(/* optional parameters */) 
+        MyApp::MyApp(/* optional parameters */);
+        void Load() override;
+        bool UnLoad() override;
         ~MyApp() override;
        private:
         // optional parameters
