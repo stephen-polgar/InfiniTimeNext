@@ -22,7 +22,7 @@ and inherits
 from [`Pinetime::Applications::Screens::Screen`](/src/displayapp/screens/Screen.h).
 
 Each app defines its own constructor.
-The constructors mostly used to create new object with different parameters (ex: AlarmSet,...). The Screen::Lpad() method is responsible for initializing the UI of the app.
+The constructors mostly used to create new object with different parameters (ex: [AlarmSet](/src/displayapp/screens/AlarmSet.h),...). The Screen::Load() method is responsible for initializing the UI of the app.
 
 The **destructor** cleans up LVGL and restores any changes (for example re-enable sleeping).
 
@@ -188,7 +188,7 @@ Now we have our very own app, but InfiniTime does not know about it yet.
 The first step is to include your `MyApp.cpp` (or any new cpp files for that matter)
 in the compilation by adding it to [CMakeLists.txt](/CMakeLists.txt).
 The next step to making it launch-able is to give your app an id.
-To do this, add an entry in the enum class `Pinetime::Applications::Apps` ([displayapp/Apps.h](/src/displayapp/Apps.h)).
+To do this, add an entry in the enum class `Pinetime::Applications::Apps` ([displayapp/apps/Apps.h](/src/displayapp/apps/Apps.h)).
 Name this entry after your app. Add `#include "displayapp/screens/MyApp.h"`
 to the file [displayapp/DisplayApp.cpp](/src/displayapp/DisplayApp.cpp).
 
