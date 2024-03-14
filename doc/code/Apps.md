@@ -153,11 +153,11 @@ MyApp.cpp:
 
 using namespace Pinetime::Applications::Screens;
 
-MyApp::MyApp(/* optional parameters */) {
+MyApp::MyApp(/* optional parameters */) : Screen(Apps::MyApp)  {
 // optional parameters
 }
 
-MyApp::MyApp() {
+MyApp::MyApp() : Screen(Apps::MyApp) {
 }
 
 void MyApp::Load() {
