@@ -125,10 +125,12 @@ namespace Pinetime {
       class MyApp : public Screen {
       public:
         MyApp();
+        MyApp::MyApp(/* optional parameters */) 
         ~MyApp() override;
+       private:
+        // optional parameters
       };
-    }
-    
+    }    
     template <>
     struct AppTraits<Apps:MyApp> {
       static constexpr Apps app = Apps::MyApp;
@@ -180,10 +182,6 @@ MyApp::UnLoad()  {
 MyApp::~MyApp() {
   UnLoad();
 }
-
-private:
-// optional parameters
-
 ```
 
 Both of these files should be in [displayapp/screens/](/src/displayapp/screens/).
