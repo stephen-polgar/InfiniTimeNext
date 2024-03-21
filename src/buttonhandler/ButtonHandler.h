@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ButtonActions.h"
-#include "systemtask/SystemTask.h"
 #include <FreeRTOS.h>
 #include <timers.h>
 
@@ -10,7 +9,7 @@ namespace Pinetime {
     class ButtonHandler {
     public:
       enum class Events : uint8_t { Press, Release, Timer };
-      void Init(Pinetime::System::SystemTask* systemTask);
+      void Init();
       ButtonActions HandleEvent(Events event);
 
     private:

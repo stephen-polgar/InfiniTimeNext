@@ -1,9 +1,9 @@
 #include "WatchFaceAnalog.h"
-#include "systemtask/SystemTask.h"
 #include "components/ble/NotificationManager.h"
 #include "components/motion/MotionController.h"
 #include "components/battery/BatteryController.h"
 #include "components/ble/BleController.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/screens/NotificationIcon.h"
 #include "Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
@@ -49,7 +49,7 @@ void WatchFaceAnalog::Load() {
   sMinute = 99;
   sSecond = 99;
 
-  minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
+  lv_obj_t* minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);
   lv_linemeter_set_angle_offset(minor_scales, 180);
   lv_obj_set_size(minor_scales, 240, 240);
@@ -59,7 +59,7 @@ void WatchFaceAnalog::Load() {
   lv_obj_set_style_local_scale_end_line_width(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 1);
   lv_obj_set_style_local_scale_end_color(minor_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_GRAY);
 
-  major_scales = lv_linemeter_create(lv_scr_act(), NULL);
+  lv_obj_t* major_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(major_scales, 300, 11);
   lv_linemeter_set_angle_offset(major_scales, 180);
   lv_obj_set_size(major_scales, 240, 240);
@@ -69,7 +69,7 @@ void WatchFaceAnalog::Load() {
   lv_obj_set_style_local_scale_end_line_width(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 4);
   lv_obj_set_style_local_scale_end_color(major_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
 
-  large_scales = lv_linemeter_create(lv_scr_act(), NULL);
+  lv_obj_t* large_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(large_scales, 180, 3);
   lv_linemeter_set_angle_offset(large_scales, 180);
   lv_obj_set_size(large_scales, 240, 240);
@@ -79,7 +79,7 @@ void WatchFaceAnalog::Load() {
   lv_obj_set_style_local_scale_end_line_width(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, 4);
   lv_obj_set_style_local_scale_end_color(large_scales, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_AQUA);
 
-  twelve = lv_label_create(lv_scr_act(), NULL);
+  lv_obj_t* twelve = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_align(twelve, LV_LABEL_ALIGN_CENTER);
   lv_label_set_text_static(twelve, "12");
   lv_obj_set_pos(twelve, 110, 10);
@@ -102,13 +102,9 @@ void WatchFaceAnalog::Load() {
   lv_obj_align(notificationIcon, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
   // Date - Day / Week day
-
   label_date_day = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(label_date_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
-  lv_label_set_text_fmt(label_date_day,
-                        "%s\n%02i",
-                        System::SystemTask::displayApp->dateTimeController.DayOfWeekShortToString(),
-                        System::SystemTask::displayApp->dateTimeController.Day());
+  updateDate(&System::SystemTask::displayApp->dateTimeController);
   lv_label_set_align(label_date_day, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_date_day, NULL, LV_ALIGN_CENTER, 50, 0);
 
@@ -147,14 +143,12 @@ void WatchFaceAnalog::Load() {
   lv_style_set_line_color(&hour_line_style_trace, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_style_set_line_rounded(&hour_line_style_trace, LV_STATE_DEFAULT, false);
   lv_obj_add_style(hour_body_trace, LV_LINE_PART_MAIN, &hour_line_style_trace);
-
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-
   Refresh();
 }
 
 bool WatchFaceAnalog::UnLoad() {
-  if (running) {   
+  if (running) {
     lv_task_del(taskRefresh);
     running = false;
     lv_obj_clean(lv_scr_act());
@@ -162,7 +156,7 @@ bool WatchFaceAnalog::UnLoad() {
     lv_style_reset(&hour_line_style_trace);
     lv_style_reset(&minute_line_style);
     lv_style_reset(&minute_line_style_trace);
-    lv_style_reset(&second_line_style);    
+    lv_style_reset(&second_line_style);
   }
   return true;
 }
@@ -171,7 +165,11 @@ WatchFaceAnalog::~WatchFaceAnalog() {
   UnLoad();
 }
 
-void WatchFaceAnalog::UpdateClock() {
+void WatchFaceAnalog::updateDate(Controllers::DateTime* dt) {
+  lv_label_set_text_fmt(label_date_day, "%s\n%02i", dt->DayOfWeekShortToString(), dt->Day());
+}
+
+void WatchFaceAnalog::updateClock() {
   auto* dc = &System::SystemTask::displayApp->dateTimeController;
   uint8_t hour = dc->Hours();
   uint8_t minute = dc->Minutes();
@@ -202,15 +200,18 @@ void WatchFaceAnalog::UpdateClock() {
 
     lv_line_set_points(hour_body, hour_point, 2);
     lv_line_set_points(hour_body_trace, hour_point_trace, 2);
+    if ((hour > 1 || minute > 7) && (hour < 4 || minute < 21))
+      lv_obj_move_foreground(label_date_day);
   }
 
   if (sSecond != second) {
     sSecond = second;
     auto const angle = second * 6;
-
     second_point[0] = CoordinateRelocate(-20, angle);
     second_point[1] = CoordinateRelocate(SecondLength, angle);
     lv_line_set_points(second_body, second_point, 2);
+    if (second > 7 && second < 21)
+      lv_obj_move_foreground(label_date_day);
   }
 }
 
@@ -224,13 +225,13 @@ void WatchFaceAnalog::Refresh() {
     } else {
       lv_obj_set_hidden(batteryIcon.GetObject(), false);
       lv_obj_set_hidden(plugIcon, true);
-    batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
+      batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
     }
   }
   if (!isCharging.Get()) {
     batteryPercentRemaining = app->batteryController.PercentRemaining();
     if (!running || batteryPercentRemaining.IsUpdated()) {
-     batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
+      batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
     }
   }
 
@@ -250,11 +251,11 @@ void WatchFaceAnalog::Refresh() {
 
   currentDateTime = app->dateTimeController.CurrentDateTime();
   if (!running || currentDateTime.IsUpdated()) {
-    UpdateClock();
+    updateClock();
     currentDate = std::chrono::time_point_cast<days>(currentDateTime.Get());
     if (!running || currentDate.IsUpdated()) {
       lv_label_set_text_fmt(label_date_day, "%s\n%02i", app->dateTimeController.DayOfWeekShortToString(), app->dateTimeController.Day());
     }
   }
-   running = true;
+  running = true;
 }

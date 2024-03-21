@@ -72,7 +72,6 @@ void FlashLight::setColors() {
 
 void FlashLight::setIndicators() {
   using namespace Pinetime::Controllers;
-
   if (brightnessLevel == BrightnessController::Levels::High) {
     lv_obj_set_state(indicators[1], LV_STATE_DEFAULT);
     lv_obj_set_state(indicators[2], LV_STATE_DEFAULT);
@@ -97,7 +96,6 @@ void FlashLight::toggle() {
 
 bool FlashLight::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   using namespace Pinetime::Controllers;
-
   auto SetState = [this]() {
     if (isOn) {
       System::SystemTask::displayApp->brightnessController.Set(brightnessLevel);

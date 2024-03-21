@@ -1,10 +1,10 @@
 #include "components/battery/BatteryController.h"
+#include "systemtask/SystemTask.h"
 #include "utility/LinearApproximation.h"
 #include "drivers/PinMap.h"
 #include <hal/nrf_gpio.h>
 #include <nrfx_saadc.h>
-#include <algorithm>
-#include <cmath>
+
 
 using namespace Pinetime::Controllers;
 
@@ -84,14 +84,10 @@ void Battery::SaadcEventHandler(nrfx_saadc_evt_t const* p_event) {
     if ((isPowerPresent && newPercent > percentRemaining) || (!isPowerPresent && newPercent < percentRemaining) || firstMeasurement) {
       firstMeasurement = false;
       percentRemaining = newPercent;
-      systemTask->PushMessage(System::Messages::BatteryPercentageUpdated);
+      System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::BatteryPercentageUpdated);
     }
 
     nrfx_saadc_uninit();
     isReading = false;
   }
-}
-
-void Battery::Register(Pinetime::System::SystemTask* systemTask) {
-  this->systemTask = systemTask;
 }

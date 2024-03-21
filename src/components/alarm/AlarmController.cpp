@@ -10,7 +10,6 @@
 using namespace Pinetime::Controllers;
 using namespace std::chrono_literals;
 
-const char* AlarmController::fileName = "/alarms.bin";
 std::vector<AlarmController*> AlarmController::alarmControllers;
 
 // std::vector<AlarmController*> AlarmController::alarmControllers(MaxElements); ?

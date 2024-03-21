@@ -139,7 +139,7 @@ void Music::Load() {
 
   frameB = false;
 
-  System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_OPEN);
+  System::SystemTask::displayApp->systemTask->nimbleController.musicService.event(Controllers::MusicService::EVENT_MUSIC_OPEN);
 
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
@@ -159,7 +159,7 @@ Music::~Music() {
 }
 
 void Music::Refresh() {
-  auto& musicService = System::SystemTask::displayApp->systemTask->nimble().music();
+  auto& musicService = System::SystemTask::displayApp->systemTask->nimbleController.musicService;
   if (artist != musicService.getArtist()) {
     artist = musicService.getArtist();
     lv_label_set_text(txtArtist, artist.data());
@@ -233,7 +233,7 @@ void Music::updateLength() {
 
 void Music::onObjectEvent(lv_obj_t* obj, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
-    auto& musicService = System::SystemTask::displayApp->systemTask->nimble().music();
+    auto& musicService = System::SystemTask::displayApp->systemTask->nimbleController.musicService;
     if (obj == btnVolDown) {
       musicService.event(Controllers::MusicService::EVENT_MUSIC_VOLDOWN);
     } else if (obj == btnVolUp) {
@@ -280,11 +280,11 @@ bool Music::OnTouchEvent(Applications::TouchEvents event) {
       return false;
     }
     case TouchEvents::SwipeLeft: {
-      System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_NEXT);
+      System::SystemTask::displayApp->systemTask->nimbleController.musicService.event(Controllers::MusicService::EVENT_MUSIC_NEXT);
       return true;
     }
     case TouchEvents::SwipeRight: {
-      System::SystemTask::displayApp->systemTask->nimble().music().event(Controllers::MusicService::EVENT_MUSIC_PREV);
+      System::SystemTask::displayApp->systemTask->nimbleController.musicService.event(Controllers::MusicService::EVENT_MUSIC_PREV);
       return true;
     }
     default: {

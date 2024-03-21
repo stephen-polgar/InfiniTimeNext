@@ -2,15 +2,12 @@
 
 #include <FreeRTOS.h>
 #include <timers.h>
-#include <cstdint>
 
 namespace Pinetime {
   namespace Controllers {
 
     class MotorController {
-    public:
-      MotorController() = default;
-
+    public:     
       void Init();
       void RunForDuration(uint8_t motorDuration);
       void StartRinging();

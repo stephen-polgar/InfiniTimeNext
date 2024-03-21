@@ -1,18 +1,15 @@
 #include "heartratetask/HeartRateTask.h"
+#include "components/heartrate/HeartRateController.h"
+#include "systemtask/SystemTask.h"
 #include <drivers/Hrs3300.h>
-#include <components/heartrate/HeartRateController.h>
-#include <nrf_log.h>
 
 using namespace Pinetime::Applications;
 
-HeartRateTask::HeartRateTask(Drivers::Hrs3300& heartRateSensor, Controllers::HeartRateController& controller)
-  : heartRateSensor {heartRateSensor}, controller {controller} {
+HeartRateTask::HeartRateTask(Drivers::Hrs3300& heartRateSensor) : heartRateSensor {heartRateSensor} {
 }
 
 void HeartRateTask::Start() {
   messageQueue = xQueueCreate(10, 1);
-  controller.SetHeartRateTask(this);
-
   if (pdPASS != xTaskCreate(HeartRateTask::Process, "Heartrate", 500, this, 0, &taskHandle)) {
     APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
   }
@@ -85,16 +82,16 @@ void HeartRateTask::Work() {
         ppg.Reset(false);
         // Set HR to zero and update
         bpm = 0;
-        controller.Update(Controllers::HeartRateController::States::Running, bpm);
+        System::SystemTask::displayApp->heartRateController.Update(Controllers::HeartRateController::States::Running, bpm);
       }
 
       if (lastBpm == 0 && bpm == 0) {
-        controller.Update(Controllers::HeartRateController::States::NotEnoughData, bpm);
+        System::SystemTask::displayApp->heartRateController.Update(Controllers::HeartRateController::States::NotEnoughData, bpm);
       }
 
       if (bpm != 0) {
         lastBpm = bpm;
-        controller.Update(Controllers::HeartRateController::States::Running, lastBpm);
+        System::SystemTask::displayApp->heartRateController.Update(Controllers::HeartRateController::States::Running, lastBpm);
       }
     }
   }

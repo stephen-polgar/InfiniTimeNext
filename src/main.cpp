@@ -28,13 +28,6 @@
 #include <drivers/Bma421.h>
 
 #include "BootloaderVersion.h"
-#include "components/battery/BatteryController.h"
-#include "components/ble/BleController.h"
-#include "components/ble/NotificationManager.h"
-#include "components/brightness/BrightnessController.h"
-#include "components/motor/MotorController.h"
-#include "components/datetime/DateTimeController.h"
-#include "components/heartrate/HeartRateController.h"
 #include "components/fs/FS.h"
 #include "drivers/Spi.h"
 #include "drivers/SpiMaster.h"
@@ -44,8 +37,7 @@
 #include "drivers/Cst816s.h"
 #include "drivers/PinMap.h"
 #include "systemtask/SystemTask.h"
-#include "touchhandler/TouchHandler.h"
-#include "buttonhandler/ButtonHandler.h"
+
 
 #if NRF_LOG_ENABLED
   #include "logging/NrfLogger.h"
@@ -90,45 +82,15 @@ Pinetime::Drivers::Hrs3300 heartRateSensor {twiMaster, heartRateSensorTwiAddress
 
 TimerHandle_t debounceTimer;
 TimerHandle_t debounceChargeTimer;
-Pinetime::Controllers::Battery batteryController;
-Pinetime::Controllers::Ble bleController;
-
-Pinetime::Controllers::HeartRateController heartRateController;
-Pinetime::Applications::HeartRateTask heartRateApp(heartRateSensor, heartRateController);
-
-Pinetime::Controllers::FS fs {spiNorFlash};
-Pinetime::Controllers::Settings settingsController {fs};
-Pinetime::Controllers::MotorController motorController;
-
-Pinetime::Controllers::DateTime dateTimeController {settingsController};
-Pinetime::Drivers::Watchdog watchdog;
-Pinetime::Controllers::NotificationManager notificationManager;
-Pinetime::Controllers::MotionController motionController;
-Pinetime::Controllers::TouchHandler touchHandler;
-Pinetime::Controllers::ButtonHandler buttonHandler;
-Pinetime::Controllers::BrightnessController brightnessController {};
 
 Pinetime::Applications::DisplayApp displayApp(lcd,
-                                              touchPanel,
-                                              batteryController,
-                                              bleController,
-                                              dateTimeController,
-                                              watchdog,
-                                              notificationManager,
-                                              heartRateController,
-                                              settingsController,
-                                              motorController,
-                                              motionController,
-                                              brightnessController,
-                                              touchHandler,
-                                              fs);
+                                              touchPanel,                                                                                                                                                                        
+                                              spiNorFlash);
 Pinetime::System::SystemTask systemTask(spi,
                                         spiNorFlash,
                                         twiMaster,                                       
                                         heartRateSensor,
-                                        motionSensor,
-                                        heartRateApp,
-                                        buttonHandler,
+                                        motionSensor,                                                                  
                                         &displayApp);
 int mallocFailedCount = 0;
 int stackOverflowCount = 0;
@@ -333,7 +295,7 @@ int main() {
   Pinetime::BootloaderVersion::SetVersion(NRF_TIMER2->CC[0]);
 
   if (NoInit_MagicWord == NoInit_MagicValue) {
-    dateTimeController.SetCurrentTime(NoInit_BackUpTime);
+    displayApp.dateTimeController.SetCurrentTime(NoInit_BackUpTime);
   } else {
     // Clear Memory to known state
     memset(&__start_noinit_data, 0, (uintptr_t) &__stop_noinit_data - (uintptr_t) &__start_noinit_data);

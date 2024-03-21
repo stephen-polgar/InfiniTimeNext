@@ -2,6 +2,7 @@
 #include <hal/nrf_gpio.h>
 #include "displayapp/screens/Symbols.h"
 #include "drivers/PinMap.h"
+
 using namespace Pinetime::Controllers;
 
 void BrightnessController::Init() {

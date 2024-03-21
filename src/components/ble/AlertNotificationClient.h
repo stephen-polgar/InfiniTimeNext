@@ -1,28 +1,17 @@
 #pragma once
 
-#include <cstdint>
-#include <functional>
+#include "components/ble/BleClient.h"
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #undef max
 #undef min
-#include "components/ble/BleClient.h"
+
 
 namespace Pinetime {
-
-  namespace System {
-    class SystemTask;
-  }
-
-  namespace Controllers {
-    class NotificationManager;
-
+  namespace Controllers {    
     class AlertNotificationClient : public BleClient {
-    public:
-      explicit AlertNotificationClient(Pinetime::System::SystemTask& systemTask,
-                                       Pinetime::Controllers::NotificationManager& notificationManager);
-
+    public:     
       bool OnDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service);
       int OnCharacteristicsDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_chr* characteristic);
       int OnNewAlertSubcribe(uint16_t connectionHandle, const ble_gatt_error* error);
@@ -59,9 +48,7 @@ namespace Pinetime {
       uint16_t newAlertDefHandle = 0;
       uint16_t unreadAlertStatusHandle = 0;
       uint16_t controlPointHandle = 0;
-      bool isDiscovered = false;
-      Pinetime::System::SystemTask& systemTask;
-      Pinetime::Controllers::NotificationManager& notificationManager;
+      bool isDiscovered = false;    
       std::function<void(uint16_t)> onServiceDiscovered;
       bool isCharacteristicDiscovered = false;
       bool isDescriptorFound = false;

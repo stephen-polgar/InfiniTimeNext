@@ -2,43 +2,35 @@
 
 #include "Screen.h"
 #include "components/ble/NotificationManager.h"
-#include "components/motor/MotorController.h"
+#include "components/motor/MotorController.h"  // TODO : remove but required for build in simulator
 #include <memory>
 
 namespace Pinetime {
-  namespace Controllers {
-    class AlertNotificationService;
-  }
-
   namespace Applications {
     namespace Screens {
 
       class Notifications : public Screen {
-      public:      
-        explicit Notifications(
-                               Controllers::AlertNotificationService& alertNotificationService,
-                               
-                               Apps id);
+      public:
+        explicit Notifications(Apps id);
         ~Notifications() override;
 
         void Load() override;
         bool UnLoad() override;
-
         void Refresh() override;
         bool OnTouchEvent(Applications::TouchEvents event) override;
+
         void DismissToBlack();
         void OnPreviewInteraction();
         void OnPreviewDismiss();
 
         class NotificationItem {
         public:
-          NotificationItem(Controllers::AlertNotificationService& alertNotificationService);
+          NotificationItem();
           NotificationItem(const char* title,
                            const char* msg,
                            uint8_t notifNr,
                            Controllers::NotificationManager::Categories,
-                           uint8_t notifNb,
-                           Controllers::AlertNotificationService& alertNotificationService);
+                           uint8_t notifNb);
           ~NotificationItem();
 
           bool IsRunning() const {
@@ -56,13 +48,10 @@ namespace Pinetime {
           lv_obj_t* label_accept;
           lv_obj_t* label_mute;
           lv_obj_t* label_reject;
-          Controllers::AlertNotificationService& alertNotificationService;    
-
           bool running = true;
         };
 
       private:
-        Controllers::AlertNotificationService& alertNotificationService;            
         std::unique_ptr<NotificationItem> currentItem;
         Controllers::NotificationManager::Notification::Id currentId;
         bool validDisplay;

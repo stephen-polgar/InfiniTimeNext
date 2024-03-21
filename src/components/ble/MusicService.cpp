@@ -17,7 +17,7 @@
 */
 #include "components/ble/MusicService.h"
 #include "components/ble/NimbleController.h"
-#include <cstring>
+#include "systemtask/SystemTask.h"
 
 namespace {
   // 0000yyxx-78fc-48fe-8e23-433b3a1942d0
@@ -53,7 +53,7 @@ namespace {
   }
 }
 
-Pinetime::Controllers::MusicService::MusicService(Pinetime::Controllers::NimbleController& nimble) : nimble(nimble) {
+Pinetime::Controllers::MusicService::MusicService() {
   characteristicDefinition[0] = {.uuid = &msEventCharUuid.u,
                                  .access_cb = MusicCallback,
                                  .arg = this,
@@ -211,12 +211,9 @@ int Pinetime::Controllers::MusicService::getTrackLength() const {
 
 void Pinetime::Controllers::MusicService::event(char event) {
   auto* om = ble_hs_mbuf_from_flat(&event, 1);
-
-  uint16_t connectionHandle = nimble.connHandle();
-
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;
   }
-
   ble_gattc_notify_custom(connectionHandle, eventHandle, om);
 }

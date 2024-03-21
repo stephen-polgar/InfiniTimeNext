@@ -5,6 +5,7 @@
 #include "displayapp/widgets/StatusIcons.h"
 #include "utility/DirtyValue.h"
 #include "components/fs/FS.h"
+#include <chrono>
 
 namespace Pinetime {
   namespace Applications {

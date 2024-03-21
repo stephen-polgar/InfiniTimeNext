@@ -1,5 +1,4 @@
 #include "components/motion/MotionController.h"
-#include <task.h>
 #include "utility/Math.h"
 
 using namespace Pinetime::Controllers;
@@ -34,12 +33,12 @@ namespace {
 }
 
 void MotionController::Update(int16_t x, int16_t y, int16_t z, uint32_t nbSteps) {
-  if (this->nbSteps != nbSteps && service != nullptr) {
-    service->OnNewStepCountValue(nbSteps);
+  if (this->nbSteps != nbSteps) {
+   service.OnNewStepCountValue(nbSteps);
   }
 
-  if (service != nullptr && (this->x != x || yHistory[0] != y || zHistory[0] != z)) {
-    service->OnNewMotionValues(x, y, z);
+  if (this->x != x || yHistory[0] != y || zHistory[0] != z) {
+    service.OnNewMotionValues(x, y, z);
   }
 
   lastTime = time;

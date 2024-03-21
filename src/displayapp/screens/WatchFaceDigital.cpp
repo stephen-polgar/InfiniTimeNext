@@ -169,7 +169,7 @@ void WatchFaceDigital::Refresh() {
     lv_obj_realign(stepIcon);
   }
 
-  currentWeather = System::SystemTask::displayApp->systemTask->nimble().weather().Current();
+  currentWeather = System::SystemTask::displayApp->systemTask->nimbleController.weatherService.Current();
   if (!running || currentWeather.IsUpdated()) {
     auto optCurrentWeather = currentWeather.Get();
     if (optCurrentWeather) {

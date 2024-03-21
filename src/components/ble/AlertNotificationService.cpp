@@ -1,8 +1,5 @@
 #include "components/ble/AlertNotificationService.h"
 #include <hal/nrf_rtc.h>
-#include <cstring>
-#include <algorithm>
-#include "components/ble/NotificationManager.h"
 #include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Controllers;
@@ -25,7 +22,7 @@ void AlertNotificationService::Init() {
   ASSERT(res == 0);
 }
 
-AlertNotificationService::AlertNotificationService(System::SystemTask& systemTask, NotificationManager& notificationManager)
+AlertNotificationService::AlertNotificationService()
   : characteristicDefinition {{.uuid = &ansCharUuid.u, .access_cb = AlertNotificationCallback, .arg = this, .flags = BLE_GATT_CHR_F_WRITE},
                               {.uuid = &notificationEventUuid.u,
                                .access_cb = AlertNotificationCallback,
@@ -39,9 +36,7 @@ AlertNotificationService::AlertNotificationService(System::SystemTask& systemTas
        .uuid = &ansUuid.u,
        .characteristics = characteristicDefinition},
       {0},
-    },
-    systemTask {systemTask},
-    notificationManager {notificationManager} {
+    }{
 }
 
 int AlertNotificationService::OnAlert(struct ble_gatt_access_ctxt* ctxt) {
@@ -70,16 +65,16 @@ int AlertNotificationService::OnAlert(struct ble_gatt_access_ctxt* ctxt) {
     // TODO convert all ANS categories to NotificationController categories
     switch (category) {
       case Categories::Call:
-        notif.category = Pinetime::Controllers::NotificationManager::Categories::IncomingCall;
+        notif.category = Controllers::NotificationManager::Categories::IncomingCall;
         break;
       default:
-        notif.category = Pinetime::Controllers::NotificationManager::Categories::SimpleAlert;
+        notif.category = Controllers::NotificationManager::Categories::SimpleAlert;
         break;
     }
 
-    auto event = Pinetime::System::Messages::OnNewNotification;
-    notificationManager.Push(std::move(notif));
-    systemTask.PushMessage(event);
+    auto event = System::Messages::OnNewNotification;
+    System::SystemTask::displayApp->notificationManager.Push(std::move(notif));
+    System::SystemTask::displayApp->systemTask->PushMessage(event);
   }
   return 0;
 }
@@ -88,7 +83,7 @@ void AlertNotificationService::AcceptIncomingCall() {
   auto response = IncomingCallResponses::Answer;
   auto* om = ble_hs_mbuf_from_flat(&response, 1);
 
-  uint16_t connectionHandle = systemTask.nimble().connHandle();
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
 
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;
@@ -101,7 +96,7 @@ void AlertNotificationService::RejectIncomingCall() {
   auto response = IncomingCallResponses::Reject;
   auto* om = ble_hs_mbuf_from_flat(&response, 1);
 
-  uint16_t connectionHandle = systemTask.nimble().connHandle();
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
 
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;
@@ -114,7 +109,7 @@ void AlertNotificationService::MuteIncomingCall() {
   auto response = IncomingCallResponses::Mute;
   auto* om = ble_hs_mbuf_from_flat(&response, 1);
 
-  uint16_t connectionHandle = systemTask.nimble().connHandle();
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
 
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;

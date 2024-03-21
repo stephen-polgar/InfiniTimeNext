@@ -6,10 +6,6 @@
 #include <vector>
 
 namespace Pinetime {
-  namespace System {
-    class SystemTask;
-  }
-
   namespace Controllers {
     class AlarmController {
 
@@ -68,7 +64,7 @@ namespace Pinetime {
       bool hasMoreAlarmSet();
       void createTimer();
       TimerHandle_t alarmTimer;
-      static const char* fileName;
+      static constexpr const char* fileName = "/alarms.bin";
     };
   }
 }

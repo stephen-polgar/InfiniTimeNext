@@ -9,23 +9,11 @@
 #undef max
 #undef min
 
-namespace Pinetime {
-  namespace System {
-    class SystemTask;
-  }
-
-  namespace Drivers {
-    class SpiNorFlash;
-  }
-
-  namespace Controllers {
-    class Ble;
-
+namespace Pinetime { 
+  namespace Controllers {   
     class DfuService {
     public:
-      DfuService(Pinetime::System::SystemTask& systemTask,
-                 Pinetime::Controllers::Ble& bleController,
-                 Pinetime::Drivers::SpiNorFlash& spiNorFlash);
+      DfuService();
       void Init();
       int OnServiceData(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context);
       void OnTimeout();
@@ -50,18 +38,14 @@ namespace Pinetime {
       };
 
       class DfuImage {
-      public:
-        DfuImage(Pinetime::Drivers::SpiNorFlash& spiNorFlash) : spiNorFlash {spiNorFlash} {
-        }
-
+      public:        
         void Init(size_t chunkSize, size_t totalSize, uint16_t expectedCrc);
         void Erase();
         void Append(uint8_t* data, size_t size);
         bool Validate();
         bool IsComplete();
 
-      private:
-        Pinetime::Drivers::SpiNorFlash& spiNorFlash;
+      private:        
         static constexpr size_t bufferSize = 200;
         bool ready = false;
         size_t chunkSize = 0;
@@ -77,9 +61,7 @@ namespace Pinetime {
         uint16_t ComputeCrc(uint8_t const* p_data, uint32_t size, uint16_t const* p_crc);
       };
 
-    private:
-      Pinetime::System::SystemTask& systemTask;
-      Pinetime::Controllers::Ble& bleController;
+    private:     
       DfuImage dfuImage;
       NotificationManager notificationManager;
 

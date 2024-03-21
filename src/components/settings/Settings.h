@@ -41,7 +41,7 @@ namespace Pinetime {
         int colorIndex = 0;
       };
 
-      Settings(Pinetime::Controllers::FS& fs);
+      Settings(Controllers::FS& fs);
 
       Settings(const Settings&) = delete;
       Settings& operator=(const Settings&) = delete;
@@ -51,7 +51,7 @@ namespace Pinetime {
       void Init();
       void SaveSettings();
 
-      void SetWatchFace(Pinetime::Applications::WatchFace face) {
+      void SetWatchFace(Applications::WatchFace face) {
         if (face != settings.watchFace) {
           settingsChanged = true;
         }
@@ -225,7 +225,7 @@ namespace Pinetime {
       };
 
     private:
-      Pinetime::Controllers::FS& fs;
+      Controllers::FS& fs;
 
       static constexpr uint32_t settingsVersion = 0x0007;
 
@@ -238,7 +238,7 @@ namespace Pinetime {
         WeatherFormat weatherFormat = WeatherFormat::Metric;
         Notification notificationStatus = Notification::On;
 
-        Pinetime::Applications::WatchFace watchFace = Pinetime::Applications::WatchFace::Digital;
+        Applications::WatchFace watchFace = Applications::WatchFace::Digital;
 
         WatchFaceInfineat watchFaceInfineat;
 

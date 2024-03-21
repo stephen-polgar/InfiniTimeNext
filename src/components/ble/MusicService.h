@@ -17,22 +17,19 @@
 */
 #pragma once
 
-#include <cstdint>
-#include <string>
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #include <host/ble_uuid.h>
 #undef max
 #undef min
+#include <string>
 
 namespace Pinetime {
   namespace Controllers {
-    class NimbleController;
-
     class MusicService {
     public:
-      explicit MusicService(NimbleController& nimble);
+      explicit MusicService();
 
       void Init();
 
@@ -86,8 +83,6 @@ namespace Pinetime {
 
       bool repeat {false};
       bool shuffle {false};
-
-      NimbleController& nimble;
     };
   }
 }

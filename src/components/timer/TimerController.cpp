@@ -7,13 +7,10 @@
 
 using namespace Pinetime::Controllers;
 
-const char* TimerController::fileName = "/timers.bin";
-// std::vector<Timer*> Timer::timers(Elements);
 std::vector<TimerController*> TimerController::timers;
-TimerCallbackFunction_t TimerController::pxCallbackFunction;
 
 TimerController::TimerController(std::chrono::milliseconds duration) : duration {duration} {
-  timer = xTimerCreate("Timer", 1, pdFALSE, this, pxCallbackFunction);
+  timer = xTimerCreate("Timer", 1, pdFALSE, this, displayAppCallbackTimer);
   timers.push_back(this);
 #ifdef Log
   NRF_LOG_INFO("Timer::Timer()=%d", this);
@@ -41,8 +38,12 @@ bool TimerController::IsRunning() {
   return (xTimerIsTimerActive(timer) == pdTRUE);
 }
 
-void TimerController::Init(TimerCallbackFunction_t pxCallbackFunction) {
-  TimerController::pxCallbackFunction = pxCallbackFunction;
+void TimerController::displayAppCallbackTimer(TimerHandle_t xTimer) {
+  (static_cast<Controllers::TimerController*>(pvTimerGetTimerID(xTimer)))->done = true;
+  System::SystemTask::displayApp->PushMessage(Applications::Display::Messages::TimerDone);
+}
+
+void TimerController::Init() {
   std::chrono::milliseconds buffer;
   lfs_file_t file;
   auto* fs = &System::SystemTask::displayApp->filesystem;

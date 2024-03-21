@@ -2,8 +2,7 @@
 
 #include <array>
 #include <atomic>
-#include <cstddef>
-#include <cstdint>
+
 
 namespace Pinetime {
   namespace Controllers {

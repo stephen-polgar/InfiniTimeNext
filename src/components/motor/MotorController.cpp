@@ -1,6 +1,5 @@
 #include "components/motor/MotorController.h"
 #include <hal/nrf_gpio.h>
-#include "systemtask/SystemTask.h"
 #include "drivers/PinMap.h"
 
 using namespace Pinetime::Controllers;

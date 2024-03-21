@@ -1,8 +1,7 @@
 #pragma once
+
 #include <cstdint>
 #include <array>
-
-#include "components/datetime/DateTimeController.h"
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
@@ -13,7 +12,7 @@ namespace Pinetime {
   namespace Controllers {
     class CurrentTimeService {
     public:
-      CurrentTimeService(DateTime& dateTimeController);
+      CurrentTimeService();
       void Init();
 
       int OnCurrentTimeServiceAccessed(struct ble_gatt_access_ctxt* ctxt);
@@ -49,9 +48,7 @@ namespace Pinetime {
       typedef struct __attribute__((packed)) {
         int8_t timezone;
         int8_t dst;
-      } CtsLocalTimeData;
-
-      DateTime& m_dateTimeController;
+      } CtsLocalTimeData;  
     };
   }
 }

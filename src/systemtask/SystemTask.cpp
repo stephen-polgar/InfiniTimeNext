@@ -1,5 +1,5 @@
 #include "SystemTask.h"
-#include "buttonhandler/ButtonHandler.h"
+
 #include "components/alarm/AlarmController.h"
 #include <hal/nrf_rtc.h>
 #include <libraries/gpiote/app_gpiote.h>
@@ -21,48 +21,26 @@
 
 using namespace Pinetime::System;
 
-Pinetime::Applications::DisplayApp* SystemTask::displayApp;
+Pinetime::Applications::DisplayApp* SystemTask::displayApp = NULL;
 
 namespace {
   inline bool in_isr() {
     return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
   }
-
-  void DisplayAppCallbackTimer(TimerHandle_t xTimer) {
-    (static_cast<Pinetime::Controllers::TimerController*>(pvTimerGetTimerID(xTimer)))->done = true;
-    SystemTask::displayApp->PushMessage(Pinetime::Applications::Display::Messages::TimerDone);
-  }
-}
-
-void MeasureBatteryTimerCallback(TimerHandle_t xTimer) {
-  auto* sysTask = static_cast<SystemTask*>(pvTimerGetTimerID(xTimer));
-  sysTask->PushMessage(Pinetime::System::Messages::MeasureBatteryTimerExpired);
 }
 
 SystemTask::SystemTask(Drivers::SpiMaster& spi,
                        Drivers::SpiNorFlash& spiNorFlash,
                        Drivers::TwiMaster& twiMaster,
                        Drivers::Hrs3300& heartRateSensor,
-                       Drivers::Bma421& motionSensor,
-                       Applications::HeartRateTask& heartRateApp,
-                       Controllers::ButtonHandler& buttonHandler,
+                       Drivers::Bma421& motionSensor,                                 
                        Applications::DisplayApp* displayApp)
   : spi {spi},
     spiNorFlash {spiNorFlash},
     twiMaster {twiMaster},
     heartRateSensor {heartRateSensor},
     motionSensor {motionSensor},
-    heartRateApp(heartRateApp),
-    buttonHandler {buttonHandler},
-    nimbleController(*this,
-                     displayApp->bleController,
-                     displayApp->dateTimeController,
-                     displayApp->notificationManager,
-                     displayApp->batteryController,
-                     spiNorFlash,
-                     displayApp->heartRateController,
-                     displayApp->motionController,
-                     displayApp->filesystem) {
+    heartRateTask {heartRateSensor}  {
   displayApp->systemTask = this;
   this->displayApp = displayApp;
 }
@@ -82,7 +60,6 @@ void SystemTask::Process(void* instance) {
 
 void SystemTask::Work() {
   BootErrors bootError = BootErrors::None;
-
   displayApp->watchdog.Setup(7, Drivers::Watchdog::SleepBehaviour::Run, Drivers::Watchdog::HaltBehaviour::Pause);
   displayApp->watchdog.Start();
   // NRF_LOG_INFO("Last reset reason : %s", Drivers::ResetReasonToString(watchdog.GetResetReason()));
@@ -94,8 +71,8 @@ void SystemTask::Work() {
 
   displayApp->filesystem.Init(); // after spiNorFlash
 
-  Controllers::AlarmController::Init();                        // after filesystem.Init()
-  Controllers::TimerController::Init(DisplayAppCallbackTimer); // after filesystem.Init()
+  Controllers::AlarmController::Init(); // after filesystem.Init()
+  Controllers::TimerController::Init(); // after filesystem.Init()
 
   nimbleController.Init();
 
@@ -109,8 +86,6 @@ void SystemTask::Work() {
   }
    */
   displayApp->touchPanel.Init();
-  displayApp->dateTimeController.Register(this);
-  displayApp->batteryController.Register(this);
   motionSensor.SoftReset();
 
   // Reset the TWI device because the motion sensor chip most probably crashed it...
@@ -125,9 +100,9 @@ void SystemTask::Work() {
 
   heartRateSensor.Init();
   heartRateSensor.Disable();
-  heartRateApp.Start();
+  heartRateTask.Start();
 
-  buttonHandler.Init(this);
+  buttonHandler.Init();
 
   // Setup Interrupts
   nrfx_gpiote_in_config_t pinConfig;
@@ -157,14 +132,13 @@ void SystemTask::Work() {
 
   displayApp->batteryController.MeasureVoltage();
 
-  measureBatteryTimer = xTimerCreate("measureBattery", batteryMeasurementPeriod, pdTRUE, this, MeasureBatteryTimerCallback);
+  measureBatteryTimer = xTimerCreate("measureBattery", batteryMeasurementPeriod, pdTRUE, NULL, measureBatteryTimerCallback);
   xTimerStart(measureBatteryTimer, portMAX_DELAY);
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
   while (true) {
     UpdateMotion();
-
     Messages msg;
     if (xQueueReceive(systemTasksMsgQueue, &msg, 100) == pdTRUE) {
       switch (msg) {
@@ -190,7 +164,7 @@ void SystemTask::Work() {
           spiNorFlash.Wakeup();
 
           displayApp->PushMessage(Applications::Display::Messages::GoToRunning);
-          heartRateApp.PushMessage(Applications::HeartRateTask::Messages::WakeUp);
+          heartRateTask.PushMessage(Applications::HeartRateTask::Messages::WakeUp);
 
           if (displayApp->bleController.IsRadioEnabled() && !displayApp->bleController.IsConnected()) {
             nimbleController.RestartFastAdv();
@@ -219,7 +193,7 @@ void SystemTask::Work() {
           state = SystemTaskState::GoingToSleep; // Already set in PushMessage()
                                                  // NRF_LOG_INFO("[systemtask] Going to sleep");
           displayApp->PushMessage(Applications::Display::Messages::GoToSleep);
-          heartRateApp.PushMessage(Applications::HeartRateTask::Messages::GoToSleep);
+          heartRateTask.PushMessage(Applications::HeartRateTask::Messages::GoToSleep);
           break;
         case Messages::OnNewTime:
           displayApp->PushMessage(Applications::Display::Messages::RestoreBrightness);
@@ -381,7 +355,7 @@ void SystemTask::UpdateMotion() {
   if (state == SystemTaskState::Sleeping &&
       !(displayApp->settingsController.isWakeUpModeOn(Controllers::Settings::WakeUpMode::RaiseWrist) ||
         displayApp->settingsController.isWakeUpModeOn(Controllers::Settings::WakeUpMode::Shake) ||
-        displayApp->motionController.GetService()->IsMotionNotificationSubscribed())) {
+        displayApp->motionController.service.IsMotionNotificationSubscribed())) {
     return;
   }
 
@@ -472,4 +446,8 @@ void SystemTask::PushMessage(System::Messages msg) {
   } else {
     xQueueSend(systemTasksMsgQueue, &msg, portMAX_DELAY);
   }
+}
+
+void SystemTask::measureBatteryTimerCallback(TimerHandle_t) {
+  displayApp->systemTask->PushMessage(System::Messages::MeasureBatteryTimerExpired);
 }

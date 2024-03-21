@@ -1,6 +1,5 @@
 #include "components/datetime/DateTimeController.h"
-#include <libraries/log/nrf_log.h>
-#include <systemtask/SystemTask.h>
+#include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Controllers;
 
@@ -11,7 +10,7 @@ namespace {
   char const* MonthsStringLow[] = {"--", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 }
 
-DateTime::DateTime(Controllers::Settings& settingsController) : settingsController {settingsController} {
+DateTime::DateTime() {
 }
 
 void DateTime::SetCurrentTime(std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> t) {
@@ -31,13 +30,8 @@ void DateTime::SetTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, 
 
   tm.tm_isdst = -1; // Use DST value from local time zone
   currentDateTime = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-
-  NRF_LOG_INFO("%d %d %d ", day, month, year);
-  NRF_LOG_INFO("%d %d %d ", hour, minute, second);
-
   UpdateTime(previousSystickCounter);
-
-  systemTask->PushMessage(System::Messages::OnNewTime);
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::OnNewTime);
 }
 
 void DateTime::SetTimeZone(int8_t timezone, int8_t dst) {
@@ -77,8 +71,8 @@ void DateTime::UpdateTime(uint32_t systickCounter) {
   // Notify new day to SystemTask
   if (hour == 0 and not isMidnightAlreadyNotified) {
     isMidnightAlreadyNotified = true;
-    if (systemTask != nullptr)
-      systemTask->PushMessage(System::Messages::OnNewDay);
+    if (System::SystemTask::displayApp != NULL)
+      System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::OnNewDay);
   } else if (hour != 0) {
     isMidnightAlreadyNotified = false;
   }
@@ -100,10 +94,6 @@ const char* DateTime::DayOfWeekShortToStringLow(Days day) {
   return DaysStringShortLow[static_cast<uint8_t>(day)];
 }
 
-void DateTime::Register(Pinetime::System::SystemTask* systemTask) {
-  this->systemTask = systemTask;
-}
-
 using ClockType = Pinetime::Controllers::Settings::ClockType;
 
 std::string DateTime::FormattedTime() {
@@ -111,7 +101,7 @@ std::string DateTime::FormattedTime() {
   auto minute = Minutes();
   // Return time as a string in 12- or 24-hour format
   char buff[9];
-  if (settingsController.GetClockType() == ClockType::H12) {
+  if (System::SystemTask::displayApp->settingsController.GetClockType() == ClockType::H12) {
     uint8_t hour12;
     const char* amPmStr;
     if (hour < 12) {

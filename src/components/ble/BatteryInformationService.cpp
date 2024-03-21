@@ -1,6 +1,6 @@
 #include "components/ble/BatteryInformationService.h"
-#include <nrf_log.h>
 #include "components/battery/BatteryController.h"
+#include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Controllers;
 
@@ -12,9 +12,8 @@ int BatteryInformationServiceCallback(uint16_t /*conn_handle*/, uint16_t attr_ha
   return batteryInformationService->OnBatteryServiceRequested(attr_handle, ctxt);
 }
 
-BatteryInformationService::BatteryInformationService(Controllers::Battery& batteryController)
-  : batteryController {batteryController},
-    characteristicDefinition {{.uuid = &batteryLevelUuid.u,
+BatteryInformationService::BatteryInformationService()
+  : characteristicDefinition {{.uuid = &batteryLevelUuid.u,
                                .access_cb = BatteryInformationServiceCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
@@ -39,9 +38,8 @@ void BatteryInformationService::Init() {
 }
 
 int BatteryInformationService::OnBatteryServiceRequested(uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
-  if (attributeHandle == batteryLevelHandle) {
-    NRF_LOG_INFO("BATTERY : handle = %d", batteryLevelHandle);
-    uint8_t batteryValue = batteryController.PercentRemaining();
+  if (attributeHandle == batteryLevelHandle) {    
+    uint8_t batteryValue = System::SystemTask::displayApp->batteryController.PercentRemaining();
     int res = os_mbuf_append(context->om, &batteryValue, 1);
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }

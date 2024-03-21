@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include "drivers/SpiNorFlash.h"
 #include <littlefs/lfs.h>
 

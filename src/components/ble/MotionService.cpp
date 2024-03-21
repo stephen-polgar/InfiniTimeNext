@@ -1,7 +1,6 @@
 #include "components/ble/MotionService.h"
-#include "components/motion/MotionController.h"
 #include "components/ble/NimbleController.h"
-//#include <nrf_log.h>
+#include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Controllers;
 
@@ -19,25 +18,17 @@ namespace {
 
   constexpr ble_uuid128_t motionServiceUuid {BaseUuid()};
   constexpr ble_uuid128_t stepCountCharUuid {CharUuid(0x01, 0x00)};
-  constexpr ble_uuid128_t motionValuesCharUuid {CharUuid(0x02, 0x00)};
-
-  int MotionServiceCallback(uint16_t /*conn_handle*/, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
-    auto* motionService = static_cast<MotionService*>(arg);
-    return motionService->OnStepCountRequested(attr_handle, ctxt);
-  }
+  constexpr ble_uuid128_t motionValuesCharUuid {CharUuid(0x02, 0x00)}; 
 }
 
-// TODO Refactoring - remove dependency to SystemTask
-MotionService::MotionService(NimbleController& nimble, Controllers::MotionController& motionController)
-  : nimble {nimble},
-    motionController {motionController},
-    characteristicDefinition {{.uuid = &stepCountCharUuid.u,
-                               .access_cb = MotionServiceCallback,
+MotionService::MotionService()
+  : characteristicDefinition {{.uuid = &stepCountCharUuid.u,
+                               .access_cb = motionServiceCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                                .val_handle = &stepCountHandle},
                               {.uuid = &motionValuesCharUuid.u,
-                               .access_cb = MotionServiceCallback,
+                               .access_cb = motionServiceCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                                .val_handle = &motionValuesHandle},
@@ -45,35 +36,35 @@ MotionService::MotionService(NimbleController& nimble, Controllers::MotionContro
     serviceDefinition {
       {.type = BLE_GATT_SVC_TYPE_PRIMARY, .uuid = &motionServiceUuid.u, .characteristics = characteristicDefinition},
       {0},
-    } {
-  // TODO refactor to prevent this loop dependency (service depends on controller and controller depends on service)
-  motionController.SetService(this);
+    } {  
 }
 
 void MotionService::Init() {
   int res = 0;
   res = ble_gatts_count_cfg(serviceDefinition);
   ASSERT(res == 0);
-
   res = ble_gatts_add_svcs(serviceDefinition);
   ASSERT(res == 0);
 }
 
-int MotionService::OnStepCountRequested(uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
+int MotionService::onStepCountRequested(uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
+  auto * motionController = &System::SystemTask::displayApp->motionController;
   if (attributeHandle == stepCountHandle) {
    // NRF_LOG_INFO("Motion-stepcount : handle = %d", stepCountHandle);
-    uint32_t buffer = motionController.NbSteps();
-
+    uint32_t buffer = motionController->NbSteps();
     int res = os_mbuf_append(context->om, &buffer, 4);
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   } else if (attributeHandle == motionValuesHandle) {
-    int16_t buffer[3] = {motionController.X(), motionController.Y(), motionController.Z()};
-
+    int16_t buffer[3] = { motionController->X(), motionController->Y(), motionController->Z()};
     int res = os_mbuf_append(context->om, buffer, 3 * sizeof(int16_t));
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }
   return 0;
 }
+
+int MotionService::motionServiceCallback(uint16_t /*conn_handle*/, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
+    return  static_cast<MotionService*>(arg)->onStepCountRequested(attr_handle, ctxt);
+ }
 
 void MotionService::OnNewStepCountValue(uint32_t stepCount) {
   if (!stepCountNoficationEnabled)
@@ -82,7 +73,7 @@ void MotionService::OnNewStepCountValue(uint32_t stepCount) {
   uint32_t buffer = stepCount;
   auto* om = ble_hs_mbuf_from_flat(&buffer, 4);
 
-  uint16_t connectionHandle = nimble.connHandle();
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
 
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;
@@ -98,7 +89,7 @@ void MotionService::OnNewMotionValues(int16_t x, int16_t y, int16_t z) {
   int16_t buffer[3] = {x, y, z};
   auto* om = ble_hs_mbuf_from_flat(buffer, 3 * sizeof(int16_t));
 
-  uint16_t connectionHandle = nimble.connHandle();
+  uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
 
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {
     return;

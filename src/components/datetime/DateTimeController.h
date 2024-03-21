@@ -1,20 +1,15 @@
 #pragma once
 
-#include <cstdint>
 #include <chrono>
 #include <ctime>
 #include <string>
-#include "components/settings/Settings.h"
+
 
 namespace Pinetime {
-  namespace System {
-    class SystemTask;
-  }
-
   namespace Controllers {
     class DateTime {
     public:
-      DateTime(Controllers::Settings& settingsController);
+      DateTime();
       enum class Days : uint8_t { Unknown, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday };
       enum class Months : uint8_t {
         Unknown,
@@ -136,7 +131,6 @@ namespace Pinetime {
         return uptime;
       }
 
-      void Register(System::SystemTask* systemTask);
       void SetCurrentTime(std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> t);
       std::string FormattedTime();
 
@@ -149,9 +143,7 @@ namespace Pinetime {
       std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> currentDateTime;
       std::chrono::seconds uptime {0};
 
-      bool isMidnightAlreadyNotified = false;
-      System::SystemTask* systemTask = nullptr;
-      Controllers::Settings& settingsController;
+      bool isMidnightAlreadyNotified = false;   
     };
   }
 }

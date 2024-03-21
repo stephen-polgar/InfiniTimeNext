@@ -23,14 +23,14 @@ namespace Pinetime {
       bool done = false;
 
       static constexpr uint8_t MaxElements = 4;
-      static std::vector<TimerController*> timers;
-      static void Init(TimerCallbackFunction_t pxCallbackFunction);
+      static std::vector<TimerController*> timers;   
+      static void Init();
       static void Save();
 
     private:
       TimerHandle_t timer;
-      static TimerCallbackFunction_t pxCallbackFunction;     
-      static const char* fileName;
+      static void displayAppCallbackTimer(TimerHandle_t xTimer);    
+      static constexpr const char* fileName = "/timers.bin";
     };
   }
 }

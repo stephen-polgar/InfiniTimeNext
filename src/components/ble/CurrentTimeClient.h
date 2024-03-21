@@ -9,12 +9,9 @@
 
 namespace Pinetime {
   namespace Controllers {
-    class DateTime;
-
-    class CurrentTimeClient : public BleClient {
+        class CurrentTimeClient : public BleClient {
     public:
-      explicit CurrentTimeClient(DateTime& dateTimeController);
-      void Init();
+      explicit CurrentTimeClient();
       void Reset();
       bool OnDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service);
       int OnCharacteristicDiscoveryEvent(uint16_t conn_handle, const ble_gatt_error* error, const ble_gatt_chr* characteristic);
@@ -49,8 +46,7 @@ namespace Pinetime {
 
       static constexpr ble_uuid16_t ctsServiceUuid {.u {.type = BLE_UUID_TYPE_16}, .value = ctsServiceId};
       static constexpr ble_uuid16_t currentTimeCharacteristicUuid {.u {.type = BLE_UUID_TYPE_16}, .value = currentTimeCharacteristicId};
-
-      DateTime& dateTimeController;
+   
       bool isDiscovered = false;
       uint16_t ctsStartHandle;
       uint16_t ctsEndHandle;

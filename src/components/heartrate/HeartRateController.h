@@ -1,17 +1,8 @@
 #pragma once
 
-#include <cstdint>
-#include <components/ble/HeartRateService.h>
+#include "components/ble/HeartRateService.h"
 
-namespace Pinetime {
-  namespace Applications {
-    class HeartRateTask;
-  }
-
-  namespace System {
-    class SystemTask;
-  }
-
+namespace Pinetime {  
   namespace Controllers {
     class HeartRateController {
     public:
@@ -21,9 +12,7 @@ namespace Pinetime {
       void Start();
       void Stop();
       void Update(States newState, uint8_t heartRate);
-
-      void SetHeartRateTask(Applications::HeartRateTask* task);
-
+     
       States State() const {
         return state;
       }
@@ -32,13 +21,11 @@ namespace Pinetime {
         return heartRate;
       }
 
-      void SetService(Pinetime::Controllers::HeartRateService* service);
+     Controllers::HeartRateService service;
 
     private:
-      Applications::HeartRateTask* task = nullptr;
       States state = States::Stopped;
-      uint8_t heartRate = 0;
-      Pinetime::Controllers::HeartRateService* service = nullptr;
+      uint8_t heartRate = 0;      
     };
   }
 }

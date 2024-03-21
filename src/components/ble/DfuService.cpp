@@ -1,7 +1,4 @@
 #include "components/ble/DfuService.h"
-#include <cstring>
-#include "components/ble/BleController.h"
-#include "drivers/SpiNorFlash.h"
 #include "systemtask/SystemTask.h"
 #include <nrf_log.h>
 
@@ -27,13 +24,8 @@ void TimeoutTimerCallback(TimerHandle_t xTimer) {
   dfuService->OnTimeout();
 }
 
-DfuService::DfuService(Pinetime::System::SystemTask& systemTask,
-                       Pinetime::Controllers::Ble& bleController,
-                       Pinetime::Drivers::SpiNorFlash& spiNorFlash)
-  : systemTask {systemTask},
-    bleController {bleController},
-    dfuImage {spiNorFlash},
-    characteristicDefinition {{
+DfuService::DfuService()
+  : characteristicDefinition {{
                                 .uuid = &packetCharacteristicUuid.u,
                                 .access_cb = DfuServiceCallback,
                                 .arg = this,
@@ -78,7 +70,7 @@ void DfuService::Init() {
 }
 
 int DfuService::OnServiceData(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
-  if (bleController.IsFirmwareUpdating()) {
+  if (System::SystemTask::displayApp->bleController.IsFirmwareUpdating()) {
     xTimerStart(timeoutTimer, 0);
   }
 
@@ -118,14 +110,14 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
       softdeviceSize = om->om_data[0] + (om->om_data[1] << 8) + (om->om_data[2] << 16) + (om->om_data[3] << 24);
       bootloaderSize = om->om_data[4] + (om->om_data[5] << 8) + (om->om_data[6] << 16) + (om->om_data[7] << 24);
       applicationSize = om->om_data[8] + (om->om_data[9] << 8) + (om->om_data[10] << 16) + (om->om_data[11] << 24);
-      bleController.FirmwareUpdateTotalBytes(applicationSize);
+      System::SystemTask::displayApp->bleController.FirmwareUpdateTotalBytes(applicationSize);
       NRF_LOG_INFO("[DFU] -> Start data received : SD size : %d, BT size : %d, app size : %d",
                    softdeviceSize,
                    bootloaderSize,
                    applicationSize);
 
       // wait until SystemTask has finished waking up all devices
-      while (systemTask.IsSleeping()) {
+      while (System::SystemTask::displayApp->systemTask->IsSleeping()) {
         vTaskDelay(50); // 50ms
       }
 
@@ -163,7 +155,7 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
       nbPacketReceived++;
       dfuImage.Append(om->om_data, om->om_len);
       bytesReceived += om->om_len;
-      bleController.FirmwareUpdateCurrentBytes(bytesReceived);
+      System::SystemTask::displayApp->bleController.FirmwareUpdateCurrentBytes(bytesReceived);
 
       if ((nbPacketReceived % nbPacketsToNotify) == 0 && bytesReceived != applicationSize) {
         uint8_t data[5] {static_cast<uint8_t>(Opcodes::PacketReceiptNotification),
@@ -194,6 +186,7 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
 int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
   auto opcode = static_cast<Opcodes>(om->om_data[0]);
   NRF_LOG_INFO("[DFU] -> ControlPointHandler");
+  auto* bleController = &System::SystemTask::displayApp->bleController;
 
   switch (opcode) {
     case Opcodes::StartDFU: {
@@ -209,11 +202,11 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
       if (imageType == ImageTypes::Application) {
         NRF_LOG_INFO("[DFU] -> Start DFU, mode = Application");
         state = States::Start;
-        bleController.StartFirmwareUpdate();
-        bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Running);
-        bleController.FirmwareUpdateTotalBytes(0xffffffffu);
-        bleController.FirmwareUpdateCurrentBytes(0);
-        systemTask.PushMessage(Pinetime::System::Messages::BleFirmwareUpdateStarted);
+        bleController->StartFirmwareUpdate();
+        bleController->State(Controllers::Ble::FirmwareUpdateStates::Running);
+        bleController->FirmwareUpdateTotalBytes(0xffffffffu);
+        bleController->FirmwareUpdateCurrentBytes(0);
+        System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::BleFirmwareUpdateStarted);
         return 0;
       } else {
         NRF_LOG_INFO("[DFU] -> Start DFU, mode %d not supported!", imageType);
@@ -261,7 +254,7 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
 
       if (dfuImage.Validate()) {
         state = States::Validated;
-        bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Validated);
+        bleController->State(Controllers::Ble::FirmwareUpdateStates::Validated);
         NRF_LOG_INFO("Image OK");
 
         uint8_t data[3] {static_cast<uint8_t>(Opcodes::Response),
@@ -275,7 +268,7 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
                          static_cast<uint8_t>(Opcodes::ValidateFirmware),
                          static_cast<uint8_t>(ErrorCodes::CrcError)};
         notificationManager.AsyncSend(connectionHandle, controlPointCharacteristicHandle, data, 3);
-        bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Error);
+        bleController->State(Controllers::Ble::FirmwareUpdateStates::Error);
         Reset();
       }
 
@@ -287,7 +280,7 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
         return 0;
       }
       NRF_LOG_INFO("[DFU] -> Activate image and reset!");
-      bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Validated);
+      bleController->State(Controllers::Ble::FirmwareUpdateStates::Validated);
       Reset();
       return 0;
     default:
@@ -296,7 +289,7 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
 }
 
 void DfuService::OnTimeout() {
-  bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Error);
+  System::SystemTask::displayApp->bleController.State(Controllers::Ble::FirmwareUpdateStates::Error);
   Reset();
 }
 
@@ -310,8 +303,8 @@ void DfuService::Reset() {
   applicationSize = 0;
   expectedCrc = 0;
   notificationManager.Reset();
-  bleController.StopFirmwareUpdate();
-  systemTask.PushMessage(Pinetime::System::Messages::BleFirmwareUpdateFinished);
+  System::SystemTask::displayApp->bleController.StopFirmwareUpdate();
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::BleFirmwareUpdateFinished);
 }
 
 DfuService::NotificationManager::NotificationManager() {
@@ -370,13 +363,13 @@ void DfuService::DfuImage::Append(uint8_t* data, size_t size) {
   bufferWriteIndex += size;
 
   if (bufferWriteIndex == bufferSize) {
-    spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
+    System::SystemTask::displayApp->systemTask->spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
     totalWriteIndex += bufferWriteIndex;
     bufferWriteIndex = 0;
   }
 
   if (bufferWriteIndex > 0 && totalWriteIndex + bufferWriteIndex == totalSize) {
-    spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
+    System::SystemTask::displayApp->systemTask->spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
     totalWriteIndex += bufferWriteIndex;
     if (totalSize < maxSize)
       WriteMagicNumber();
@@ -393,12 +386,12 @@ void DfuService::DfuImage::WriteMagicNumber() {
   };
 
   uint32_t offset = writeOffset + (maxSize - (4 * sizeof(uint32_t)));
-  spiNorFlash.Write(offset, reinterpret_cast<const uint8_t*>(magic), 4 * sizeof(uint32_t));
+  System::SystemTask::displayApp->systemTask->spiNorFlash.Write(offset, reinterpret_cast<const uint8_t*>(magic), 4 * sizeof(uint32_t));
 }
 
 void DfuService::DfuImage::Erase() {
   for (size_t erased = 0; erased < maxSize; erased += 0x1000) {
-    spiNorFlash.SectorErase(writeOffset + erased);
+    System::SystemTask::displayApp->systemTask->spiNorFlash.SectorErase(writeOffset + erased);
   }
 }
 
@@ -411,7 +404,7 @@ bool DfuService::DfuImage::Validate() {
   while (currentOffset < totalSize) {
     uint32_t readSize = (totalSize - currentOffset) > chunkSize ? chunkSize : (totalSize - currentOffset);
 
-    spiNorFlash.Read(writeOffset + currentOffset, tempBuffer, readSize);
+    System::SystemTask::displayApp->systemTask->spiNorFlash.Read(writeOffset + currentOffset, tempBuffer, readSize);
     if (first) {
       crc = ComputeCrc(tempBuffer, readSize, NULL);
       first = false;

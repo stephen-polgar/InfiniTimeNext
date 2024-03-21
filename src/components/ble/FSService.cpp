@@ -1,6 +1,4 @@
-#include <nrf_log.h>
 #include "FSService.h"
-#include "components/ble/BleController.h"
 #include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Controllers;
@@ -14,10 +12,8 @@ int FSServiceCallback(uint16_t conn_handle, uint16_t attr_handle, struct ble_gat
   return fsService->OnFSServiceRequested(conn_handle, attr_handle, ctxt);
 }
 
-FSService::FSService(Pinetime::System::SystemTask& systemTask, Pinetime::Controllers::FS& fs)
-  : systemTask {systemTask},
-    fs {fs},
-    characteristicDefinition {{.uuid = &fsVersionUuid.u,
+FSService::FSService()
+  : characteristicDefinition {{.uuid = &fsVersionUuid.u,
                                .access_cb = FSServiceCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_READ,
@@ -49,8 +45,7 @@ void FSService::Init() {
 }
 
 int FSService::OnFSServiceRequested(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
-  if (attributeHandle == versionCharacteristicHandle) {
-    NRF_LOG_INFO("FS_S : handle = %d", versionCharacteristicHandle);
+  if (attributeHandle == versionCharacteristicHandle) {   
     int res = os_mbuf_append(context->om, &fsVersion, sizeof(fsVersion));
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }
@@ -61,20 +56,19 @@ int FSService::OnFSServiceRequested(uint16_t connectionHandle, uint16_t attribut
 }
 
 int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
-  auto command = static_cast<commands>(om->om_data[0]);
-  NRF_LOG_INFO("[FS_S] -> FSCommandHandler Command %d", command);
+  auto command = static_cast<commands>(om->om_data[0]); 
   // Just always make sure we are awake...
-  systemTask.PushMessage(Pinetime::System::Messages::StartFileTransfer);
+  auto * displayApp = System::SystemTask::displayApp;
+  displayApp->systemTask->PushMessage(Pinetime::System::Messages::StartFileTransfer);
   vTaskDelay(10);
-  while (systemTask.IsSleeping()) {
+  while (displayApp->systemTask->IsSleeping()) {
     vTaskDelay(100); // 50ms
   }
   lfs_dir_t dir = {0};
   lfs_info info = {0};
   lfs_file f = {0};
   switch (command) {
-    case commands::READ: {
-      NRF_LOG_INFO("[FS_S] -> Read");
+    case commands::READ: {     
       auto* header = (ReadHeader*) om->om_data;
       uint16_t plen = header->pathlen;
       if (plen > maxpathlen) { //> counts for null term
@@ -87,7 +81,7 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       resp.command = commands::READ_DATA;
       resp.status = 0x01;
       resp.chunkoff = header->chunkoff;
-      int res = fs.Stat(filepath, &info);
+      int res = displayApp->filesystem.Stat(filepath, &info);
       if (res == LFS_ERR_NOENT && info.type != LFS_TYPE_DIR) {
         resp.status = (int8_t) res;
         resp.chunklen = 0;
@@ -96,26 +90,25 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       } else {
         resp.chunklen = std::min(header->chunksize, info.size); // TODO add mtu somehow
         resp.totallen = info.size;
-        fs.FileOpen(&f, filepath, LFS_O_RDONLY);
-        fs.FileSeek(&f, header->chunkoff);
+        displayApp->filesystem.FileOpen(&f, filepath, LFS_O_RDONLY);
+        displayApp->filesystem.FileSeek(&f, header->chunkoff);
         uint8_t fileData[resp.chunklen] = {0};
-        resp.chunklen = fs.FileRead(&f, fileData, resp.chunklen);
+        resp.chunklen = displayApp->filesystem.FileRead(&f, fileData, resp.chunklen);
         om = ble_hs_mbuf_from_flat(&resp, sizeof(ReadResponse));
         os_mbuf_append(om, fileData, resp.chunklen);
-        fs.FileClose(&f);
+        displayApp->filesystem.FileClose(&f);
       }
 
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::READ_PACING: {
-      NRF_LOG_INFO("[FS_S] -> Readpacing");
+    case commands::READ_PACING: {     
       auto* header = (ReadHeader*) om->om_data;
       ReadResponse resp;
       resp.command = commands::READ_DATA;
       resp.status = 0x01;
       resp.chunkoff = header->chunkoff;
-      int res = fs.Stat(filepath, &info);
+      int res = displayApp->filesystem.Stat(filepath, &info);
       if (res == LFS_ERR_NOENT && info.type != LFS_TYPE_DIR) {
         resp.status = (int8_t) res;
         resp.chunklen = 0;
@@ -123,25 +116,24 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       } else {
         resp.chunklen = std::min(header->chunksize, info.size); // TODO add mtu somehow
         resp.totallen = info.size;
-        fs.FileOpen(&f, filepath, LFS_O_RDONLY);
-        fs.FileSeek(&f, header->chunkoff);
+        displayApp->filesystem.FileOpen(&f, filepath, LFS_O_RDONLY);
+        displayApp->filesystem.FileSeek(&f, header->chunkoff);
       }
       os_mbuf* om;
       if (resp.chunklen > 0) {
         uint8_t fileData[resp.chunklen] = {0};
-        resp.chunklen = fs.FileRead(&f, fileData, resp.chunklen);
+        resp.chunklen = displayApp->filesystem.FileRead(&f, fileData, resp.chunklen);
         om = ble_hs_mbuf_from_flat(&resp, sizeof(ReadResponse));
         os_mbuf_append(om, fileData, resp.chunklen);
       } else {
         resp.chunklen = 0;
         om = ble_hs_mbuf_from_flat(&resp, sizeof(ReadResponse));
       }
-      fs.FileClose(&f);
+      displayApp->filesystem.FileClose(&f);
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::WRITE: {
-      NRF_LOG_INFO("[FS_S] -> Write");
+    case commands::WRITE: {   
       auto* header = (WriteHeader*) om->om_data;
       uint16_t plen = header->pathlen;
       if (plen > maxpathlen) { //> counts for null term
@@ -155,40 +147,38 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       resp.offset = header->offset;
       resp.modTime = 0;
 
-      int res = fs.FileOpen(&f, filepath, LFS_O_RDWR | LFS_O_CREAT);
+      int res = displayApp->filesystem.FileOpen(&f, filepath, LFS_O_RDWR | LFS_O_CREAT);
       if (res == 0) {
-        fs.FileClose(&f);
+        displayApp->filesystem.FileClose(&f);
         resp.status = (res == 0) ? 0x01 : (int8_t) res;
       }
-      resp.freespace = std::min(fs.getSize() - (fs.GetFSSize() * fs.getBlockSize()), fileSize - header->offset);
+      resp.freespace = std::min(displayApp->filesystem.getSize() - (displayApp->filesystem.GetFSSize() * displayApp->filesystem.getBlockSize()), fileSize - header->offset);
       auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(WriteResponse));
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::WRITE_DATA: {
-      NRF_LOG_INFO("[FS_S] -> WriteData");
+    case commands::WRITE_DATA: {     
       auto* header = (WritePacing*) om->om_data;
       WriteResponse resp;
       resp.command = commands::WRITE_PACING;
       resp.offset = header->offset;
       int res = 0;
 
-      if (!(res = fs.FileOpen(&f, filepath, LFS_O_RDWR | LFS_O_CREAT))) {
-        if ((res = fs.FileSeek(&f, header->offset)) >= 0) {
-          res = fs.FileWrite(&f, header->data, header->dataSize);
+      if (!(res = displayApp->filesystem.FileOpen(&f, filepath, LFS_O_RDWR | LFS_O_CREAT))) {
+        if ((res = displayApp->filesystem.FileSeek(&f, header->offset)) >= 0) {
+          res = displayApp->filesystem.FileWrite(&f, header->data, header->dataSize);
         }
-        fs.FileClose(&f);
+        displayApp->filesystem.FileClose(&f);
       }
       if (res < 0) {
         resp.status = (int8_t) res;
       }
-      resp.freespace = std::min(fs.getSize() - (fs.GetFSSize() * fs.getBlockSize()), fileSize - header->offset);
+      resp.freespace = std::min(displayApp->filesystem.getSize() - (displayApp->filesystem.GetFSSize() * displayApp->filesystem.getBlockSize()), fileSize - header->offset);
       auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(WriteResponse));
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::DELETE: {
-      NRF_LOG_INFO("[FS_S] -> Delete");
+    case commands::DELETE: {     
       auto* header = (DelHeader*) om->om_data;
       uint16_t plen = header->pathlen;
       char path[plen + 1] = {0};
@@ -196,14 +186,13 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       path[plen] = 0; // Copy and null terminate string
       DelResponse resp {};
       resp.command = commands::DELETE_STATUS;
-      int res = fs.FileDelete(path);
+      int res = displayApp->filesystem.FileDelete(path);
       resp.status = (res == 0) ? 0x01 : (int8_t) res;
       auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(DelResponse));
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::MKDIR: {
-      NRF_LOG_INFO("[FS_S] -> MKDir");
+    case commands::MKDIR: {     
       auto* header = (MKDirHeader*) om->om_data;
       uint16_t plen = header->pathlen;
       char path[plen + 1] = {0};
@@ -212,14 +201,13 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       MKDirResponse resp {};
       resp.command = commands::MKDIR_STATUS;
       resp.modification_time = 0;
-      int res = fs.DirCreate(path);
+      int res = displayApp->filesystem.DirCreate(path);
       resp.status = (res == 0) ? 0x01 : (int8_t) res;
       auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(MKDirResponse));
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::LISTDIR: {
-      NRF_LOG_INFO("[FS_S] -> ListDir");
+    case commands::LISTDIR: {     
       ListDirHeader* header = (ListDirHeader*) om->om_data;
       uint16_t plen = header->pathlen;
       char path[plen + 1] = {0};
@@ -233,19 +221,19 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       resp.totalentries = 0;
       resp.entry = 0;
       resp.modification_time = 0;
-      int res = fs.DirOpen(path, &dir);
+      int res = displayApp->filesystem.DirOpen(path, &dir);
       if (res != 0) {
         resp.status = (int8_t) res;
         auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(ListDirResponse));
         ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
         break;
       };
-      while (fs.DirRead(&dir, &info)) {
+      while (displayApp->filesystem.DirRead(&dir, &info)) {
         resp.totalentries++;
       }
-      fs.DirRewind(&dir);
+      displayApp->filesystem.DirRewind(&dir);
       while (true) {
-        res = fs.DirRead(&dir, &info);
+        res = displayApp->filesystem.DirRead(&dir, &info);
         if (res <= 0) {
           break;
         }
@@ -282,8 +270,7 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
       break;
     }
-    case commands::MOVE: {
-      NRF_LOG_INFO("[FS_S] -> Move");
+    case commands::MOVE: {      
       MoveHeader* header = (MoveHeader*) om->om_data;
       uint16_t plen = header->OldPathLength;
       // Null Terminate string
@@ -293,16 +280,15 @@ int FSService::FSCommandHandler(uint16_t connectionHandle, os_mbuf* om) {
       path[header->NewPathLength] = 0; // Copy and null terminate string
       MoveResponse resp {};
       resp.command = commands::MOVE_STATUS;
-      int8_t res = (int8_t) fs.Rename(header->pathstr, path);
+      int8_t res = (int8_t) displayApp->filesystem.Rename(header->pathstr, path);
       resp.status = (res == 0) ? 1 : res;
       auto* om = ble_hs_mbuf_from_flat(&resp, sizeof(MoveResponse));
       ble_gattc_notify_custom(connectionHandle, transferCharacteristicHandle, om);
     }
     default:
       break;
-  }
-  NRF_LOG_INFO("[FS_S] -> done ");
-  systemTask.PushMessage(Pinetime::System::Messages::StopFileTransfer);
+  }  
+  displayApp->systemTask->PushMessage(System::Messages::StopFileTransfer);
   return 0;
 }
 
@@ -313,7 +299,8 @@ void FSService::prepareReadDataResp(ReadHeader* header, ReadResponse* resp) {
   resp->chunkoff = header->chunkoff;
   resp->status = 0x01;
   struct lfs_info info = {};
-  int res = fs.Stat(filepath, &info);
+  auto * fs = &System::SystemTask::displayApp->filesystem;
+  int res = fs->Stat(filepath, &info);
   if (res == LFS_ERR_NOENT && info.type != LFS_TYPE_DIR) {
     resp->status = 0x03;
     resp->chunklen = 0;
@@ -322,9 +309,9 @@ void FSService::prepareReadDataResp(ReadHeader* header, ReadResponse* resp) {
     lfs_file f;
     resp->chunklen = std::min(header->chunksize, info.size);
     resp->totallen = info.size;
-    fs.FileOpen(&f, filepath, LFS_O_RDONLY);
-    fs.FileSeek(&f, header->chunkoff);
-    resp->chunklen = fs.FileRead(&f, resp->chunk, resp->chunklen);
-    fs.FileClose(&f);
+    fs->FileOpen(&f, filepath, LFS_O_RDONLY);
+    fs->FileSeek(&f, header->chunkoff);
+    resp->chunklen = fs->FileRead(&f, resp->chunk, resp->chunklen);
+    fs->FileClose(&f);
   }
 }

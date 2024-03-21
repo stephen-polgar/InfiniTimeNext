@@ -1,5 +1,4 @@
 #include "components/ble/ImmediateAlertService.h"
-#include <cstring>
 #include "components/ble/NotificationManager.h"
 #include "systemtask/SystemTask.h"
 
@@ -28,11 +27,8 @@ namespace {
   }
 }
 
-ImmediateAlertService::ImmediateAlertService(Pinetime::System::SystemTask& systemTask,
-                                             Pinetime::Controllers::NotificationManager& notificationManager)
-  : systemTask {systemTask},
-    notificationManager {notificationManager},
-    characteristicDefinition {{.uuid = &alertLevelUuid.u,
+ImmediateAlertService::ImmediateAlertService()
+  : characteristicDefinition {{.uuid = &alertLevelUuid.u,
                                .access_cb = AlertLevelCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_WRITE_NO_RSP,
@@ -65,11 +61,9 @@ int ImmediateAlertService::OnAlertLevelChanged(uint16_t attributeHandle, ble_gat
       NotificationManager::Notification notif;
       std::memcpy(notif.message.data(), alertString, strlen(alertString));
       notif.category = Pinetime::Controllers::NotificationManager::Categories::SimpleAlert;
-      notificationManager.Push(std::move(notif));
-
-      systemTask.PushMessage(Pinetime::System::Messages::OnNewNotification);
+      System::SystemTask::displayApp->notificationManager.Push(std::move(notif));
+      System::SystemTask::displayApp->systemTask->PushMessage(Pinetime::System::Messages::OnNewNotification);
     }
   }
-
   return 0;
 }

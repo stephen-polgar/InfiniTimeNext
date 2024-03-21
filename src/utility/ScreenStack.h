@@ -54,10 +54,9 @@ namespace Pinetime {
 #ifdef StackLog
       NRF_LOG_INFO("ScreenStack:Reset");
 #endif
-      for (uint8_t i = 0; i < stackPointer; i++) {
-        delete elementArray[i];
-      }
-      stackPointer = 0;
+      while (stackPointer) {
+        delete elementArray[--stackPointer];
+      }      
     }
 
     template <uint8_t N>

@@ -1,7 +1,4 @@
 #include "components/fs/FS.h"
-#include <cstring>
-#include <littlefs/lfs.h>
-#include <lvgl/lvgl.h>
 
 using namespace Pinetime::Controllers;
 

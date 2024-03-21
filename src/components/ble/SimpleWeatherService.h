@@ -31,14 +31,11 @@
 #undef max
 #undef min
 
-#include "components/datetime/DateTimeController.h"
-
 namespace Pinetime {
   namespace Controllers {
-
     class SimpleWeatherService {
     public:
-      explicit SimpleWeatherService(const DateTime& dateTimeController);
+      explicit SimpleWeatherService();
 
       void Init();
 
@@ -143,9 +140,7 @@ namespace Pinetime {
       const struct ble_gatt_svc_def serviceDefinition[2] = {
         {.type = BLE_GATT_SVC_TYPE_PRIMARY, .uuid = &weatherUuid.u, .characteristics = characteristicDefinition},
         {0}};
-
-      const Controllers::DateTime& dateTimeController;
-
+    
       std::optional<CurrentWeather> currentWeather;
       std::optional<Forecast> forecast;
     };

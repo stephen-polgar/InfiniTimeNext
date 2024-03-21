@@ -246,7 +246,7 @@ Navigation::~Navigation() {
 }
 
 void Navigation::Refresh() {
-  auto& navService = System::SystemTask::displayApp->systemTask->nimble().navigation();
+  auto& navService = System::SystemTask::displayApp->systemTask->nimbleController.navService;
   if (flag != navService.getFlag()) {
     flag = navService.getFlag();
     const auto& image = GetIcon(flag);

@@ -1,31 +1,24 @@
 #pragma once
+
+#include "components/fs/FS.h"
+
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #undef max
 #undef min
 
-#include "components/fs/FS.h"
-
 namespace Pinetime {
-  namespace System {
-    class SystemTask;
-  }
-
   namespace Controllers {
-    class Ble;
-
     class FSService {
     public:
-      FSService(Pinetime::System::SystemTask& systemTask, Pinetime::Controllers::FS& fs);
+      FSService();
       void Init();
 
       int OnFSServiceRequested(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context);
-      //void NotifyFSRaw(uint16_t connectionHandle);
+      // void NotifyFSRaw(uint16_t connectionHandle);
 
     private:
-      Pinetime::System::SystemTask& systemTask;
-      Pinetime::Controllers::FS& fs;
       static constexpr uint16_t FSServiceId {0xFEBB};
       static constexpr uint16_t fsVersionId {0x0100};
       static constexpr uint16_t fsTransferId {0x0200};

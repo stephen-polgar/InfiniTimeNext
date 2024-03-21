@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FreeRTOS.h>
+#include <queue.h>
 #include "BootErrors.h"
 #include "displayapp/screens/Screen.h"
 #include "drivers/Cst816s.h"
@@ -10,6 +11,8 @@
 #include "displayapp/Messages.h"
 #include "displayapp/LittleVgl.h"
 
+#include "components/heartrate/HeartRateController.h"
+#include "components/settings/Settings.h"
 #include "components/battery/BatteryController.h"
 #include "components/ble/BleController.h"
 #include "components/datetime/DateTimeController.h"
@@ -34,19 +37,8 @@ namespace Pinetime {
       enum class States : uint8_t { Idle, Running };
 
       DisplayApp(Drivers::St7789& lcd,
-                 Drivers::Cst816S& touchPanel,
-                 Controllers::Battery& batteryController,
-                 Controllers::Ble& bleController,
-                 Controllers::DateTime& dateTimeController,
-                 Drivers::Watchdog& watchdog,
-                 Controllers::NotificationManager& notificationManager,
-                 Controllers::HeartRateController& heartRateController,
-                 Controllers::Settings& settingsController,
-                 Controllers::MotorController& motorController,
-                 Controllers::MotionController& motionController,
-                 Controllers::BrightnessController& brightnessController,
-                 Controllers::TouchHandler& touchHandler,
-                 Controllers::FS& filesystem);
+                 Drivers::Cst816S& touchPanel,                                            
+                  Drivers::SpiNorFlash& spiNorFlash);
 
       void Start(System::BootErrors error);
       void PushMessage(Display::Messages id);
@@ -56,20 +48,20 @@ namespace Pinetime {
       void SetFullRefresh(Screen::FullRefreshDirections direction);
 
 
-      Controllers::DateTime& dateTimeController;
+      Controllers::DateTime dateTimeController;
       System::SystemTask* systemTask;
-      Controllers::NotificationManager& notificationManager;
-      Controllers::HeartRateController& heartRateController;
-      Controllers::Settings& settingsController;
-      Controllers::MotorController& motorController;
-      Controllers::MotionController& motionController;
-      Controllers::BrightnessController& brightnessController;
-      Controllers::TouchHandler& touchHandler;
-      Controllers::FS& filesystem;
-      Drivers::Watchdog& watchdog;
+      Controllers::NotificationManager notificationManager;
+      Controllers::HeartRateController heartRateController;
+      Controllers::Settings settingsController;
+      Controllers::MotorController motorController;
+      Controllers::MotionController motionController;
+      Controllers::BrightnessController brightnessController;
+      Controllers::TouchHandler touchHandler;
+      Controllers::FS filesystem;
+      Drivers::Watchdog watchdog;
       Drivers::Cst816S& touchPanel;
-      Controllers::Battery& batteryController;
-      Controllers::Ble& bleController;
+      Controllers::Battery batteryController;
+      Controllers::Ble bleController;
       Controllers::FirmwareValidator validator;
       Components::LittleVgl lvgl;
 

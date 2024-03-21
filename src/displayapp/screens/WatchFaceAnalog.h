@@ -4,13 +4,12 @@
 #include "BatteryIcon.h"
 #include "utility/DirtyValue.h"
 #include "components/fs/FS.h"
+#include "components/datetime/DateTimeController.h"
 #include <chrono>
 
 namespace Pinetime {
-  
-  namespace Applications {
+    namespace Applications {
     namespace Screens {
-
       class WatchFaceAnalog : public Screen {
       public:
         WatchFaceAnalog();
@@ -30,12 +29,7 @@ namespace Pinetime {
         Utility::DirtyValue<bool> notificationState {false};
         using days = std::chrono::duration<int32_t, std::ratio<86400>>; // TODO: days is standard in c++20
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, days>> currentDate;
-
-        lv_obj_t* minor_scales;
-        lv_obj_t* major_scales;
-        lv_obj_t* large_scales;
-        lv_obj_t* twelve;
-
+     
         lv_obj_t* hour_body;
         lv_obj_t* hour_body_trace;
         lv_obj_t* minute_body;
@@ -61,7 +55,8 @@ namespace Pinetime {
 
         BatteryIcon batteryIcon;
 
-        void UpdateClock();
+        void updateDate(Controllers::DateTime *);
+        void updateClock();
        
         lv_task_t* taskRefresh;
       };

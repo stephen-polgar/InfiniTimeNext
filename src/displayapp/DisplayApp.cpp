@@ -41,7 +41,7 @@
 
 #include "UserApps.h"
 
-// #define Log
+//#define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -56,35 +56,8 @@ namespace {
   }
 }
 
-DisplayApp::DisplayApp(Drivers::St7789& lcd,
-                       Drivers::Cst816S& touchPanel,
-                       Controllers::Battery& batteryController,
-                       Controllers::Ble& bleController,
-                       Controllers::DateTime& dateTimeController,
-                       Drivers::Watchdog& watchdog,
-                       Controllers::NotificationManager& notificationManager,
-                       Controllers::HeartRateController& heartRateController,
-                       Controllers::Settings& settingsController,
-                       Controllers::MotorController& motorController,
-                       Controllers::MotionController& motionController,
-                       Controllers::BrightnessController& brightnessController,
-                       Controllers::TouchHandler& touchHandler,
-                       Controllers::FS& filesystem)
-  : lcd {lcd},
-    touchPanel {touchPanel},
-    batteryController {batteryController},
-    bleController {bleController},
-    dateTimeController {dateTimeController},
-    watchdog {watchdog},
-    notificationManager {notificationManager},
-    heartRateController {heartRateController},
-    settingsController {settingsController},
-    motorController {motorController},
-    motionController {motionController},
-    brightnessController {brightnessController},
-    touchHandler {touchHandler},
-    filesystem {filesystem},
-    lvgl {lcd, filesystem} {
+DisplayApp::DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Drivers::SpiNorFlash& spiNorFlash)
+  : lcd {lcd}, touchPanel {touchPanel}, filesystem {spiNorFlash}, settingsController {filesystem}, lvgl {lcd, filesystem} {
 }
 
 void DisplayApp::Start(System::BootErrors error) {
@@ -111,9 +84,6 @@ void DisplayApp::InitHw() {
 
 void DisplayApp::Process(void* instance) {
   auto* app = static_cast<DisplayApp*>(instance);
-#ifdef Log
-  NRF_LOG_INFO("DisplayApp::Process task started!");
-#endif
   app->InitHw();
   // Send a dummy notification to unlock the lvgl display driver for the first iteration
   xTaskNotifyGive(xTaskGetCurrentTaskHandle());
@@ -125,24 +95,26 @@ void DisplayApp::Process(void* instance) {
 void DisplayApp::refresh() {
   auto loadPreviousScreen = [this]() {
     Screen::FullRefreshDirections returnDirection;
-    if (screenStack.Empty()) returnDirection = Screen::FullRefreshDirections::None;
-   else switch (screenStack.Top()->direction) {
-      case Screen::FullRefreshDirections::Up:
-        returnDirection = Screen::FullRefreshDirections::Down;
-        break;
-      case Screen::FullRefreshDirections::Down:
-        returnDirection = Screen::FullRefreshDirections::Up;
-        break;
-      case Screen::FullRefreshDirections::LeftAnim:
-        returnDirection = Screen::FullRefreshDirections::RightAnim;
-        break;
-      case Screen::FullRefreshDirections::RightAnim:
-        returnDirection = Screen::FullRefreshDirections::LeftAnim;
-        break;
-      default:
-        returnDirection = Screen::FullRefreshDirections::None;
-        break;
-    }
+    if (screenStack.Empty())
+      returnDirection = Screen::FullRefreshDirections::None;
+    else
+      switch (screenStack.Top()->direction) {
+        case Screen::FullRefreshDirections::Up:
+          returnDirection = Screen::FullRefreshDirections::Down;
+          break;
+        case Screen::FullRefreshDirections::Down:
+          returnDirection = Screen::FullRefreshDirections::Up;
+          break;
+        case Screen::FullRefreshDirections::LeftAnim:
+          returnDirection = Screen::FullRefreshDirections::RightAnim;
+          break;
+        case Screen::FullRefreshDirections::RightAnim:
+          returnDirection = Screen::FullRefreshDirections::LeftAnim;
+          break;
+        default:
+          returnDirection = Screen::FullRefreshDirections::None;
+          break;
+      }
     loadScreen(screenStack.Pop(), returnDirection);
   };
 
@@ -199,10 +171,10 @@ void DisplayApp::refresh() {
 
   Messages msg;
   if (xQueueReceive(msgQueue, &msg, queueTimeout) == pdTRUE) {
-#ifdef Log
-    // NRF_LOG_INFO("DisplayApp::xQueueReceive Id=%d, data=%d", msg.Id, msg.data);
+    #ifdef Log
+       // NRF_LOG_INFO("DisplayApp msg=%d", msg);
 #endif
-    switch (msg) {
+    switch (msg) { 
       case Messages::DimScreen:
         DimScreen();
         break;
@@ -229,7 +201,12 @@ void DisplayApp::refresh() {
         //        Screens::Clock::BleConnectionStates::NotConnected);
         break;
       case Messages::NewNotification:
-        loadNewScreen(Apps::NotificationsPreview, Screen::FullRefreshDirections::Down);
+        if (currentScreen->Id == Apps::NotificationsPreview || currentScreen->Id == Apps::Notifications) {
+          currentScreen->UnLoad();
+          currentScreen->Id = Apps::NotificationsPreview;
+          currentScreen->Load();
+        } else
+          loadNewScreen(Apps::NotificationsPreview, Screen::FullRefreshDirections::Down);
         break;
       case Messages::TimerDone: {
         if (state != States::Running)
@@ -324,7 +301,7 @@ void DisplayApp::refresh() {
             loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::LeftAnim);
           } else {
             loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::Down);
-          }          
+          }
         }
         break;
       case Messages::ButtonLongerPressed:
@@ -381,13 +358,13 @@ void DisplayApp::StartApp(Apps app, Screen::FullRefreshDirections direction) {
 
 void DisplayApp::StartApp(Screens::Screen* screen, Screen::FullRefreshDirections direction) {
   screen->direction = direction;
-  nextScreen = screen;  
+  nextScreen = screen;
 }
 
 void DisplayApp::loadScreen(Screens::Screen* screen, Screen::FullRefreshDirections direction) {
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
-  if (currentScreen) { 
+  if (currentScreen) {
     delete currentScreen;
     currentScreen = NULL;
   }
@@ -403,10 +380,10 @@ void DisplayApp::loadNewScreen(Screens::Screen* screen, Screen::FullRefreshDirec
     if (currentScreen->UnLoad()) {
       if (screenStack.Push(currentScreen)) {
         currentScreen->direction = direction;
-        currentScreen = NULL; // do not delete stored screen       
+        currentScreen = NULL; // do not delete stored screen
       }
     }
-  } 
+  }
   loadScreen(screen, direction);
 }
 
@@ -424,7 +401,7 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       }
       screen = new Screens::ApplicationList(std::move(apps));
     } break;
-    case Apps::Clock: {     
+    case Apps::Clock: {
       screenStack.DeleteAll(Apps::Clock);
       const auto* watchFace =
         std::find_if(userWatchFaces.begin(), userWatchFaces.end(), [this](const WatchFaceDescription& watchfaceDescription) {
@@ -434,7 +411,7 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
         screen = watchFace->create();
       else {
         screen = new WatchFaceDigital();
-      }       
+      }
     } break;
     case Apps::Error:
       screen = new Screens::Error(bootError);
@@ -449,10 +426,10 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       screen = new Screens::PassKey(bleController.GetPairingKey());
       break;
     case Apps::Notifications:
-      screen = new Screens::Notifications(systemTask->nimble().alertService(), Apps::Notifications);
+      screen = new Screens::Notifications(Apps::Notifications);
       break;
     case Apps::NotificationsPreview:
-      screen = new Screens::Notifications(systemTask->nimble().alertService(), Apps::NotificationsPreview);
+      screen = new Screens::Notifications(Apps::NotificationsPreview);
       break;
     case Apps::QuickSettings:
       screen = new Screens::QuickSettings();
@@ -464,8 +441,7 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
       int i = 0;
       for (const auto& userWatchFace : userWatchFaces) {
-        items[i++] =
-          Screens::SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
+        items[i++] = Screens::SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
       }
       screen = new Screens::SettingWatchFace(std::move(items));
     } break;
@@ -565,7 +541,7 @@ void DisplayApp::SetFullRefresh(Screen::FullRefreshDirections direction) {
 }
 
 void DisplayApp::PushMessageToSystemTask(System::Messages id) {
-   systemTask->PushMessage(id);
+  systemTask->PushMessage(id);
 }
 
 void DisplayApp::ApplyBrightness() {

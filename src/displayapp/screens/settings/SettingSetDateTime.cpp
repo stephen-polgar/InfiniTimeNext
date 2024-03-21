@@ -19,6 +19,7 @@ SettingSetDateTime::SettingSetDateTime()
 }
 
 void SettingSetDateTime::Load() {
+  running = true;
   loaded = true;
   screens.Load();
 }

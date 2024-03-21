@@ -119,7 +119,7 @@ int16_t Weather::roundTemperature(int16_t temp) {
 }
 
 void Weather::Refresh() {
-  currentWeather = System::SystemTask::displayApp->systemTask->nimble().weather().Current();
+  currentWeather = System::SystemTask::displayApp->systemTask->nimbleController.weatherService.Current();
   if (!running || currentWeather.IsUpdated()) {
     auto optCurrentWeather = currentWeather.Get();
     if (optCurrentWeather) {
@@ -149,7 +149,7 @@ void Weather::Refresh() {
     }
   }
 
-  currentForecast = System::SystemTask::displayApp->systemTask->nimble().weather().GetForecast();
+  currentForecast = System::SystemTask::displayApp->systemTask->nimbleController.weatherService.GetForecast();
   if (!running || currentForecast.IsUpdated()) {
     auto optCurrentForecast = currentForecast.Get();
     if (optCurrentForecast) {

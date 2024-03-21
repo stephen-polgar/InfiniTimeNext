@@ -26,7 +26,7 @@ AlarmSet::AlarmSet(bool showAlarm) : clockType {System::SystemTask::displayApp->
   alarmController = new AlarmController();
 }
 
-AlarmSet::AlarmSet(Controllers::AlarmController* alarmController)
+AlarmSet::AlarmSet(AlarmController* alarmController)
   : alarmController {alarmController},
     clockType {System::SystemTask::displayApp->settingsController.GetClockType()},
     Screen(Apps::AlarmSet) {
@@ -96,17 +96,17 @@ void AlarmSet::Load() {
   updateRecurencesButton();
   UpdateAlarmTime();
 
-  if (alarmController->State() == Controllers::AlarmController::AlarmState::Alerting) {
+  if (alarmController->State() == AlarmController::AlarmState::Alerting) {
     SetAlerting();
   }
 }
 
 bool AlarmSet::UnLoad() {
   if (running) {
+     running = false;
     if (alarmController->State() != AlarmController::AlarmState::Not_Set)
       alarmController->ScheduleAlarm();
-    lv_obj_clean(lv_scr_act());
-    running = false;
+    lv_obj_clean(lv_scr_act());    
   }
   return true;
 }
@@ -120,7 +120,7 @@ AlarmSet::~AlarmSet() {
   }
   UnLoad();
   if (changed)
-    Controllers::AlarmController::Save();
+    AlarmController::Save();
 }
 
 bool AlarmSet::OnButtonPushed() {
