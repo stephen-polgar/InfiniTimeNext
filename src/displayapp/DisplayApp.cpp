@@ -314,12 +314,11 @@ void DisplayApp::refresh() {
       case Messages::ButtonDoubleClicked:
         // if (currentApp != Apps::Weather && controllers.weatherController->has_value()) {
         if (currentScreen->Id != Apps::Weather) {
-          loadNewScreen(new Screens::Weather(), Screen::FullRefreshDirections::Down);
+          loadNewScreen(Apps::Weather, Screen::FullRefreshDirections::Down);
         } else if (currentScreen->Id != Apps::Notifications) {
           loadNewScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
         }
         break;
-
       case Messages::BleFirmwareUpdateStarted:
         loadNewScreen(Apps::FirmwareUpdate, Screen::FullRefreshDirections::Down);
         break;
@@ -429,13 +428,19 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       screen = new Screens::PassKey(bleController.GetPairingKey());
       break;
     case Apps::Notifications:
-      screen = new Screens::Notifications();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::Notifications();
       break;
     case Apps::QuickSettings:
-      screen = new Screens::QuickSettings();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::QuickSettings();
       break;
     case Apps::Settings:
-      screen = new Screens::Settings();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::Settings();
       break;
     case Apps::SettingWatchFace: {
       std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
@@ -458,16 +463,22 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       screen = new Screens::SettingDisplay();
       break;
     case Apps::SettingSteps:
-      screen = new Screens::SettingSteps();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::SettingSteps();
       break;
     case Apps::SettingSetDateTime:
       screen = new Screens::SettingSetDateTime();
       break;
     case Apps::SettingShakeThreshold:
-      screen = new SettingShakeThreshold();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new SettingShakeThreshold();
       break;
     case Apps::SettingBluetooth:
-      screen = new Screens::SettingBluetooth();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::SettingBluetooth();
       break;
     case Apps::BatteryInfo:
       screen = new Screens::BatteryInfo();
@@ -476,16 +487,21 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       screen = new Screens::SystemInfo();
       break;
     case Apps::FlashLight:
-      screen = new Screens::FlashLight();
+      screen = screenStack.Get(app);
+      if (!screen)
+        screen = new Screens::FlashLight();
       break;
     default: {
-      const auto* d = std::find_if(userApps.begin(), userApps.end(), [app](const AppDescription& appDescription) {
-        return appDescription.app == app;
-      });
-      if (d != userApps.end()) {
-        screen = d->create();
-      } else {
-        screen = new WatchFaceDigital();
+      screen = screenStack.Get(app);
+      if (!screen) {
+        const auto* d = std::find_if(userApps.begin(), userApps.end(), [app](const AppDescription& appDescription) {
+          return appDescription.app == app;
+        });
+        if (d != userApps.end()) {
+          screen = d->create();
+        } else {
+          screen = new WatchFaceDigital();
+        }
       }
       break;
     }

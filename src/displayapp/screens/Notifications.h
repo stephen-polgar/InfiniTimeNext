@@ -18,10 +18,6 @@ namespace Pinetime {
         void Refresh() override;
         bool OnTouchEvent(Applications::TouchEvents event) override;
 
-        void DismissToBlack();
-        void OnPreviewInteraction();
-        void OnPreviewDismiss();
-
         class NotificationItem {
         public:
           NotificationItem();
@@ -51,6 +47,12 @@ namespace Pinetime {
         };
 
       private:
+        
+        void dismissToBlack();
+        void onPreviewInteraction();
+        void onPreviewDismiss(bool remove = true);
+        bool onSwipe(bool right);
+
         std::unique_ptr<NotificationItem> currentItem;
         uint8_t currentId;
         bool validDisplay;

@@ -124,7 +124,7 @@ void Notifications::Refresh() {
   running = currentItem->IsRunning() && running;
 }
 
-void Notifications::OnPreviewInteraction() {
+void Notifications::onPreviewInteraction() {
   System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
   System::SystemTask::displayApp->motorController.StopRinging();
   if (timeoutLine) {
@@ -133,7 +133,7 @@ void Notifications::OnPreviewInteraction() {
   }
 }
 
-void Notifications::DismissToBlack() {
+void Notifications::dismissToBlack() {
   currentItem.reset();
   System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::RightAnim);
   // create black transition screen to let the notification dismiss to blackness
@@ -143,24 +143,47 @@ void Notifications::DismissToBlack() {
   dismissingNotification = true;
 }
 
-void Notifications::OnPreviewDismiss() {
-  System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
+void Notifications::onPreviewDismiss(bool remove) {
+  if (remove)
+    System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
   if (timeoutLine) {
     lv_obj_del(timeoutLine);
     timeoutLine = NULL;
   }
-  DismissToBlack();
+  dismissToBlack();
+}
+
+bool Notifications::onSwipe(bool right) {
+  if (validDisplay) {
+    auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
+    auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
+    afterDismissNextMessageFromAbove = previousMessage.valid;
+   if (right) System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
+    if (previousMessage.valid) {
+      currentId = previousMessage.id;
+    } else if (nextMessage.valid) {
+      currentId = nextMessage.id;
+    } else {
+      // don't update id, won't be found be refresh and try to load latest message or no message box
+    }
+    dismissToBlack();
+  }
+  return validDisplay;
 }
 
 bool Notifications::OnTouchEvent(Applications::TouchEvents event) {
   if (previewMode) {
     if (!interacted && event == TouchEvents::Tap) {
       interacted = true;
-      OnPreviewInteraction();
+      onPreviewInteraction();
       return true;
     }
     if (event == Applications::TouchEvents::SwipeRight) {
-      OnPreviewDismiss();
+      onPreviewDismiss();
+      return true;
+    }
+    if (event == Applications::TouchEvents::SwipeLeft) {
+      onPreviewDismiss(false);
       return true;
     }
     return false;
@@ -168,22 +191,9 @@ bool Notifications::OnTouchEvent(Applications::TouchEvents event) {
 
   switch (event) {
     case Applications::TouchEvents::SwipeRight:
-      if (validDisplay) {
-        auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
-        auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
-        afterDismissNextMessageFromAbove = previousMessage.valid;
-        System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
-        if (previousMessage.valid) {
-          currentId = previousMessage.id;
-        } else if (nextMessage.valid) {
-          currentId = nextMessage.id;
-        } else {
-          // don't update id, won't be found be refresh and try to load latest message or no message box
-        }
-        DismissToBlack();
-        return true;
-      }
-      return false;
+      return onSwipe(true);
+    case Applications::TouchEvents::SwipeLeft:
+      return onSwipe(false);
     case Applications::TouchEvents::SwipeDown: {
       Controllers::NotificationManager::Notification previousNotification;
       if (validDisplay) {

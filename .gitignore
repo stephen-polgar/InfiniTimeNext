@@ -1,5 +1,6 @@
 .gitconfig
 .idea/
+qgit_script.sh
 # Python virtual environment for DFU images
 .venv/
 
