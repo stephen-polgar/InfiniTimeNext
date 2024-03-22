@@ -10,39 +10,10 @@ constexpr ble_uuid16_t AlertNotificationClient::newAlertUuid;
 constexpr ble_uuid16_t AlertNotificationClient::unreadAlertStatusUuid;
 constexpr ble_uuid16_t AlertNotificationClient::controlPointUuid;
 
-namespace {
-  int OnDiscoveryEventCallback(uint16_t conn_handle, const struct ble_gatt_error* error, const struct ble_gatt_svc* service, void* arg) {
-    auto client = static_cast<AlertNotificationClient*>(arg);
-    return client->OnDiscoveryEvent(conn_handle, error, service);
-  }
-
-  int OnAlertNotificationCharacteristicDiscoveredCallback(uint16_t conn_handle,
-                                                          const struct ble_gatt_error* error,
-                                                          const struct ble_gatt_chr* chr,
-                                                          void* arg) {
-    auto client = static_cast<AlertNotificationClient*>(arg);
-    return client->OnCharacteristicsDiscoveryEvent(conn_handle, error, chr);
-  }
-
-  int OnAlertNotificationDescriptorDiscoveryEventCallback(uint16_t conn_handle,
-                                                          const struct ble_gatt_error* error,
-                                                          uint16_t chr_val_handle,
-                                                          const struct ble_gatt_dsc* dsc,
-                                                          void* arg) {
-    auto client = static_cast<AlertNotificationClient*>(arg);
-    return client->OnDescriptorDiscoveryEventCallback(conn_handle, error, chr_val_handle, dsc);
-  }
-
-  int NewAlertSubcribeCallback(uint16_t conn_handle, const struct ble_gatt_error* error, struct ble_gatt_attr* /*attr*/, void* arg) {
-    auto client = static_cast<AlertNotificationClient*>(arg);
-    return client->OnNewAlertSubcribe(conn_handle, error);
-  }
-}
-
-bool AlertNotificationClient::OnDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service) {
+bool AlertNotificationClient::onDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service) {
   if (service == nullptr && error->status == BLE_HS_EDONE) {
     if (isDiscovered) {
-      ble_gattc_disc_all_chrs(connectionHandle, ansStartHandle, ansEndHandle, OnAlertNotificationCharacteristicDiscoveredCallback, this);
+      ble_gattc_disc_all_chrs(connectionHandle, ansStartHandle, ansEndHandle, onAlertNotificationCharacteristicDiscoveredCallback, this);
     } else {
       onServiceDiscovered(connectionHandle);
     }
@@ -57,7 +28,7 @@ bool AlertNotificationClient::OnDiscoveryEvent(uint16_t connectionHandle, const 
   return false;
 }
 
-int AlertNotificationClient::OnCharacteristicsDiscoveryEvent(uint16_t connectionHandle,
+int AlertNotificationClient::onCharacteristicsDiscoveryEvent(uint16_t connectionHandle,
                                                              const ble_gatt_error* error,
                                                              const ble_gatt_chr* characteristic) {
   if (error->status != 0 && error->status != BLE_HS_EDONE) {
@@ -67,7 +38,7 @@ int AlertNotificationClient::OnCharacteristicsDiscoveryEvent(uint16_t connection
 
   if (characteristic == nullptr && error->status == BLE_HS_EDONE) {
     if (isCharacteristicDiscovered) {
-      ble_gattc_disc_all_dscs(connectionHandle, newAlertHandle, ansEndHandle, OnAlertNotificationDescriptorDiscoveryEventCallback, this);
+      ble_gattc_disc_all_dscs(connectionHandle, newAlertHandle, ansEndHandle, onAlertNotificationDescriptorDiscoveryEventCallback, this);
     } else
       onServiceDiscovered(connectionHandle);
   } else {
@@ -88,7 +59,7 @@ int AlertNotificationClient::OnCharacteristicsDiscoveryEvent(uint16_t connection
   return 0;
 }
 
-int AlertNotificationClient::OnNewAlertSubcribe(uint16_t connectionHandle, const ble_gatt_error*) {
+int AlertNotificationClient::onNewAlertSubcribe(uint16_t connectionHandle, const ble_gatt_error*) {
   /*
   if (error->status == 0) {
     NRF_LOG_INFO("ANS New alert subscribe OK");
@@ -101,7 +72,7 @@ int AlertNotificationClient::OnNewAlertSubcribe(uint16_t connectionHandle, const
   return 0;
 }
 
-int AlertNotificationClient::OnDescriptorDiscoveryEventCallback(uint16_t connectionHandle,
+int AlertNotificationClient::onDescriptorDiscoveryEventCallback(uint16_t connectionHandle,
                                                                 const ble_gatt_error* error,
                                                                 uint16_t characteristicValueHandle,
                                                                 const ble_gatt_dsc* descriptor) {
@@ -113,7 +84,7 @@ int AlertNotificationClient::OnDescriptorDiscoveryEventCallback(uint16_t connect
         uint8_t value[2];
         value[0] = 1;
         value[1] = 0;
-        ble_gattc_write_flat(connectionHandle, newAlertDescriptorHandle, value, sizeof(value), NewAlertSubcribeCallback, this);
+        ble_gattc_write_flat(connectionHandle, newAlertDescriptorHandle, value, sizeof(value), newAlertSubcribeCallback, this);
       }
     }
   } else {
@@ -125,18 +96,17 @@ int AlertNotificationClient::OnDescriptorDiscoveryEventCallback(uint16_t connect
 
 void AlertNotificationClient::OnNotification(ble_gap_event* event) {
   if (event->notify_rx.attr_handle == newAlertHandle) {
-    constexpr size_t stringTerminatorSize = 1; // end of string '\0'
-    constexpr size_t headerSize = 3;
-    const auto maxMessageSize {NotificationManager::MaximumMessageSize()};
-    const auto maxBufferSize {maxMessageSize + headerSize};
+    constexpr uint8_t stringTerminatorSize = 1; // end of string '\0'
+    constexpr uint8_t headerSize = 3;
+    const uint8_t maxBufferSize = NotificationManager::MaximumMessageSize + headerSize;
 
     // Ignore notifications with empty message
     const auto packetLen = OS_MBUF_PKTLEN(event->notify_rx.om);
     if (packetLen <= headerSize)
       return;
 
-    size_t bufferSize = std::min(packetLen + stringTerminatorSize, maxBufferSize);
-    auto messageSize = std::min(maxMessageSize, (bufferSize - headerSize));
+    uint8_t bufferSize = std::min(size_t(packetLen + stringTerminatorSize), size_t(maxBufferSize));
+    uint8_t messageSize = std::min( size_t(NotificationManager::MaximumMessageSize),  size_t(bufferSize - headerSize));
 
     NotificationManager::Notification notif;
     os_mbuf_copydata(event->notify_rx.om, headerSize, messageSize - 1, notif.message.data());
@@ -165,5 +135,35 @@ void AlertNotificationClient::Reset() {
 
 void AlertNotificationClient::Discover(uint16_t connectionHandle, std::function<void(uint16_t)> onServiceDiscovered) {
   this->onServiceDiscovered = onServiceDiscovered;
-  ble_gattc_disc_svc_by_uuid(connectionHandle, &ansServiceUuid.u, OnDiscoveryEventCallback, this);
+  ble_gattc_disc_svc_by_uuid(connectionHandle, &ansServiceUuid.u, onDiscoveryEventCallback, this);
+}
+
+
+int AlertNotificationClient::onDiscoveryEventCallback(uint16_t conn_handle,
+                                                      const struct ble_gatt_error* error,
+                                                      const struct ble_gatt_svc* service,
+                                                      void* arg) {
+  return static_cast<AlertNotificationClient*>(arg)->onDiscoveryEvent(conn_handle, error, service);
+}
+
+int AlertNotificationClient::onAlertNotificationCharacteristicDiscoveredCallback(uint16_t conn_handle,
+                                                                                 const struct ble_gatt_error* error,
+                                                                                 const struct ble_gatt_chr* chr,
+                                                                                 void* arg) {
+  return static_cast<AlertNotificationClient*>(arg)->onCharacteristicsDiscoveryEvent(conn_handle, error, chr);
+}
+
+int AlertNotificationClient::onAlertNotificationDescriptorDiscoveryEventCallback(uint16_t conn_handle,
+                                                                                 const struct ble_gatt_error* error,
+                                                                                 uint16_t chr_val_handle,
+                                                                                 const struct ble_gatt_dsc* dsc,
+                                                                                 void* arg) {
+  return static_cast<AlertNotificationClient*>(arg)->onDescriptorDiscoveryEventCallback(conn_handle, error, chr_val_handle, dsc);
+}
+
+int AlertNotificationClient::newAlertSubcribeCallback(uint16_t conn_handle,
+                                                      const struct ble_gatt_error* error,
+                                                      struct ble_gatt_attr* /*attr*/,
+                                                      void* arg) {
+  return static_cast<AlertNotificationClient*>(arg)->onNewAlertSubcribe(conn_handle, error);
 }

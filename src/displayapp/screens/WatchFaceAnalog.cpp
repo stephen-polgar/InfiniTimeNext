@@ -103,7 +103,7 @@ void WatchFaceAnalog::Load() {
 
   // Date - Day / Week day
   label_date_day = lv_label_create(lv_scr_act(), NULL);
-  lv_obj_set_style_local_text_color(label_date_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
+  lv_obj_set_style_local_text_color(label_date_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::green);
   updateDate(&System::SystemTask::displayApp->dateTimeController);
   lv_label_set_align(label_date_day, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_date_day, NULL, LV_ALIGN_CENTER, 50, 0);
@@ -145,6 +145,7 @@ void WatchFaceAnalog::Load() {
   lv_obj_add_style(hour_body_trace, LV_LINE_PART_MAIN, &hour_line_style_trace);
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
   Refresh();
+  lv_obj_move_foreground(label_date_day);
 }
 
 bool WatchFaceAnalog::UnLoad() {
@@ -199,9 +200,7 @@ void WatchFaceAnalog::updateClock() {
     hour_point_trace[1] = CoordinateRelocate(31, angle);
 
     lv_line_set_points(hour_body, hour_point, 2);
-    lv_line_set_points(hour_body_trace, hour_point_trace, 2);
-    if ((hour > 1 || minute > 7) && (hour < 4 || minute < 21))
-      lv_obj_move_foreground(label_date_day);
+    lv_line_set_points(hour_body_trace, hour_point_trace, 2);   
   }
 
   if (sSecond != second) {
@@ -209,9 +208,7 @@ void WatchFaceAnalog::updateClock() {
     auto const angle = second * 6;
     second_point[0] = CoordinateRelocate(-20, angle);
     second_point[1] = CoordinateRelocate(SecondLength, angle);
-    lv_line_set_points(second_body, second_point, 2);
-    if (second > 7 && second < 21)
-      lv_obj_move_foreground(label_date_day);
+    lv_line_set_points(second_body, second_point, 2);   
   }
 }
 
@@ -252,9 +249,9 @@ void WatchFaceAnalog::Refresh() {
   currentDateTime = app->dateTimeController.CurrentDateTime();
   if (!running || currentDateTime.IsUpdated()) {
     updateClock();
-    currentDate = std::chrono::time_point_cast<days>(currentDateTime.Get());
+    currentDate = std::chrono::time_point_cast<std::chrono::days>(currentDateTime.Get());
     if (!running || currentDate.IsUpdated()) {
-      lv_label_set_text_fmt(label_date_day, "%s\n%02i", app->dateTimeController.DayOfWeekShortToString(), app->dateTimeController.Day());
+      updateDate(&app->dateTimeController);
     }
   }
   running = true;

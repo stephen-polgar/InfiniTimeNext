@@ -41,7 +41,7 @@
 
 #include "UserApps.h"
 
-//#define Log
+// #define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -171,10 +171,10 @@ void DisplayApp::refresh() {
 
   Messages msg;
   if (xQueueReceive(msgQueue, &msg, queueTimeout) == pdTRUE) {
-    #ifdef Log
-       // NRF_LOG_INFO("DisplayApp msg=%d", msg);
+#ifdef Log
+    // NRF_LOG_INFO("DisplayApp msg=%d", msg);
 #endif
-    switch (msg) { 
+    switch (msg) {
       case Messages::DimScreen:
         DimScreen();
         break;
@@ -201,12 +201,15 @@ void DisplayApp::refresh() {
         //        Screens::Clock::BleConnectionStates::NotConnected);
         break;
       case Messages::NewNotification:
-        if (currentScreen->Id == Apps::NotificationsPreview || currentScreen->Id == Apps::Notifications) {
+        if (currentScreen->Id == Apps::Notifications) {
           currentScreen->UnLoad();
-          currentScreen->Id = Apps::NotificationsPreview;
           currentScreen->Load();
-        } else
-          loadNewScreen(Apps::NotificationsPreview, Screen::FullRefreshDirections::Down);
+        } else {
+          Screen* screen = screenStack.Get(Apps::Notifications);
+          if (!screen)
+            screen = new Notifications();
+          loadNewScreen(screen, Screen::FullRefreshDirections::Down);
+        }
         break;
       case Messages::TimerDone: {
         if (state != States::Running)
@@ -312,7 +315,7 @@ void DisplayApp::refresh() {
         // if (currentApp != Apps::Weather && controllers.weatherController->has_value()) {
         if (currentScreen->Id != Apps::Weather) {
           loadNewScreen(new Screens::Weather(), Screen::FullRefreshDirections::Down);
-        } else if (currentScreen->Id != Apps::Notifications && currentScreen->Id != Apps::NotificationsPreview) {
+        } else if (currentScreen->Id != Apps::Notifications) {
           loadNewScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
         }
         break;
@@ -426,10 +429,7 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       screen = new Screens::PassKey(bleController.GetPairingKey());
       break;
     case Apps::Notifications:
-      screen = new Screens::Notifications(Apps::Notifications);
-      break;
-    case Apps::NotificationsPreview:
-      screen = new Screens::Notifications(Apps::NotificationsPreview);
+      screen = new Screens::Notifications();
       break;
     case Apps::QuickSettings:
       screen = new Screens::QuickSettings();

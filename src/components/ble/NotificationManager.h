@@ -3,7 +3,6 @@
 #include <array>
 #include <atomic>
 
-
 namespace Pinetime {
   namespace Controllers {
     class NotificationManager {
@@ -21,56 +20,45 @@ namespace Pinetime {
         HighProriotyAlert,
         InstantMessage
       };
-      static constexpr uint8_t MessageSize {100};
+      static constexpr uint8_t MaximumMessageSize = 100;
 
       struct Notification {
-        using Id = uint8_t;
-        using Idx = uint8_t;
-
-        std::array<char, MessageSize + 1> message;
+        std::array<char, MaximumMessageSize + 1> message;
         uint8_t size;
         Categories category = Categories::Unknown;
-        Id id = 0;
+        uint8_t id = 0;
         bool valid = false;
-
-        const char* Message() const;
-        const char* Title() const;
+        const char* Message();
+        const char* Title();
       };
 
       void Push(Notification&& notif);
-      Notification GetLastNotification() const;
-      Notification Get(Notification::Id id) const;
-      Notification GetNext(Notification::Id id) const;
-      Notification GetPrevious(Notification::Id id) const;
+      Notification GetLastNotification();
+      Notification Get(uint8_t id);
+      Notification GetNext(uint8_t id);
+      Notification GetPrevious(uint8_t id);
+      uint8_t IndexOf(uint8_t id);
       // Return the index of the notification with the specified id, if not found return NbNotifications()
-      Notification::Idx IndexOf(Notification::Id id) const;
+    
       bool ClearNewNotificationFlag();
-      bool AreNewNotificationsAvailable() const;
-      void Dismiss(Notification::Id id);
-
-      static constexpr size_t MaximumMessageSize() {
-        return MessageSize;
-      };
+      bool AreNewNotificationsAvailable();
+      void Dismiss(uint8_t id);
 
       bool IsEmpty() const {
         return size == 0;
       }
 
-      size_t NbNotifications() const;
+      uint8_t NbNotifications();
 
-    private:
-      Notification::Id nextId {0};
-      Notification::Id GetNextId();
-      const Notification& At(Notification::Idx idx) const;
-      Notification& At(Notification::Idx idx);
-      void DismissIdx(Notification::Idx idx);
-
-      static constexpr uint8_t TotalNbNotifications = 5;
+    private:     
+      uint8_t nextId = 0;     
+      Notification& At(uint8_t idx);
+      void DismissIdx(uint8_t idx);
+      static constexpr uint8_t TotalNbNotifications = 8;
       std::array<Notification, TotalNbNotifications> notifications;
-      size_t beginIdx = TotalNbNotifications - 1; // index of the newest notification
-      size_t size = 0;                            // number of valid notifications in buffer
-
-      std::atomic<bool> newNotification {false};
+      uint8_t beginIdx = TotalNbNotifications - 1; // index of the newest notification
+      uint8_t size = 0;                           // number of valid notifications in buffer
+      std::atomic<bool> newNotification = false;
     };
   }
 }

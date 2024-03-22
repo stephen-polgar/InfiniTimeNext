@@ -17,9 +17,6 @@ namespace Pinetime {
     public:
       AlertNotificationService();
       void Init();
-
-      int OnAlert(struct ble_gatt_access_ctxt* ctxt);
-
       void AcceptIncomingCall();
       void RejectIncomingCall();
       void MuteIncomingCall();
@@ -40,7 +37,9 @@ namespace Pinetime {
         InstantMessage = 0x09,
         All = 0xff
       };
-
+      
+      int onAlert(struct ble_gatt_access_ctxt* ctxt);
+      static int alertNotificationCallback(uint16_t /*conn_handle*/, uint16_t /*attr_handle*/, struct ble_gatt_access_ctxt* ctxt, void* arg) ;
       static constexpr uint16_t ansId {0x1811};
       static constexpr uint16_t ansCharId {0x2a46};
 

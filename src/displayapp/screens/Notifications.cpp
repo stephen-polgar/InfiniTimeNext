@@ -9,15 +9,12 @@ using namespace Pinetime::Applications::Screens;
 extern lv_font_t jetbrains_mono_extrabold_compressed;
 extern lv_font_t jetbrains_mono_bold_20;
 
-Notifications::Notifications(Apps id) : Screen(id) {  
+Notifications::Notifications() : Screen(Apps::Notifications) {
 }
 
 void Notifications::Load() {
   running = true;
-  timeoutLine = NULL;
-  validDisplay = false;
   afterDismissNextMessageFromAbove = false;
-  interacted = true;
   timeoutLinePoints[0] = {0, 1};
   timeoutLinePoints[1] = {239, 1};
   dismissingNotification = false;
@@ -37,7 +34,8 @@ void Notifications::Load() {
     currentItem = std::make_unique<NotificationItem>();
     validDisplay = false;
   }
-  if (Id == Apps::NotificationsPreview) {
+  previewMode = notificationManager->NbNotifications() < 2;
+  if (previewMode) {
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
     if (notification.category == Controllers::NotificationManager::Categories::IncomingCall) {
       System::SystemTask::displayApp->motorController.StartRinging();
@@ -45,8 +43,7 @@ void Notifications::Load() {
       System::SystemTask::displayApp->motorController.RunForDuration(35);
     }
 
-    timeoutLine = lv_line_create(lv_scr_act(), nullptr);
-
+    timeoutLine = lv_line_create(lv_scr_act(), NULL);
     lv_obj_set_style_local_line_width(timeoutLine, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, 3);
     lv_obj_set_style_local_line_color(timeoutLine, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
     lv_obj_set_style_local_line_rounded(timeoutLine, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, true);
@@ -54,12 +51,15 @@ void Notifications::Load() {
     lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
     timeoutTickCountStart = xTaskGetTickCount();
     interacted = false;
+  } else {
+    interacted = true;
+    timeoutLine = NULL;
   }
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
 bool Notifications::UnLoad() {
-  if (taskRefresh) {    
+  if (taskRefresh) {
     lv_task_del(taskRefresh);
     taskRefresh = NULL;
     currentItem.reset();
@@ -76,19 +76,21 @@ Notifications::~Notifications() {
 }
 
 void Notifications::Refresh() {
-  if (Id == Apps::NotificationsPreview && timeoutLine) {
-    TickType_t tick = xTaskGetTickCount();
-    int32_t pos = LV_HOR_RES - ((tick - timeoutTickCountStart) / (timeoutLength / LV_HOR_RES));
-    if (pos <= 0) {
-      running = false;
-    } else {
-      timeoutLinePoints[1].x = pos;
-      lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
-    }
+  if (previewMode) {
+    if (timeoutLine) {
+      TickType_t tick = xTaskGetTickCount();
+      int32_t pos = LV_HOR_RES - ((tick - timeoutTickCountStart) / (timeoutLength / LV_HOR_RES));
+      if (pos <= 0) {
+        running = false;
+      } else {
+        timeoutLinePoints[1].x = pos;
+        lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
+      }
 
-  } else if (Id == Apps::NotificationsPreview && dismissingNotification) {
-    running = false;
-    currentItem = std::make_unique<NotificationItem>();
+    } else if (dismissingNotification) {
+      running = false;
+      currentItem = std::make_unique<NotificationItem>();
+    }
   } else if (dismissingNotification) {
     dismissingNotification = false;
     auto notification = System::SystemTask::displayApp->notificationManager.Get(currentId);
@@ -109,8 +111,7 @@ void Notifications::Refresh() {
     }
 
     if (validDisplay) {
-      Controllers::NotificationManager::Notification::Idx currentIdx =
-        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
+      uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       currentItem = std::make_unique<NotificationItem>(notification.Title(),
                                                        notification.Message(),
                                                        currentIdx + 1,
@@ -128,7 +129,7 @@ void Notifications::OnPreviewInteraction() {
   System::SystemTask::displayApp->motorController.StopRinging();
   if (timeoutLine) {
     lv_obj_del(timeoutLine);
-    timeoutLine = nullptr;
+    timeoutLine = NULL;
   }
 }
 
@@ -146,18 +147,19 @@ void Notifications::OnPreviewDismiss() {
   System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
   if (timeoutLine) {
     lv_obj_del(timeoutLine);
-    timeoutLine = nullptr;
+    timeoutLine = NULL;
   }
   DismissToBlack();
 }
 
-bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  if (Id == Apps::NotificationsPreview) {
+bool Notifications::OnTouchEvent(Applications::TouchEvents event) {
+  if (previewMode) {
     if (!interacted && event == TouchEvents::Tap) {
       interacted = true;
       OnPreviewInteraction();
       return true;
-    } else if (event == Pinetime::Applications::TouchEvents::SwipeRight) {
+    }
+    if (event == Applications::TouchEvents::SwipeRight) {
       OnPreviewDismiss();
       return true;
     }
@@ -165,7 +167,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   }
 
   switch (event) {
-    case Pinetime::Applications::TouchEvents::SwipeRight:
+    case Applications::TouchEvents::SwipeRight:
       if (validDisplay) {
         auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
         auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
@@ -182,7 +184,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
         return true;
       }
       return false;
-    case Pinetime::Applications::TouchEvents::SwipeDown: {
+    case Applications::TouchEvents::SwipeDown: {
       Controllers::NotificationManager::Notification previousNotification;
       if (validDisplay) {
         previousNotification = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
@@ -195,8 +197,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       }
 
       currentId = previousNotification.id;
-      Controllers::NotificationManager::Notification::Idx currentIdx =
-        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
+      uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       validDisplay = true;
       currentItem.reset();
       System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
@@ -207,7 +208,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
                                                        System::SystemTask::displayApp->notificationManager.NbNotifications());
     }
       return true;
-    case Pinetime::Applications::TouchEvents::SwipeUp: {
+    case Applications::TouchEvents::SwipeUp: {
       Controllers::NotificationManager::Notification nextNotification;
       if (validDisplay) {
         nextNotification = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
@@ -221,8 +222,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       }
 
       currentId = nextNotification.id;
-      Controllers::NotificationManager::Notification::Idx currentIdx =
-        System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
+      uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       validDisplay = true;
       currentItem.reset();
       System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
@@ -235,13 +235,6 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       return true;
     default:
       return false;
-  }
-}
-
-namespace {
-  void CallEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* item = static_cast<Notifications::NotificationItem*>(obj->user_data);
-    item->OnCallButtonEvent(obj, event);
   }
 }
 
@@ -314,7 +307,7 @@ Notifications::NotificationItem::NotificationItem(const char* title,
 
       bt_accept = lv_btn_create(container, nullptr);
       bt_accept->user_data = this;
-      lv_obj_set_event_cb(bt_accept, CallEventHandler);
+      lv_obj_set_event_cb(bt_accept, callEventHandler);
       lv_obj_set_size(bt_accept, 76, 76);
       lv_obj_align(bt_accept, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
       label_accept = lv_label_create(bt_accept, nullptr);
@@ -323,7 +316,7 @@ Notifications::NotificationItem::NotificationItem(const char* title,
 
       bt_reject = lv_btn_create(container, nullptr);
       bt_reject->user_data = this;
-      lv_obj_set_event_cb(bt_reject, CallEventHandler);
+      lv_obj_set_event_cb(bt_reject, callEventHandler);
       lv_obj_set_size(bt_reject, 76, 76);
       lv_obj_align(bt_reject, nullptr, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
       label_reject = lv_label_create(bt_reject, nullptr);
@@ -332,7 +325,7 @@ Notifications::NotificationItem::NotificationItem(const char* title,
 
       bt_mute = lv_btn_create(container, nullptr);
       bt_mute->user_data = this;
-      lv_obj_set_event_cb(bt_mute, CallEventHandler);
+      lv_obj_set_event_cb(bt_mute, callEventHandler);
       lv_obj_set_size(bt_mute, 76, 76);
       lv_obj_align(bt_mute, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
       label_mute = lv_label_create(bt_mute, nullptr);
@@ -342,13 +335,8 @@ Notifications::NotificationItem::NotificationItem(const char* title,
   }
 }
 
-void Notifications::NotificationItem::OnCallButtonEvent(lv_obj_t* obj, lv_event_t event) {
-  if (event != LV_EVENT_CLICKED) {
-    return;
-  }
-
+void Notifications::NotificationItem::onCallButtonEvent(lv_obj_t* obj) {
   System::SystemTask::displayApp->motorController.StopRinging();
-
   if (obj == bt_accept) {
     System::SystemTask::displayApp->systemTask->nimbleController.alertService.AcceptIncomingCall();
   } else if (obj == bt_reject) {
@@ -357,6 +345,11 @@ void Notifications::NotificationItem::OnCallButtonEvent(lv_obj_t* obj, lv_event_
     System::SystemTask::displayApp->systemTask->nimbleController.alertService.MuteIncomingCall();
   }
   running = false;
+}
+
+void Notifications::NotificationItem::callEventHandler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED)
+    static_cast<Notifications::NotificationItem*>(obj->user_data)->onCallButtonEvent(obj);
 }
 
 Notifications::NotificationItem::~NotificationItem() {

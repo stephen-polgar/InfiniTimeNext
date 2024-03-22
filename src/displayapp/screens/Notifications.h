@@ -2,16 +2,15 @@
 
 #include "Screen.h"
 #include "components/ble/NotificationManager.h"
-#include "components/motor/MotorController.h"  // TODO : remove but required for build in simulator
+#include "components/motor/MotorController.h" // TODO : remove but required for build in simulator
 #include <memory>
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-
       class Notifications : public Screen {
       public:
-        explicit Notifications(Apps id);
+        explicit Notifications();
         ~Notifications() override;
 
         void Load() override;
@@ -37,9 +36,9 @@ namespace Pinetime {
             return running;
           }
 
-          void OnCallButtonEvent(lv_obj_t*, lv_event_t event);
-
         private:
+          static void callEventHandler(lv_obj_t* obj, lv_event_t event);
+          void onCallButtonEvent(lv_obj_t*);
           lv_obj_t* container;
           lv_obj_t* subject_container;
           lv_obj_t* bt_accept;
@@ -53,7 +52,7 @@ namespace Pinetime {
 
       private:
         std::unique_ptr<NotificationItem> currentItem;
-        Controllers::NotificationManager::Notification::Id currentId;
+        uint8_t currentId;
         bool validDisplay;
         bool afterDismissNextMessageFromAbove;
 
@@ -63,7 +62,7 @@ namespace Pinetime {
 
         static const TickType_t timeoutLength = pdMS_TO_TICKS(7000);
         bool interacted;
-
+        bool previewMode;
         bool dismissingNotification;
 
         lv_task_t* taskRefresh = NULL;

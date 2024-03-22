@@ -8,7 +8,7 @@ constexpr ble_uuid16_t CurrentTimeClient::ctsServiceUuid;
 constexpr ble_uuid16_t CurrentTimeClient::currentTimeCharacteristicUuid;
 
 namespace {
-  int OnDiscoveryEventCallback(uint16_t conn_handle, const struct ble_gatt_error* error, const struct ble_gatt_svc* service, void* arg) {
+  int onDiscoveryEventCallback(uint16_t conn_handle, const struct ble_gatt_error* error, const struct ble_gatt_svc* service, void* arg) {
     auto client = static_cast<CurrentTimeClient*>(arg);
     return client->OnDiscoveryEvent(conn_handle, error, service);
   }
@@ -90,5 +90,5 @@ void CurrentTimeClient::Reset() {
 
 void CurrentTimeClient::Discover(uint16_t connectionHandle, std::function<void(uint16_t)> onServiceDiscovered) {
   this->onServiceDiscovered = onServiceDiscovered;
-  ble_gattc_disc_svc_by_uuid(connectionHandle, &ctsServiceUuid.u, OnDiscoveryEventCallback, this);
+  ble_gattc_disc_svc_by_uuid(connectionHandle, &ctsServiceUuid.u, onDiscoveryEventCallback, this);
 }

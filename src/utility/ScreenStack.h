@@ -20,6 +20,7 @@ namespace Pinetime {
       Screen* Top();
       bool Empty();
       void DeleteAll(Applications::Apps id);
+      Screen* Get(Applications::Apps id);
 
     private:
       std::array<Screen*, N> elementArray;
@@ -35,6 +36,23 @@ namespace Pinetime {
 #else
       return stackPointer ? elementArray[--stackPointer] : NULL;
 #endif
+    }
+
+    template <uint8_t N>
+    Screen* ScreenStack<N>::Get(Applications::Apps id) {
+      Screen* screen = NULL;
+      uint8_t i = stackPointer;
+      while (i) {
+        if (id == elementArray[--i]->Id) {
+          screen = elementArray[i];
+          while (i < stackPointer) {
+            elementArray[i] = elementArray[++i];
+          }
+          stackPointer--;
+          break;
+        }
+      }
+      return screen;
     }
 
     template <uint8_t N>
@@ -56,7 +74,7 @@ namespace Pinetime {
 #endif
       while (stackPointer) {
         delete elementArray[--stackPointer];
-      }      
+      }
     }
 
     template <uint8_t N>

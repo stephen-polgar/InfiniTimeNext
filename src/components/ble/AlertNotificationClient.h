@@ -7,18 +7,10 @@
 #undef max
 #undef min
 
-
 namespace Pinetime {
-  namespace Controllers {    
+  namespace Controllers {
     class AlertNotificationClient : public BleClient {
-    public:     
-      bool OnDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service);
-      int OnCharacteristicsDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_chr* characteristic);
-      int OnNewAlertSubcribe(uint16_t connectionHandle, const ble_gatt_error* error);
-      int OnDescriptorDiscoveryEventCallback(uint16_t connectionHandle,
-                                             const ble_gatt_error* error,
-                                             uint16_t characteristicValueHandle,
-                                             const ble_gatt_dsc* descriptor);
+    public:
       void OnNotification(ble_gap_event* event);
       void Reset();
       void Discover(uint16_t connectionHandle, std::function<void(uint16_t)> lambda) override;
@@ -39,6 +31,27 @@ namespace Pinetime {
       static constexpr ble_uuid16_t unreadAlertStatusUuid {.u {.type = BLE_UUID_TYPE_16}, .value = unreadAlertStatusId};
       static constexpr ble_uuid16_t controlPointUuid {.u {.type = BLE_UUID_TYPE_16}, .value = controlPointId};
 
+      bool onDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_svc* service);
+      int onCharacteristicsDiscoveryEvent(uint16_t connectionHandle, const ble_gatt_error* error, const ble_gatt_chr* characteristic);
+      int onNewAlertSubcribe(uint16_t connectionHandle, const ble_gatt_error* error);
+      int onDescriptorDiscoveryEventCallback(uint16_t connectionHandle,
+                                             const ble_gatt_error* error,
+                                             uint16_t characteristicValueHandle,
+                                             const ble_gatt_dsc* descriptor);
+
+      static int
+      onDiscoveryEventCallback(uint16_t conn_handle, const struct ble_gatt_error* error, const struct ble_gatt_svc* service, void* arg);
+      static int onAlertNotificationCharacteristicDiscoveredCallback(uint16_t conn_handle,
+                                                                     const struct ble_gatt_error* error,
+                                                                     const struct ble_gatt_chr* chr,
+                                                                     void* arg);
+      static int onAlertNotificationDescriptorDiscoveryEventCallback(uint16_t conn_handle,
+                                                                     const struct ble_gatt_error* error,
+                                                                     uint16_t chr_val_handle,
+                                                                     const struct ble_gatt_dsc* dsc,
+                                                                     void* arg);
+      static int
+      newAlertSubcribeCallback(uint16_t conn_handle, const struct ble_gatt_error* error, struct ble_gatt_attr* /*attr*/, void* arg);
       uint16_t ansStartHandle = 0;
       uint16_t ansEndHandle = 0;
       uint16_t supportedNewAlertCategoryHandle = 0;
@@ -48,7 +61,7 @@ namespace Pinetime {
       uint16_t newAlertDefHandle = 0;
       uint16_t unreadAlertStatusHandle = 0;
       uint16_t controlPointHandle = 0;
-      bool isDiscovered = false;    
+      bool isDiscovered = false;
       std::function<void(uint16_t)> onServiceDiscovered;
       bool isCharacteristicDiscovered = false;
       bool isDescriptorFound = false;

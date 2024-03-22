@@ -8,11 +8,6 @@ constexpr ble_uuid16_t AlertNotificationService::ansUuid;
 constexpr ble_uuid16_t AlertNotificationService::ansCharUuid;
 constexpr ble_uuid128_t AlertNotificationService::notificationEventUuid;
 
-int AlertNotificationCallback(uint16_t /*conn_handle*/, uint16_t /*attr_handle*/, struct ble_gatt_access_ctxt* ctxt, void* arg) {
-  auto anService = static_cast<AlertNotificationService*>(arg);
-  return anService->OnAlert(ctxt);
-}
-
 void AlertNotificationService::Init() {
   int res;
   res = ble_gatts_count_cfg(serviceDefinition);
@@ -23,9 +18,9 @@ void AlertNotificationService::Init() {
 }
 
 AlertNotificationService::AlertNotificationService()
-  : characteristicDefinition {{.uuid = &ansCharUuid.u, .access_cb = AlertNotificationCallback, .arg = this, .flags = BLE_GATT_CHR_F_WRITE},
+  : characteristicDefinition {{.uuid = &ansCharUuid.u, .access_cb = alertNotificationCallback, .arg = this, .flags = BLE_GATT_CHR_F_WRITE},
                               {.uuid = &notificationEventUuid.u,
-                               .access_cb = AlertNotificationCallback,
+                               .access_cb = alertNotificationCallback,
                                .arg = this,
                                .flags = BLE_GATT_CHR_F_NOTIFY,
                                .val_handle = &eventHandle},
@@ -39,12 +34,11 @@ AlertNotificationService::AlertNotificationService()
     }{
 }
 
-int AlertNotificationService::OnAlert(struct ble_gatt_access_ctxt* ctxt) {
+int AlertNotificationService::onAlert(struct ble_gatt_access_ctxt* ctxt) {
   if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
-    constexpr size_t stringTerminatorSize = 1; // end of string '\0'
-    constexpr size_t headerSize = 3;
-    const auto maxMessageSize {NotificationManager::MaximumMessageSize()};
-    const auto maxBufferSize {maxMessageSize + headerSize};
+    constexpr uint8_t stringTerminatorSize = 1; // end of string '\0'
+    constexpr uint8_t headerSize = 3;    
+    const uint8_t maxBufferSize = NotificationManager::MaximumMessageSize + headerSize;
 
     // Ignore notifications with empty message
     const auto packetLen = OS_MBUF_PKTLEN(ctxt->om);
@@ -52,8 +46,8 @@ int AlertNotificationService::OnAlert(struct ble_gatt_access_ctxt* ctxt) {
       return 0;
     }
 
-    size_t bufferSize = std::min(packetLen + stringTerminatorSize, maxBufferSize);
-    auto messageSize = std::min(maxMessageSize, (bufferSize - headerSize));
+    uint8_t bufferSize = std::min(size_t(packetLen + stringTerminatorSize), size_t(maxBufferSize));
+    uint8_t messageSize = std::min(size_t(NotificationManager::MaximumMessageSize), size_t(bufferSize - headerSize));
     Categories category;
 
     NotificationManager::Notification notif;
@@ -70,14 +64,16 @@ int AlertNotificationService::OnAlert(struct ble_gatt_access_ctxt* ctxt) {
       default:
         notif.category = Controllers::NotificationManager::Categories::SimpleAlert;
         break;
-    }
-
-    auto event = System::Messages::OnNewNotification;
+    }   
     System::SystemTask::displayApp->notificationManager.Push(std::move(notif));
-    System::SystemTask::displayApp->systemTask->PushMessage(event);
+    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::OnNewNotification);
   }
   return 0;
 }
+int AlertNotificationService::alertNotificationCallback(uint16_t /*conn_handle*/, uint16_t /*attr_handle*/, struct ble_gatt_access_ctxt* ctxt, void* arg) {
+  return static_cast<AlertNotificationService*>(arg)->onAlert(ctxt);
+}
+
 
 void AlertNotificationService::AcceptIncomingCall() {
   auto response = IncomingCallResponses::Answer;
