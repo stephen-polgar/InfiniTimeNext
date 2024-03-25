@@ -1,8 +1,9 @@
 #pragma once
 
+#include <FreeRTOS.h>
+#include <timers.h>
 #include "Screen.h"
 #include "components/ble/NotificationManager.h"
-#include "components/motor/MotorController.h" // TODO : remove but required for build in simulator
 #include <memory>
 
 namespace Pinetime {
@@ -10,12 +11,11 @@ namespace Pinetime {
     namespace Screens {
       class Notifications : public Screen {
       public:
-        explicit Notifications();
+        explicit Notifications(Apps id);
         ~Notifications() override;
 
         void Load() override;
         bool UnLoad() override;
-        void Refresh() override;
         bool OnTouchEvent(Applications::TouchEvents event) override;
 
         class NotificationItem {
@@ -33,8 +33,8 @@ namespace Pinetime {
           }
 
         private:
-          static void callEventHandler(lv_obj_t* obj, lv_event_t event);
           void onCallButtonEvent(lv_obj_t*);
+          static void callEventHandler(lv_obj_t* obj, lv_event_t event);
           lv_obj_t* container;
           lv_obj_t* subject_container;
           lv_obj_t* bt_accept;
@@ -47,11 +47,11 @@ namespace Pinetime {
         };
 
       private:
-        
+        void Refresh() override;
+        void load(Controllers::NotificationManager::Notification& notification, FullRefreshDirections direction);
         void dismissToBlack();
         void onPreviewInteraction();
-        void onPreviewDismiss(bool remove = true);
-        bool onSwipe(bool right);
+        void onPreviewDismiss();
 
         std::unique_ptr<NotificationItem> currentItem;
         uint8_t currentId;
@@ -61,12 +61,11 @@ namespace Pinetime {
         lv_point_t timeoutLinePoints[2];
         lv_obj_t* timeoutLine;
         TickType_t timeoutTickCountStart;
+        void deleteTimeOut();
 
         static const TickType_t timeoutLength = pdMS_TO_TICKS(7000);
         bool interacted;
-        bool previewMode;
         bool dismissingNotification;
-
         lv_task_t* taskRefresh = NULL;
       };
     }

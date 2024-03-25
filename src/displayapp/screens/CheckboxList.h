@@ -10,7 +10,7 @@ namespace Pinetime {
     namespace Screens {
       class CheckboxList : public Screen {
       public:
-        static constexpr size_t MaxItems = 4;
+        static constexpr uint8_t MaxItems = 4;
 
         struct Item {
           const char* name;
@@ -21,26 +21,25 @@ namespace Pinetime {
                      const uint8_t numScreens,
                      const char* optionsTitle,
                      const char* optionsSymbol,
-                     uint32_t originalValue,
-                     std::function<void(uint32_t)> OnValueChanged,
-                     std::array<Item, MaxItems> options);
+                     uint8_t originalValue,
+                     std::function<void(uint8_t)> OnValueChanged,
+                     std::array<Item, MaxItems> options,
+                     Widgets::PageIndicator& pageIndicator);
         ~CheckboxList() override;
         void Load() override;
         bool UnLoad() override;
 
       private:
-        const uint8_t screenID;
-        std::function<void(uint32_t)> OnValueChanged;
+        const uint8_t screenID, numScreens;
+        std::function<void(uint8_t)> OnValueChanged;
         std::array<Item, MaxItems> options;
         std::array<lv_obj_t*, MaxItems> cbOption;
-        uint32_t value;
+        uint8_t value, originalValue;
 
-        const uint8_t numScreens;
         const char* optionsTitle;
         const char* optionsSymbol;
-        uint32_t originalValue;
 
-        Widgets::PageIndicator pageIndicator;
+        Widgets::PageIndicator& pageIndicator;
         void updateSelected(lv_obj_t* object, lv_event_t event);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
       };

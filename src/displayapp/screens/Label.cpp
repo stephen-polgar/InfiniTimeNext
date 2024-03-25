@@ -1,6 +1,6 @@
 #include "Label.h"
 
-//#define Log
+// #define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -8,7 +8,10 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Label::Label(uint8_t screenID, uint8_t numScreens) : pageIndicator(screenID, numScreens) {
+// Widgets::PageIndicator Label::pageIndicator;
+
+Label::Label(uint8_t screenID, uint8_t numScreens, Widgets::PageIndicator& pageIndicator)
+  : screenID {screenID}, numScreens {numScreens}, pageIndicator {pageIndicator} {
 #ifdef Log
   NRF_LOG_INFO("Label created %d", this);
 #endif
@@ -19,7 +22,7 @@ void Label::Load() {
   NRF_LOG_INFO("Label:Load %d", this);
 #endif
   running = true;
-  pageIndicator.Create();
+  pageIndicator.Create(screenID, numScreens);
 }
 
 bool Label::UnLoad() {

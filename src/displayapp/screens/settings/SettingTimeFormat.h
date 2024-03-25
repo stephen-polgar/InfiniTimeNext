@@ -17,6 +17,7 @@ namespace Pinetime {
         bool UnLoad() override;
 
       private:
+         Widgets::PageIndicator pageIndicator;
         CheckboxList checkboxList;
 
         struct Option {
@@ -30,7 +31,7 @@ namespace Pinetime {
         }};
 
         std::array<CheckboxList::Item, CheckboxList::MaxItems> CreateOptionArray();
-        uint32_t GetDefaultOption(Controllers::Settings::ClockType currentOption);
+        uint8_t GetDefaultOption(Controllers::Settings::ClockType currentOption);
       };
     }
   }

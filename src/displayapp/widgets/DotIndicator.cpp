@@ -3,10 +3,7 @@
 
 using namespace Pinetime::Applications::Widgets;
 
-DotIndicator::DotIndicator(uint8_t nCurrentScreen, uint8_t nScreens) : nCurrentScreen {nCurrentScreen}, nScreens {nScreens} {
-}
-
-void DotIndicator::Create() {
+void DotIndicator::Create(uint8_t nCurrentScreen, uint8_t nScreens) {
   lv_obj_t* dotIndicator[nScreens];
   static constexpr uint8_t dotSize = 12;
 

@@ -16,16 +16,16 @@ namespace Pinetime {
         void Load() override;
         bool UnLoad() override;
 
-        bool OnTouchEvent(Pinetime::Applications::TouchEvents event) override;
+        bool OnTouchEvent(Applications::TouchEvents event) override;
 
       private:
-        auto CreateScreenList() const;
-        std::unique_ptr<Screen> CreateScreen(unsigned int screenNum) const;
+      
+        Screen* CreateScreen(uint8_t screenNum);
 
-        static constexpr int entriesPerScreen = 4;
+        static constexpr uint8_t entriesPerScreen = 4;
 
         // Increment this when more space is needed
-        static constexpr int nScreens = 4;
+        static constexpr uint8_t nScreens = 3;
 
         static constexpr std::array<List::Applications, entriesPerScreen * nScreens> entries {
           {{Symbols::sun, "Display", Apps::SettingDisplay},
@@ -39,7 +39,9 @@ namespace Pinetime {
            {Symbols::clock, "Time format", Apps::SettingTimeFormat},
            {Symbols::cloudSunRain, "Weather", Apps::SettingWeatherFormat},
            {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
+
         ScreenList<nScreens> screens;
+        Widgets::PageIndicator pageIndicator;
       };
     }
   }

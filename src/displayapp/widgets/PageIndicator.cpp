@@ -3,10 +3,7 @@
 
 using namespace Pinetime::Applications::Widgets;
 
-PageIndicator::PageIndicator(uint8_t nCurrentScreen, uint8_t nScreens) : nCurrentScreen {nCurrentScreen}, nScreens {nScreens} {
-}
-
-void PageIndicator::Create() {
+void PageIndicator::Create(uint8_t nCurrentScreen, uint8_t nScreens) {
   pageIndicatorBasePoints[0].x = LV_HOR_RES - 1;
   pageIndicatorBasePoints[0].y = 0;
   pageIndicatorBasePoints[1].x = LV_HOR_RES - 1;

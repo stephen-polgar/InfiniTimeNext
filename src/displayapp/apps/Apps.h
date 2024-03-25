@@ -10,7 +10,8 @@ namespace Pinetime {
       Clock,
       SysInfo,
       FirmwareUpdate,
-      FirmwareValidation,     
+      FirmwareValidation,
+      NotificationsPreview,
       Notifications,
       Timer,
       TimerSet,
@@ -55,14 +56,14 @@ namespace Pinetime {
 
     template <Apps... As>
     struct TypeList {
-      static constexpr size_t Count = sizeof...(As);
+      static constexpr uint8_t Count = sizeof...(As);
     };
 
     using UserAppTypes = TypeList<Apps::StopWatch, Apps::Alarm, Apps::Timer, Apps::Steps, Apps::HeartRate, Apps::Weather, Apps::Music, Apps::Motion, Apps::Navigation>;
 
     template <WatchFace... Ws>
     struct WatchFaceTypeList {
-      static constexpr size_t Count = sizeof...(Ws);
+      static constexpr uint8_t Count = sizeof...(Ws);
     };
 
     using UserWatchFaceTypes = WatchFaceTypeList<WatchFace::Digital, WatchFace::Analog, WatchFace::Terminal, WatchFace::CasioStyleG7710>;

@@ -31,6 +31,7 @@ sdk
 src/Version.h
 docker/post_build.sh
 Testing/Temporary/
+src/libs/
 
 # Linux
 **/.directory

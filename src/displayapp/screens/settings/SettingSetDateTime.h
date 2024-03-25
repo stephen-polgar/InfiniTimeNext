@@ -1,6 +1,7 @@
 #pragma once
 
 #include "displayapp/screens/ScreenList.h"
+#include "displayapp/widgets/DotIndicator.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -16,12 +17,11 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
         void Advance();
         void Quit();
+        Widgets::DotIndicator dotIndicator;
 
       private:
         bool loaded = false;
         ScreenList<2> screens;
-        std::unique_ptr<Screen> screenSetDate();
-        std::unique_ptr<Screen> screenSetTime();       
       };
     }
   }

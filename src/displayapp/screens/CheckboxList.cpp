@@ -8,18 +8,16 @@ CheckboxList::CheckboxList(const uint8_t screenID,
                            const uint8_t numScreens,
                            const char* optionsTitle,
                            const char* optionsSymbol,
-                           uint32_t originalValue,
-                           std::function<void(uint32_t)> OnValueChanged,
-                           std::array<Item, MaxItems> options)
+                           uint8_t originalValue,
+                           std::function<void(uint8_t)> OnValueChanged,
+                           std::array<Item, MaxItems> options, Widgets::PageIndicator& pageIndicator)
   : screenID {screenID},
     numScreens {numScreens},
     optionsTitle {optionsTitle},
     optionsSymbol {optionsSymbol},
     originalValue {originalValue},
     OnValueChanged {std::move(OnValueChanged)},
-    options {options},
-    value {originalValue},
-    pageIndicator(screenID, numScreens) {
+    options {options},value {originalValue}, pageIndicator {pageIndicator} {
 }
 
 void CheckboxList::Load() {
@@ -28,7 +26,7 @@ void CheckboxList::Load() {
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
 
   if (numScreens > 1) {
-    pageIndicator.Create();
+    pageIndicator.Create(screenID, numScreens);
   }
 
   lv_obj_t* container1 = lv_cont_create(lv_scr_act(), NULL);
@@ -54,7 +52,7 @@ void CheckboxList::Load() {
   lv_label_set_align(icon, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(icon, title, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
-  for (unsigned int i = 0; i < options.size(); i++) {
+  for (uint8_t i = 0; i < options.size(); i++) {
     if (strcmp(options[i].name, "")) {
       cbOption[i] = lv_checkbox_create(container1, NULL);
       lv_checkbox_set_text(cbOption[i], options[i].name);
@@ -65,7 +63,7 @@ void CheckboxList::Load() {
       lv_obj_set_event_cb(cbOption[i], event_handler);
       SetRadioButtonStyle(cbOption[i]);
 
-      if (static_cast<unsigned int>(originalValue - MaxItems * screenID) == i) {
+      if (static_cast<uint8_t>(originalValue - MaxItems * screenID) == i) {
         lv_checkbox_set_checked(cbOption[i], true);
       }
     }
@@ -91,7 +89,7 @@ CheckboxList::~CheckboxList() {
 
 void CheckboxList::updateSelected(lv_obj_t* object, lv_event_t event) {
   if (event == LV_EVENT_VALUE_CHANGED) {
-    for (unsigned int i = 0; i < options.size(); i++) {
+    for (uint8_t i = 0; i < options.size(); i++) {
       if (strcmp(options[i].name, "")) {
         if (object == cbOption[i]) {
           lv_checkbox_set_checked(cbOption[i], true);

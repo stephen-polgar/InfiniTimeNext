@@ -22,25 +22,21 @@ namespace Pinetime {
         static constexpr uint8_t screenNumber = 5;
 
       private:
+        Widgets::PageIndicator pageIndicator;
         static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
-
         ScreenList<screenNumber> screens;
 
         static bool sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs);
 
         class MemoryInfo : public Label {
         public:
-          MemoryInfo(uint8_t screenID) : Label(screenID, screenNumber) {
-          }
-
+          MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
           void Load() override;
         };
 
         class TasksScreen : public Label {
         public:
-          TasksScreen(uint8_t screenID) : Label(screenID, screenNumber) {
-          }
-
+          TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
           void Load() override;
 
         private:
@@ -51,7 +47,7 @@ namespace Pinetime {
 
         class HardverScreen : public Label {
         public:
-          HardverScreen(uint8_t screenID) : Label(screenID, screenNumber) {
+          HardverScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
             uptimeSeconds = uptimeSeconds % secondsInADay;
             uptimeHours = uptimeSeconds / secondsInAnHour;
             uptimeSeconds = uptimeSeconds % secondsInAnHour;
@@ -98,9 +94,17 @@ namespace Pinetime {
           }();
         };
 
+        class FirmwareScreen : public Label {
+        public:
+          FirmwareScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator)
+            : Label(screenID, SystemInfo::screenNumber, pageIndicator) {
+          }
+          void Load() override;
+        };
+
         class LicenseScreen : public Label {
         public:
-          LicenseScreen(uint8_t screenID) : Label(screenID, screenNumber) {
+          LicenseScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
           }
 
           void Load() override;

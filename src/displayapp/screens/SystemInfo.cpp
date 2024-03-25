@@ -8,6 +8,10 @@ using namespace Pinetime::Applications::Screens;
 extern int mallocFailedCount;
 extern int stackOverflowCount;
 
+SystemInfo::TasksScreen::TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator)
+  : Label(screenID, screenNumber, pageIndicator) {
+}
+
 void SystemInfo::TasksScreen::Load() {
   Label::Load();
   lv_obj_t* infoTask = lv_table_create(lv_scr_act(), nullptr);
@@ -96,52 +100,35 @@ void SystemInfo::HardverScreen::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
-class FirmwareScreen : public Label {
-public:
-  FirmwareScreen(uint8_t screenID) : Label(screenID, SystemInfo::screenNumber) {
-  }
+void SystemInfo::FirmwareScreen::Load() {
+  Label::Load();
+  lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_recolor(label, true);
+  lv_label_set_text_fmt(label,
+                        "#FFFF00 InfiniTimeNext#\n\n"
+                        "#808080 Custom V.# %ld.%ld.%ld\n"
+                        "#808080 Short Ref# %s\n"
+                        "#808080 Build date#\n"
+                        "%s\n"
+                        "%s\n\n"
+                        "#808080 Bootloader# %s",
+                        Pinetime::Version::Major(),
+                        Pinetime::Version::Minor(),
+                        Pinetime::Version::Patch(),
+                        Pinetime::Version::GitCommitHash(),
+                        __DATE__,
+                        __TIME__,
+                        Pinetime::BootloaderVersion::VersionString());
+  lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
+  lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+}
 
-  void Load() override {
-    Label::Load();
-    lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
-    lv_label_set_recolor(label, true);
-    lv_label_set_text_fmt(label,
-                          "#FFFF00 InfiniTimeNext#\n\n"
-                          "#808080 Custom V.# %ld.%ld.%ld\n"
-                          "#808080 Short Ref# %s\n"
-                          "#808080 Build date#\n"
-                          "%s\n"
-                          "%s\n\n"
-                          "#808080 Bootloader# %s",
-                          Pinetime::Version::Major(),
-                          Pinetime::Version::Minor(),
-                          Pinetime::Version::Patch(),
-                          Pinetime::Version::GitCommitHash(),
-                          __DATE__,
-                          __TIME__,
-                          Pinetime::BootloaderVersion::VersionString());
-    lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  }
-};
-
-SystemInfo::SystemInfo()
-  : Screen(Apps::SysInfo),
-    screens {{[this]() -> std::unique_ptr<Screen> {
-                return std::make_unique<MemoryInfo>(0);
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return std::make_unique<TasksScreen>(1);
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return std::make_unique<HardverScreen>(2);
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return std::make_unique<FirmwareScreen>(3);
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return std::make_unique<LicenseScreen>(4);
-              }}} {
+SystemInfo::SystemInfo() : Screen(Apps::SysInfo) {
+  screens.Add(new MemoryInfo(0, pageIndicator));
+  screens.Add(new TasksScreen(1, pageIndicator));
+  screens.Add(new HardverScreen(2, pageIndicator));
+  screens.Add(new FirmwareScreen(3, pageIndicator));
+  screens.Add(new LicenseScreen(4, pageIndicator));
 }
 
 void SystemInfo::Load() {
@@ -175,6 +162,9 @@ const char* SystemInfo::toString(const Controllers::MotionController::DeviceType
       return "???";
   }
   return "???";
+}
+
+SystemInfo::MemoryInfo::MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
 }
 
 void SystemInfo::MemoryInfo::Load() {

@@ -17,8 +17,7 @@ namespace Pinetime {
         Controllers::FirmwareValidator& validator;
         void onButtonEvent(lv_obj_t* object);
         static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
-        lv_obj_t* buttonValidate;
-        lv_obj_t* buttonReset = NULL;    
+        lv_obj_t* buttonValidate, *buttonReset;    
       };
     }
   }

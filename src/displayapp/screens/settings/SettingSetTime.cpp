@@ -15,7 +15,7 @@ SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTi
 
 void SettingSetTime::Load() {
   running = true;
-  dotIndicator.Create();
+  settingSetDateTime.dotIndicator.Create(1,2);
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current time");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);

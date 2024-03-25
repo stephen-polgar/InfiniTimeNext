@@ -16,7 +16,7 @@ namespace Pinetime {
           bool enabled;
         };
 
-        explicit Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications);
+        explicit Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications, Widgets::PageIndicator& pageIndicator);
 
         ~Tile() override;
         void Load() override;
@@ -24,19 +24,14 @@ namespace Pinetime {
 
       private:
         void Refresh() override;
-
-        void onValueChangedEvent(lv_obj_t* obj, uint32_t buttonId);
-
+        void onValueChangedEvent(lv_obj_t* obj, uint8_t buttonId);
         lv_task_t* taskUpdate;
-
         lv_obj_t* label_time;
         lv_obj_t* btnm1;
-        uint8_t screenID;
+        const uint8_t screenID, numScreens;
         std::array<Applications, 6> applications;
-
-        Widgets::PageIndicator pageIndicator;
+        Widgets::PageIndicator& pageIndicator;
         Widgets::StatusIcons statusIcons;
-
         const char* btnmMap[8];
         Pinetime::Applications::Apps apps[6];
       };

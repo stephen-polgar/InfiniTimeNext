@@ -4,18 +4,10 @@ using namespace Pinetime::Applications::Screens;
 
 constexpr std::array<List::Applications, Settings::entries.size()> Settings::entries;
 
-auto Settings::CreateScreenList() const {
-  std::array<std::function<std::unique_ptr<Screen>()>, nScreens> screens;
-  for (size_t i = 0; i < screens.size(); i++) {
-    screens[i] = [this, i]() -> std::unique_ptr<Screen> {
-      return CreateScreen(i);
-    };
+Settings::Settings() : Screen(Apps::Settings) {
+  for (uint8_t i = 0; i < nScreens; i++) {
+    screens.Add(CreateScreen(i));
   }
-  return screens;
-}
-
-Settings::Settings() : Screen(Apps::Settings),
-   screens {CreateScreenList(), System::SystemTask::displayApp->settingsController.GetSettingsMenu()} {
 }
 
 void Settings::Load() {
@@ -35,14 +27,14 @@ Settings::~Settings() {
   UnLoad();
 }
 
-bool Settings::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
+bool Settings::OnTouchEvent(Applications::TouchEvents event) {
   return screens.OnTouchEvent(event);
 }
 
-std::unique_ptr<Screen> Settings::CreateScreen(unsigned int screenNum) const {
+Screen* Settings::CreateScreen(uint8_t screenNum)  {
   std::array<List::Applications, entriesPerScreen> screens;
   for (int i = 0; i < entriesPerScreen; i++) {
     screens[i] = entries[screenNum * entriesPerScreen + i];
   }
-  return std::make_unique<Screens::List>(screenNum, nScreens, screens);
+  return new Screens::List(screenNum, nScreens, screens, pageIndicator);
 }

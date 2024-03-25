@@ -55,8 +55,7 @@ void FirmwareValidation::Load() {
 }
 
 bool FirmwareValidation::UnLoad() {
-  if (buttonReset) {
-    buttonReset = NULL;
+  if (running) {   
     running = false;
     lv_obj_clean(lv_scr_act());
   }
@@ -73,7 +72,7 @@ void FirmwareValidation::onButtonEvent(lv_obj_t* object) {
   } else if (object == buttonReset) {
     validator.Reset();
   }
-   running = false;
+  UnLoad();
 }
 
 void FirmwareValidation::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {

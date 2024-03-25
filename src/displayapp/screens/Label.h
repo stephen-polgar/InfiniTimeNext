@@ -6,16 +6,15 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-
       class Label : public Screen {
       public:
-        Label(uint8_t screenID, uint8_t numScreens);
+        Label(uint8_t screenID, uint8_t numScreens, Widgets::PageIndicator& pageIndicator);
         virtual ~Label() override;
         void Load() override;
         bool UnLoad() override;
-
       private:
-        Widgets::PageIndicator pageIndicator;
+        uint8_t screenID, numScreens;
+        Widgets::PageIndicator& pageIndicator;
       };
     }
   }

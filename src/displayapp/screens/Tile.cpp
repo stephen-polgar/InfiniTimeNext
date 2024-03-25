@@ -5,8 +5,8 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Tile::Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications)
-  : screenID {screenID}, applications {std::move(applications)}, pageIndicator(screenID, numScreens) {
+Tile::Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications, Widgets::PageIndicator& pageIndicator)
+  : screenID {screenID}, applications {std::move(applications)},  numScreens {numScreens}, pageIndicator {pageIndicator} {
   taskUpdate = NULL;
 }
 
@@ -20,7 +20,7 @@ void Tile::Load() {
   lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_time, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
-  pageIndicator.Create();
+  pageIndicator.Create(screenID, numScreens);
 
   uint8_t btIndex = 0;
   for (uint8_t i = 0; i < 6; i++) {
@@ -91,7 +91,7 @@ void Tile::Refresh() {
   statusIcons.Update();
 }
 
-void Tile::onValueChangedEvent(lv_obj_t* obj, uint32_t buttonId) {
+void Tile::onValueChangedEvent(lv_obj_t* obj, uint8_t buttonId) {
   if (obj == btnm1) {
     System::SystemTask::displayApp->StartApp(apps[buttonId]);
     running = false;

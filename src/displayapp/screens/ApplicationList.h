@@ -3,7 +3,6 @@
 #include "ScreenList.h"
 #include "Tile.h"
 #include <array>
-#include <memory>
 
 namespace Pinetime {
   namespace Applications {
@@ -17,15 +16,11 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-        auto CreateScreenList() const;
-        std::unique_ptr<Screen> CreateScreen(unsigned int screenNum) const;
-
+        Screen* CreateScreen(uint8_t screenNum);
         std::array<Tile::Applications, UserAppTypes::Count> apps;
-
-        static constexpr int appsPerScreen = 6;
-
-        static constexpr int nScreens = UserAppTypes::Count > 0 ? (UserAppTypes::Count - 1) / appsPerScreen + 1 : 1;
-
+        static constexpr uint8_t appsPerScreen = 6;
+        static constexpr uint8_t nScreens = UserAppTypes::Count > 0 ? (UserAppTypes::Count - 1) / appsPerScreen + 1 : 1;
+        Widgets::PageIndicator pageIndicator;
         ScreenList<nScreens> screens;
       };
     }

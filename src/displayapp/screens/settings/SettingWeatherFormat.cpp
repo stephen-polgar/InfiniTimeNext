@@ -16,7 +16,7 @@ SettingWeatherFormat::SettingWeatherFormat()
         settings.SetWeatherFormat(options[index].weatherFormat);
         settings.SaveSettings();
       },
-      CreateOptionArray()) {
+      CreateOptionArray(), pageIndicator) {
 }
 
 void SettingWeatherFormat::Load() {
@@ -38,7 +38,7 @@ SettingWeatherFormat::~SettingWeatherFormat() {
 
 std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingWeatherFormat::CreateOptionArray() {
   std::array<Applications::Screens::CheckboxList::Item, CheckboxList::MaxItems> optionArray;
-  for (size_t i = 0; i < CheckboxList::MaxItems; i++) {
+  for (uint8_t i = 0; i < CheckboxList::MaxItems; i++) {
     if (i >= options.size()) {
       optionArray[i].name = "";
       optionArray[i].enabled = false;
@@ -50,8 +50,8 @@ std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingWeatherFormat::Cre
   return optionArray;
 }
 
-uint32_t SettingWeatherFormat::GetDefaultOption(Controllers::Settings::WeatherFormat currentOption) {
-  for (size_t i = 0; i < options.size(); i++) {
+uint8_t SettingWeatherFormat::GetDefaultOption(Controllers::Settings::WeatherFormat currentOption) {
+  for (uint8_t i = 0; i < options.size(); i++) {
     if (options[i].weatherFormat == currentOption) {
       return i;
     }

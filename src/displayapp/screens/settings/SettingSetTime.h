@@ -3,7 +3,6 @@
 #include "displayapp/screens/Screen.h"
 #include "SettingSetDateTime.h"
 #include "displayapp/widgets/Counter.h"
-#include "displayapp/widgets/DotIndicator.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -25,8 +24,7 @@ namespace Pinetime {
         lv_obj_t* btnSetTime;
         lv_obj_t* lblSetTime;
         Widgets::Counter hourCounter = Widgets::Counter(0, 23, jetbrains_mono_42);
-        Widgets::Counter minuteCounter = Widgets::Counter(0, 59, jetbrains_mono_42);
-        Widgets::DotIndicator dotIndicator{1, 2};
+        Widgets::Counter minuteCounter = Widgets::Counter(0, 59, jetbrains_mono_42);        
       };
     }
   }

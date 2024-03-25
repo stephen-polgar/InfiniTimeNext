@@ -4,8 +4,12 @@
 
 using namespace Pinetime::Applications::Screens;
 
-List::List(uint8_t screenID, uint8_t numScreens, std::array<Applications, MAXLISTITEMS>& applications)
-  : screenID {screenID}, applications {std::move(applications)}, pageIndicator(screenID, numScreens) {
+List::List(uint8_t screenID,
+           uint8_t numScreens,
+           std::array<Applications, MAXLISTITEMS>& applications,
+           Widgets::PageIndicator& pageIndicator)
+  : screenID {screenID}, applications {std::move(applications)}, numScreens {numScreens}, pageIndicator {pageIndicator} {
+  
 }
 
 void List::Load() {
@@ -15,12 +19,12 @@ void List::Load() {
 
   System::SystemTask::displayApp->settingsController.SetSettingsMenu(screenID);
 
-  pageIndicator.Create();
+  pageIndicator.Create(screenID, numScreens);
 
   lv_obj_t* container = lv_cont_create(lv_scr_act(), nullptr);
 
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-  static constexpr int innerPad = 4;
+  static constexpr uint8_t innerPad = 4;
   lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, innerPad);
   lv_obj_set_style_local_border_width(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);
 
@@ -29,7 +33,7 @@ void List::Load() {
   lv_obj_set_height(container, LV_VER_RES);
   lv_cont_set_layout(container, LV_LAYOUT_COLUMN_LEFT);
 
-  for (int i = 0; i < MAXLISTITEMS; i++) {
+  for (uint8_t i = 0; i < MAXLISTITEMS; i++) {
     apps[i] = applications[i].application;
     if (applications[i].application != Apps::None) {
 
@@ -73,7 +77,7 @@ List::~List() {
 
 void List::onButtonEvent(lv_obj_t* object, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
-    for (int i = 0; i < MAXLISTITEMS; i++) {
+    for (uint8_t i = 0; i < MAXLISTITEMS; i++) {
       if (apps[i] != Apps::None && object == itemApps[i]) {
         System::SystemTask::displayApp->StartApp(apps[i]);
         running = false;
@@ -86,4 +90,3 @@ void List::onButtonEvent(lv_obj_t* object, lv_event_t event) {
 void List::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
   (static_cast<List*>(obj->user_data))->onButtonEvent(obj, event);
 }
-

@@ -56,14 +56,14 @@ namespace Pinetime {
 
     template <Apps... As>
     struct TypeList {
-      static constexpr size_t Count = sizeof...(As);
+      static constexpr uint8_t Count = sizeof...(As);
     };
 
     using UserAppTypes = TypeList<@USERAPP_TYPES@>;
 
     template <WatchFace... Ws>
     struct WatchFaceTypeList {
-      static constexpr size_t Count = sizeof...(Ws);
+      static constexpr uint8_t Count = sizeof...(Ws);
     };
 
     using UserWatchFaceTypes = WatchFaceTypeList<@WATCHFACE_TYPES@>;

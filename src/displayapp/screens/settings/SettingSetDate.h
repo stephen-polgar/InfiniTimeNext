@@ -2,7 +2,6 @@
 
 #include "SettingSetDateTime.h"
 #include "displayapp/widgets/Counter.h"
-#include "displayapp/widgets/DotIndicator.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -13,9 +12,7 @@ namespace Pinetime {
         ~SettingSetDate()override;
 
         void Load() override;
-        bool UnLoad() override;
-
-        
+        bool UnLoad() override;        
 
       private:
         Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime;
@@ -29,8 +26,7 @@ namespace Pinetime {
 
         Widgets::Counter dayCounter = Widgets::Counter(1, 31, jetbrains_mono_bold_20);
         Widgets::Counter monthCounter = Widgets::Counter(1, 12, jetbrains_mono_bold_20);
-        Widgets::Counter yearCounter = Widgets::Counter(1970, 9999, jetbrains_mono_bold_20);
-         Widgets::DotIndicator dotIndicator{0, 2};
+        Widgets::Counter yearCounter = Widgets::Counter(1970, 9999, jetbrains_mono_bold_20);         
       };
     }
   }

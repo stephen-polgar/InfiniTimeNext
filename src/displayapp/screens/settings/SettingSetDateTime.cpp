@@ -8,14 +8,9 @@ bool SettingSetDateTime::OnTouchEvent(Pinetime::Applications::TouchEvents event)
   return screens.OnTouchEvent(event);
 }
 
-SettingSetDateTime::SettingSetDateTime()
-  : Screen(Apps::SettingSetDateTime),
-    screens {{[this]() -> std::unique_ptr<Screen> {
-                return screenSetDate();
-              },
-              [this]() -> std::unique_ptr<Screen> {
-                return screenSetTime();
-              }}} {
+SettingSetDateTime::SettingSetDateTime() : Screen(Apps::SettingSetDateTime) {
+    screens.Add(new Screens::SettingSetDate(*this));
+    screens.Add(new Screens::SettingSetTime(*this));           
 }
 
 void SettingSetDateTime::Load() {
@@ -30,14 +25,6 @@ bool SettingSetDateTime::UnLoad() {
     screens.UnLoad();
   }
   return true;
-}
-
-std::unique_ptr<Screen> SettingSetDateTime::screenSetDate() {
-  return std::make_unique<Screens::SettingSetDate>(*this);
-}
-
-std::unique_ptr<Screen> SettingSetDateTime::screenSetTime() { 
-  return std::make_unique<Screens::SettingSetTime>(*this);
 }
 
 SettingSetDateTime::~SettingSetDateTime() {

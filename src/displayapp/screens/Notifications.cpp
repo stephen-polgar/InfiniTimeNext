@@ -1,6 +1,5 @@
 #include "Notifications.h"
-#include "components/ble/MusicService.h"
-#include "components/ble/AlertNotificationService.h"
+#include "components/motor/MotorController.h"
 #include "systemtask/SystemTask.h"
 #include "Symbols.h"
 #include "displayapp/InfiniTimeTheme.h"
@@ -9,7 +8,7 @@ using namespace Pinetime::Applications::Screens;
 extern lv_font_t jetbrains_mono_extrabold_compressed;
 extern lv_font_t jetbrains_mono_bold_20;
 
-Notifications::Notifications() : Screen(Apps::Notifications) {
+Notifications::Notifications(Apps id) : Screen(id) {
 }
 
 void Notifications::Load() {
@@ -34,8 +33,7 @@ void Notifications::Load() {
     currentItem = std::make_unique<NotificationItem>();
     validDisplay = false;
   }
-  previewMode = notificationManager->NbNotifications() < 2;
-  if (previewMode) {
+  if (Id == Apps::NotificationsPreview) {
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
     if (notification.category == Controllers::NotificationManager::Categories::IncomingCall) {
       System::SystemTask::displayApp->motorController.StartRinging();
@@ -58,11 +56,18 @@ void Notifications::Load() {
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
 }
 
+void Notifications::deleteTimeOut() {
+  if (timeoutLine) {
+    lv_obj_del(timeoutLine);
+    timeoutLine = NULL;
+  }
+}
+
 bool Notifications::UnLoad() {
   if (taskRefresh) {
     lv_task_del(taskRefresh);
     taskRefresh = NULL;
-    currentItem.reset();
+    currentItem.reset(); 
     // make sure we stop any vibrations before exiting
     System::SystemTask::displayApp->motorController.StopRinging();
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
@@ -76,21 +81,18 @@ Notifications::~Notifications() {
 }
 
 void Notifications::Refresh() {
-  if (previewMode) {
-    if (timeoutLine) {
-      TickType_t tick = xTaskGetTickCount();
-      int32_t pos = LV_HOR_RES - ((tick - timeoutTickCountStart) / (timeoutLength / LV_HOR_RES));
-      if (pos <= 0) {
-        running = false;
-      } else {
-        timeoutLinePoints[1].x = pos;
-        lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
-      }
-
-    } else if (dismissingNotification) {
+  if (Id == Apps::NotificationsPreview && timeoutLine) {
+    TickType_t tick = xTaskGetTickCount();
+    int32_t pos = LV_HOR_RES - ((tick - timeoutTickCountStart) / (timeoutLength / LV_HOR_RES));
+    if (pos <= 0) {
       running = false;
-      currentItem = std::make_unique<NotificationItem>();
+    } else {
+      timeoutLinePoints[1].x = pos;
+      lv_line_set_points(timeoutLine, timeoutLinePoints, 2);
     }
+  } else if (Id == Apps::NotificationsPreview && dismissingNotification) {
+    running = false;
+    currentItem = std::make_unique<NotificationItem>();
   } else if (dismissingNotification) {
     dismissingNotification = false;
     auto notification = System::SystemTask::displayApp->notificationManager.Get(currentId);
@@ -98,18 +100,15 @@ void Notifications::Refresh() {
       notification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
     }
     currentId = notification.id;
-
     if (!notification.valid) {
       validDisplay = false;
     }
-
     currentItem.reset();
     if (afterDismissNextMessageFromAbove) {
       System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
     } else {
       System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
     }
-
     if (validDisplay) {
       uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
       currentItem = std::make_unique<NotificationItem>(notification.Title(),
@@ -127,10 +126,7 @@ void Notifications::Refresh() {
 void Notifications::onPreviewInteraction() {
   System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
   System::SystemTask::displayApp->motorController.StopRinging();
-  if (timeoutLine) {
-    lv_obj_del(timeoutLine);
-    timeoutLine = NULL;
-  }
+  deleteTimeOut();
 }
 
 void Notifications::dismissToBlack() {
@@ -143,82 +139,89 @@ void Notifications::dismissToBlack() {
   dismissingNotification = true;
 }
 
-void Notifications::onPreviewDismiss(bool remove) {
-  if (remove)
-    System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
-  if (timeoutLine) {
-    lv_obj_del(timeoutLine);
-    timeoutLine = NULL;
-  }
+void Notifications::onPreviewDismiss() {
+  System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
+  deleteTimeOut();
   dismissToBlack();
 }
 
-bool Notifications::onSwipe(bool right) {
-  if (validDisplay) {
-    auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
-    auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
-    afterDismissNextMessageFromAbove = previousMessage.valid;
-   if (right) System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
-    if (previousMessage.valid) {
-      currentId = previousMessage.id;
-    } else if (nextMessage.valid) {
-      currentId = nextMessage.id;
-    } else {
-      // don't update id, won't be found be refresh and try to load latest message or no message box
-    }
-    dismissToBlack();
-  }
-  return validDisplay;
+void Notifications::load(Controllers::NotificationManager::Notification& notification, FullRefreshDirections direction) {
+  validDisplay = true;
+  currentItem.reset();
+  System::SystemTask::displayApp->SetFullRefresh(direction);
+  currentItem = std::make_unique<NotificationItem>(notification.Title(),
+                                                   notification.Message(),
+                                                   System::SystemTask::displayApp->notificationManager.IndexOf(currentId) + 1,
+                                                   notification.category,
+                                                   System::SystemTask::displayApp->notificationManager.NbNotifications());
 }
 
-bool Notifications::OnTouchEvent(Applications::TouchEvents event) {
-  if (previewMode) {
-    if (!interacted && event == TouchEvents::Tap) {
-      interacted = true;
-      onPreviewInteraction();
-      return true;
+bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
+  if (Id == Apps::NotificationsPreview) {
+    switch (event) {
+      case TouchEvents::Tap:
+        if (!interacted) {
+          interacted = true;
+          onPreviewInteraction();
+          return true;
+        }
+        return false;
+      case TouchEvents::SwipeRight:
+        onPreviewDismiss();
+        break;
+      case TouchEvents::SwipeDown: {
+        Controllers::NotificationManager::Notification previousNotification;
+        if (validDisplay) {
+          previousNotification = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
+        } else {
+          previousNotification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
+        }
+        if (!previousNotification.valid) {
+          return true;
+        }
+        deleteTimeOut();
+        Id = Apps::Notifications;
+        currentId = previousNotification.id;
+        load(previousNotification, FullRefreshDirections::Down);
+      } break;
+      default:
+        return false;
     }
-    if (event == Applications::TouchEvents::SwipeRight) {
-      onPreviewDismiss();
-      return true;
-    }
-    if (event == Applications::TouchEvents::SwipeLeft) {
-      onPreviewDismiss(false);
-      return true;
-    }
-    return false;
+    return true;
   }
 
   switch (event) {
-    case Applications::TouchEvents::SwipeRight:
-      return onSwipe(true);
-    case Applications::TouchEvents::SwipeLeft:
-      return onSwipe(false);
-    case Applications::TouchEvents::SwipeDown: {
+    case TouchEvents::SwipeRight:
+      if (validDisplay) {
+        auto previousMessage = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
+        auto nextMessage = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
+        afterDismissNextMessageFromAbove = previousMessage.valid;
+        System::SystemTask::displayApp->notificationManager.Dismiss(currentId);
+        if (previousMessage.valid) {
+          currentId = previousMessage.id;
+        } else if (nextMessage.valid) {
+          currentId = nextMessage.id;
+        } else {
+          // don't update id, won't be found be refresh and try to load latest message or no message box
+        }
+        dismissToBlack();
+        return true;
+      }
+      return false;
+    case TouchEvents::SwipeDown: {
       Controllers::NotificationManager::Notification previousNotification;
       if (validDisplay) {
         previousNotification = System::SystemTask::displayApp->notificationManager.GetPrevious(currentId);
       } else {
         previousNotification = System::SystemTask::displayApp->notificationManager.GetLastNotification();
       }
-
       if (!previousNotification.valid) {
         return true;
       }
-
       currentId = previousNotification.id;
-      uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
-      validDisplay = true;
-      currentItem.reset();
-      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Down);
-      currentItem = std::make_unique<NotificationItem>(previousNotification.Title(),
-                                                       previousNotification.Message(),
-                                                       currentIdx + 1,
-                                                       previousNotification.category,
-                                                       System::SystemTask::displayApp->notificationManager.NbNotifications());
-    }
-      return true;
-    case Applications::TouchEvents::SwipeUp: {
+      load(previousNotification, FullRefreshDirections::Down);
+    } break;
+    case TouchEvents::SwipeUp: {
       Controllers::NotificationManager::Notification nextNotification;
       if (validDisplay) {
         nextNotification = System::SystemTask::displayApp->notificationManager.GetNext(currentId);
@@ -232,20 +235,12 @@ bool Notifications::OnTouchEvent(Applications::TouchEvents event) {
       }
 
       currentId = nextNotification.id;
-      uint8_t currentIdx = System::SystemTask::displayApp->notificationManager.IndexOf(currentId);
-      validDisplay = true;
-      currentItem.reset();
-      System::SystemTask::displayApp->SetFullRefresh(Screen::FullRefreshDirections::Up);
-      currentItem = std::make_unique<NotificationItem>(nextNotification.Title(),
-                                                       nextNotification.Message(),
-                                                       currentIdx + 1,
-                                                       nextNotification.category,
-                                                       System::SystemTask::displayApp->notificationManager.NbNotifications());
-    }
-      return true;
+      load(nextNotification, FullRefreshDirections::Up);
+    } break;
     default:
       return false;
   }
+  return true;
 }
 
 Notifications::NotificationItem::NotificationItem()

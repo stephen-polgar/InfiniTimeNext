@@ -16,7 +16,7 @@ SettingTimeFormat::SettingTimeFormat()
         settings.SetClockType(options[index].clockType);
         settings.SaveSettings();
       },
-      CreateOptionArray()) {
+      CreateOptionArray(), pageIndicator) {
 }
 
 void SettingTimeFormat::Load() {
@@ -50,8 +50,8 @@ std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingTimeFormat::Create
   return optionArray;
 }
 
-uint32_t SettingTimeFormat::GetDefaultOption(Controllers::Settings::ClockType currentOption) {
-  for (size_t i = 0; i < options.size(); i++) {
+uint8_t SettingTimeFormat::GetDefaultOption(Controllers::Settings::ClockType currentOption) {
+  for (uint8_t i = 0; i < options.size(); i++) {
     if (options[i].clockType == currentOption) {
       return i;
     }

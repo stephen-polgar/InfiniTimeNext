@@ -201,13 +201,18 @@ void DisplayApp::refresh() {
         //        Screens::Clock::BleConnectionStates::NotConnected);
         break;
       case Messages::NewNotification:
-        if (currentScreen->Id == Apps::Notifications) {
+        if (currentScreen->Id == Apps::NotificationsPreview || currentScreen->Id == Apps::Notifications) {
           currentScreen->UnLoad();
+          currentScreen->Id = Apps::NotificationsPreview;
           currentScreen->Load();
         } else {
-          Screen* screen = screenStack.Get(Apps::Notifications);
+          Screen* screen = screenStack.Get(Apps::NotificationsPreview);
           if (!screen)
-            screen = new Notifications();
+            screen = screenStack.Get(Apps::Notifications);
+          if (screen)
+            screen->Id = Apps::NotificationsPreview;
+          else
+            screen = new Notifications(Apps::NotificationsPreview);
           loadNewScreen(screen, Screen::FullRefreshDirections::Down);
         }
         break;
@@ -392,16 +397,18 @@ void DisplayApp::loadNewScreen(Screens::Screen* screen, Screen::FullRefreshDirec
 void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction) {
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
-  Screens::Screen* screen;
+  Screens::Screen* screen = (app != Apps::None && app != Apps::Clock) ? screenStack.Get(app) : NULL;
 
   switch (app) {
     case Apps::Launcher: {
-      std::array<Screens::Tile::Applications, UserAppTypes::Count> apps;
-      int i = 0;
-      for (const auto& userApp : userApps) {
-        apps[i++] = Screens::Tile::Applications {userApp.icon, userApp.app, true};
+      if (!screen) {
+        std::array<Screens::Tile::Applications, UserAppTypes::Count> apps;
+        int i = 0;
+        for (const auto& userApp : userApps) {
+          apps[i++] = Screens::Tile::Applications {userApp.icon, userApp.app, true};
+        }
+        screen = new Screens::ApplicationList(std::move(apps));
       }
-      screen = new Screens::ApplicationList(std::move(apps));
     } break;
     case Apps::Clock: {
       screenStack.DeleteAll(Apps::Clock);
@@ -416,83 +423,89 @@ void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction
       }
     } break;
     case Apps::Error:
-      screen = new Screens::Error(bootError);
+      if (!screen)
+        screen = new Screens::Error(bootError);
       break;
     case Apps::FirmwareValidation:
-      screen = new Screens::FirmwareValidation(validator);
+      if (!screen)
+        screen = new Screens::FirmwareValidation(validator);
       break;
     case Apps::FirmwareUpdate:
-      screen = new Screens::FirmwareUpdate(bleController);
+      if (!screen)
+        screen = new Screens::FirmwareUpdate(bleController);
       break;
     case Apps::PassKey:
-      screen = new Screens::PassKey(bleController.GetPairingKey());
-      break;
-    case Apps::Notifications:
-      screen = screenStack.Get(app);
       if (!screen)
-        screen = new Screens::Notifications();
+        screen = new Screens::PassKey(bleController.GetPairingKey());
+      break;
+    case Apps::NotificationsPreview:
+    case Apps::Notifications:
+      if (!screen)
+        screen = new Screens::Notifications(app);
       break;
     case Apps::QuickSettings:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new Screens::QuickSettings();
       break;
     case Apps::Settings:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new Screens::Settings();
       break;
     case Apps::SettingWatchFace: {
-      std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
-      int i = 0;
-      for (const auto& userWatchFace : userWatchFaces) {
-        items[i++] = Screens::SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
+      if (!screen) {
+        std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
+        int i = 0;
+        for (const auto& userWatchFace : userWatchFaces) {
+          items[i++] = Screens::SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
+        }
+        screen = new Screens::SettingWatchFace(std::move(items));
       }
-      screen = new Screens::SettingWatchFace(std::move(items));
     } break;
     case Apps::SettingTimeFormat:
-      screen = new Screens::SettingTimeFormat();
+      if (!screen)
+        screen = new Screens::SettingTimeFormat();
       break;
     case Apps::SettingWeatherFormat:
-      screen = new Screens::SettingWeatherFormat();
+      if (!screen)
+        screen = new Screens::SettingWeatherFormat();
       break;
     case Apps::SettingWakeUp:
-      screen = new Screens::SettingWakeUp();
+      if (!screen)
+        screen = new Screens::SettingWakeUp();
       break;
     case Apps::SettingDisplay:
-      screen = new Screens::SettingDisplay();
+      if (!screen)
+        screen = new Screens::SettingDisplay();
       break;
     case Apps::SettingSteps:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new Screens::SettingSteps();
       break;
     case Apps::SettingSetDateTime:
-      screen = new Screens::SettingSetDateTime();
+      if (!screen)
+        screen = new Screens::SettingSetDateTime();
       break;
     case Apps::SettingShakeThreshold:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new SettingShakeThreshold();
       break;
     case Apps::SettingBluetooth:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new Screens::SettingBluetooth();
       break;
     case Apps::BatteryInfo:
-      screen = new Screens::BatteryInfo();
+      if (!screen)
+        screen = new Screens::BatteryInfo();
       break;
     case Apps::SysInfo:
-      screen = new Screens::SystemInfo();
+      if (!screen)
+        screen = new Screens::SystemInfo();
       break;
     case Apps::FlashLight:
-      screen = screenStack.Get(app);
       if (!screen)
         screen = new Screens::FlashLight();
       break;
     default: {
-      screen = screenStack.Get(app);
       if (!screen) {
         const auto* d = std::find_if(userApps.begin(), userApps.end(), [app](const AppDescription& appDescription) {
           return appDescription.app == app;
