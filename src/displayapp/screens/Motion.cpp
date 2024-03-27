@@ -1,4 +1,5 @@
 #include "Motion.h"
+#ifdef UseMotion
 #include "systemtask/SystemTask.h"
 #include "components/motion/MotionController.h"
 #include "displayapp/InfiniTimeTheme.h"
@@ -73,3 +74,4 @@ void Motion::Refresh() {
                         mc->Z() / 0x10);
   lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
 }
+#endif

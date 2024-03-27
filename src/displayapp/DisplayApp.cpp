@@ -20,6 +20,11 @@
 #include "displayapp/screens/PassKey.h"
 #include "displayapp/screens/Error.h"
 
+#include "displayapp/screens/Weather.h"
+#include "displayapp/screens/Calendar.h"
+#include "displayapp/screens/Calculator.h"
+#include "displayapp/screens/Gallery.h"
+
 #include "displayapp/screens/settings/QuickSettings.h"
 #include "displayapp/screens/settings/Settings.h"
 #include "displayapp/screens/settings/SettingWatchFace.h"
@@ -37,7 +42,6 @@
 #include "displayapp/screens/WatchFaceCasioStyleG7710.h"
 #include "displayapp/screens/WatchFaceTerminal.h"
 
-#include "displayapp/screens/Weather.h"
 
 #include "UserApps.h"
 

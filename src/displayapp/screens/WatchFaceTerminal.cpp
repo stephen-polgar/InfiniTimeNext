@@ -1,4 +1,5 @@
 #include "WatchFaceTerminal.h"
+#ifdef UseWatchFaceTerminal
 #include "systemtask/SystemTask.h"
 #include "components/ble/NotificationManager.h"
 #include "displayapp/screens/Symbols.h"
@@ -146,3 +147,4 @@ void WatchFaceTerminal::Refresh() {
   }
   running = true;
 }
+#endif

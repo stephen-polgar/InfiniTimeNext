@@ -8,8 +8,6 @@
 
 using namespace Pinetime::Applications::Screens;
 
-// Widgets::PageIndicator Label::pageIndicator;
-
 Label::Label(uint8_t screenID, uint8_t numScreens, Widgets::PageIndicator& pageIndicator)
   : screenID {screenID}, numScreens {numScreens}, pageIndicator {pageIndicator} {
 #ifdef Log

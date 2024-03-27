@@ -151,8 +151,7 @@ void QuickSettings::OnButtonEvent(lv_obj_t* object) {
       System::SystemTask::displayApp->motorController.RunForDuration(35);
     }
 
-  } else if (object == btn4) {
-    System::SystemTask::displayApp->settingsController.SetSettingsMenu(0);
+  } else if (object == btn4) {   
     System::SystemTask::displayApp->StartApp(new Settings());
   }
 }

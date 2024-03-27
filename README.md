@@ -7,6 +7,10 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
 - Multiple saved alarm times with advanced settings
 - Several saved timers can run at the same time
 - Steps are shown in meters also
+* [Calculator](https://github.com/InfiniTimeOrg/InfiniTime/pull/1483)
+* [Gallery](https://github.com/InfiniTimeOrg/InfiniTime/pull/1384) (Additional set-up is required to add external resources. Read instructions in pull.)
+* [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
+
 ### Removed apps
  - Chimes 
  - All games

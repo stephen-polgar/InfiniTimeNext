@@ -12,7 +12,6 @@ Tile::Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& ap
 
 void Tile::Load() {
   running = true;
-  System::SystemTask::displayApp->settingsController.SetAppMenu(screenID);
   statusIcons.Create();
   lv_obj_align(statusIcons.GetObject(), lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, -8, 0);
 

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "UsedAppsConfig.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -16,14 +18,26 @@ namespace Pinetime {
       Timer,
       TimerSet,
       Alarm,
-      AlarmSet,    
+      AlarmSet,
       FlashLight,
       BatteryInfo,
       Music,
       HeartRate,
       Navigation,
       StopWatch,
+#ifdef UseMotion
       Motion,
+#endif
+#ifdef UseCalculator
+      Calculator,
+#endif
+#ifdef UseCalendar
+      Calendar,
+#endif
+#ifdef UseGallery
+      Gallery,
+      FileView,
+#endif
       Steps,
       PassKey,
       QuickSettings,
@@ -34,17 +48,19 @@ namespace Pinetime {
       SettingDisplay,
       SettingWakeUp,
       SettingSteps,
-      SettingSetDateTime,     
+      SettingSetDateTime,
       SettingShakeThreshold,
       SettingBluetooth,
       Error,
-      Weather    
+      Weather
     };
 
     enum class WatchFace : uint8_t {
       Digital,
       Analog,
-      Terminal,     
+#ifdef UseWatchFaceTerminal
+      Terminal,
+#endif
       CasioStyleG7710
     };
 
@@ -59,14 +75,44 @@ namespace Pinetime {
       static constexpr uint8_t Count = sizeof...(As);
     };
 
-    using UserAppTypes = TypeList<Apps::StopWatch, Apps::Alarm, Apps::Timer, Apps::Steps, Apps::HeartRate, Apps::Weather, Apps::Music, Apps::Motion, Apps::Navigation>;
+// Change the order if you want different order in application list
+    using UserAppTypes = TypeList<Apps::StopWatch,
+                                  Apps::Alarm,
+                                  Apps::Timer,
+                                  Apps::Steps,
+                                  Apps::HeartRate,
+                                  Apps::Weather,
+                                  Apps::Music,
+                                  Apps::Navigation
+#ifdef UseCalendar
+                                  ,
+                                  Apps::Calendar
+#endif
+#ifdef UseCalculator
+                                  ,
+                                  Apps::Calculator
+#endif
+#ifdef UseMotion
+                                  ,
+                                  Apps::Motion
+#endif
+#ifdef UseGallery
+                                  ,
+                                  Apps::Gallery
+#endif
+                                  >;
 
     template <WatchFace... Ws>
     struct WatchFaceTypeList {
       static constexpr uint8_t Count = sizeof...(Ws);
     };
 
-    using UserWatchFaceTypes = WatchFaceTypeList<WatchFace::Digital, WatchFace::Analog, WatchFace::Terminal, WatchFace::CasioStyleG7710>;
+    using UserWatchFaceTypes = WatchFaceTypeList<WatchFace::Digital,
+                                                 WatchFace::Analog,
+#ifdef UseWatchFaceTerminal
+                                                 WatchFace::Terminal,
+#endif
+                                                 WatchFace::CasioStyleG7710>;
 
     static_assert(UserWatchFaceTypes::Count >= 1);
   }

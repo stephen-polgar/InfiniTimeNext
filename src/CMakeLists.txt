@@ -392,8 +392,12 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Alarm.cpp
         displayapp/screens/AlarmSet.cpp
         displayapp/screens/Styles.cpp
+        displayapp/screens/Weather.cpp 
         displayapp/screens/WeatherSymbols.cpp   
-        displayapp/screens/Weather.cpp
+        displayapp/screens/Calendar.cpp
+        displayapp/screens/Calculator.cpp
+        displayapp/screens/FileView.cpp
+        displayapp/screens/Gallery.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
         displayapp/widgets/PageIndicator.cpp
@@ -580,7 +584,7 @@ set(INCLUDE_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/src/Version.h
         BootloaderVersion.h
         logging/Logger.h
-        logging/NrfLogger.h
+        logging/NrfLogger.h   
         displayapp/DisplayApp.h
         displayapp/Messages.h
         displayapp/TouchEvents.h
@@ -597,7 +601,7 @@ set(INCLUDE_FILES
         displayapp/screens/FirmwareValidation.h
         displayapp/screens/ApplicationList.h
         displayapp/screens/CheckboxList.h
-        displayapp/Apps.h
+        displayapp/apps/Apps.h
         displayapp/screens/Notifications.h
         displayapp/screens/HeartRate.h
         displayapp/screens/Motion.h
@@ -606,6 +610,10 @@ set(INCLUDE_FILES
         displayapp/screens/Alarm.h
         displayapp/screens/AlarmSet.h
         displayapp/screens/Weather.h
+        displayapp/screens/Calendar.h
+        displayapp/screens/Calculator.h
+        displayapp/screens/FileView.h
+        displayapp/screens/Gallery.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h
         displayapp/widgets/PageIndicator.h

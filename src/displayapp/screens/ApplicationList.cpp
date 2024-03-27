@@ -1,8 +1,7 @@
 #include "ApplicationList.h"
 
 using namespace Pinetime::Applications::Screens;
-
-// System::SystemTask::displayApp->settingsController.GetAppMenu()
+ 
 ApplicationList::ApplicationList(std::array<Tile::Applications, UserAppTypes::Count>&& apps)
   : Screen(Apps::Launcher), apps {std::move(apps)} {
   for (uint8_t i = 0; i < nScreens; i++) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Screen.h"
+#ifdef UseMotion
 #include "displayapp/apps/Apps.h"
 
 namespace Pinetime {
@@ -38,3 +39,4 @@ namespace Pinetime {
     };
   }
 }
+#endif

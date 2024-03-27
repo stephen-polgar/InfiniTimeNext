@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Screen.h"
+#ifdef UseWatchFaceTerminal
 #include "components/fs/FS.h"
 #include "utility/DirtyValue.h"
 #include <chrono>
@@ -59,3 +60,4 @@ namespace Pinetime {
     };
   }
 }
+#endif

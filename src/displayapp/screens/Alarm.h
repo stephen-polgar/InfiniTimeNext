@@ -28,7 +28,7 @@ namespace Pinetime {
       static constexpr Apps app = Apps::Alarm;
       static constexpr const char* icon = Screens::Symbols::clock;
 
-      static Screens::Screen* Create() { 
+      static Screens::Screen* Create() {
         return new Screens::Alarm();
       };
     };

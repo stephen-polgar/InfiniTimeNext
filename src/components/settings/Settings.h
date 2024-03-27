@@ -36,11 +36,6 @@ namespace Pinetime {
       enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
       enum class PTSWeather : uint8_t { On, Off };
 
-      struct WatchFaceInfineat {
-        bool showSideCover = true;
-        int colorIndex = 0;
-      };
-
       Settings(Controllers::FS& fs);
 
       Settings(const Settings&) = delete;
@@ -60,44 +55,6 @@ namespace Pinetime {
 
       Pinetime::Applications::WatchFace GetWatchFace() const {
         return settings.watchFace;
-      };
-
-      void SetInfineatShowSideCover(bool show) {
-        if (show != settings.watchFaceInfineat.showSideCover) {
-          settings.watchFaceInfineat.showSideCover = show;
-          settingsChanged = true;
-        }
-      };
-
-      bool GetInfineatShowSideCover() const {
-        return settings.watchFaceInfineat.showSideCover;
-      };
-
-      void SetInfineatColorIndex(int index) {
-        if (index != settings.watchFaceInfineat.colorIndex) {
-          settings.watchFaceInfineat.colorIndex = index;
-          settingsChanged = true;
-        }
-      };
-
-      int GetInfineatColorIndex() const {
-        return settings.watchFaceInfineat.colorIndex;
-      };
-
-      void SetAppMenu(uint8_t menu) {
-        appMenu = menu;
-      };
-
-      uint8_t GetAppMenu() const {
-        return appMenu;
-      };
-
-      void SetSettingsMenu(uint8_t menu) {
-        settingsMenu = menu;
-      };
-
-      uint8_t GetSettingsMenu() const {
-        return settingsMenu;
       };
 
       void SetClockType(ClockType clocktype) {
@@ -239,9 +196,6 @@ namespace Pinetime {
         Notification notificationStatus = Notification::On;
 
         Applications::WatchFace watchFace = Applications::WatchFace::Digital;
-
-        WatchFaceInfineat watchFaceInfineat;
-
         std::bitset<5> wakeUpMode {0};
         uint16_t shakeWakeThreshold = 150;
 
@@ -250,10 +204,7 @@ namespace Pinetime {
 
       SettingsData settings;
       bool settingsChanged = false;
-
-      uint8_t appMenu = 0;
-      uint8_t settingsMenu = 0;
-      uint8_t watchFacesMenu = 0;
+    
       /* ble state is intentionally not saved with the other watch settings and initialized
        * to off (false) on every boot because we always want ble to be enabled on startup
        */
