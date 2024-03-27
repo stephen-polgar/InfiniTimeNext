@@ -25,7 +25,7 @@ To build this project, you'll need:
 ### Clone the repo
 
 ```
-git clone https://github.com/InfiniTimeOrg/InfiniTime.git
+git clone https://github.com/stephen-polgar/InfiniTimeNext.git
 cd InfiniTime
 git submodule update --init
 mkdir build
@@ -46,7 +46,7 @@ CMake configures the project according to variables you specify the command line
 **TARGET_DEVICE**|Target device, used for hardware configuration. Allowed: `PINETIME, MOY_TFK5, MOY_TIN5, MOY_TON5, MOY_UNK`|`-DTARGET_DEVICE=PINETIME` (Default)
 
 #### (\*) Note about **CMAKE_BUILD_TYPE**
-By default, this variable is set to *Release*. It compiles the code with size and speed optimizations. We use this value for all the binaries we publish when we [release](https://github.com/InfiniTimeOrg/InfiniTime/releases) new versions of InfiniTime.
+By default, this variable is set to *Release*. It compiles the code with size and speed optimizations. We use this value for all the binaries we publish when we [release](https://github.com/stephen-polgar/InfiniTimeNext/releases) new versions of InfiniTime.
 
 The *Debug* mode disables all optimizations, which makes the code easier to debug. However, the binary size will likely be too big to fit in the internal flash memory. If you want to build and debug a *Debug* binary, you can disable some parts of the code that are not needed for the test you want to achieve. You can also apply the *Debug* mode selectively on parts of the application by applying the `DEBUG_FLAGS` only for the part (CMake target) you want to debug. For example, let's say you want to debug code related to LittleFS, simply set the compilation options for the RELEASE configuration of the target to `DEBUG_FLAGS` (in `src/CMakeLists.txt`). This will force the compilation of that target in *Debug* mode while the rest of the project will be built in *Release* mode. Example:
 
