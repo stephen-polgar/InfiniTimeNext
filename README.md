@@ -80,7 +80,6 @@ Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in t
 
 - [Maintainer's guide](doc/maintainer-guide.md)
 - [Versioning](doc/versioning.md)
-- [Project branches](doc/branches.md)
 - [Files included in the release notes](doc/filesInReleaseNotes.md)
 - [Files needed by the factory](doc/files-needed-by-factory.md)
 
