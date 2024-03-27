@@ -69,7 +69,7 @@ namespace Pinetime {
     template <>
     struct AppTraits<Apps::Calculator> {
       static constexpr Apps app = Apps::Calculator;
-      static constexpr const char* icon = "C';  // TODO: create icon
+      static constexpr const char* icon = "C";  // TODO: create icon
 
       static Screens::Screen* Create() { 
         return new Screens::Calculator();

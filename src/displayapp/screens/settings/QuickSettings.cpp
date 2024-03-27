@@ -35,7 +35,7 @@ void QuickSettings::Load() {
 
   btn1 = lv_btn_create(lv_scr_act(), nullptr);
   btn1->user_data = this;
-  lv_obj_set_event_cb(btn1, ButtonEventHandler);
+  lv_obj_set_event_cb(btn1, buttonEventHandler);
   lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_size(btn1, buttonWidth, buttonHeight);
   lv_obj_align(btn1, nullptr, LV_ALIGN_IN_TOP_LEFT, buttonXOffset, barHeight);
@@ -46,7 +46,7 @@ void QuickSettings::Load() {
 
   btn2 = lv_btn_create(lv_scr_act(), nullptr);
   btn2->user_data = this;
-  lv_obj_set_event_cb(btn2, ButtonEventHandler);
+  lv_obj_set_event_cb(btn2, buttonEventHandler);
   lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_size(btn2, buttonWidth, buttonHeight);
   lv_obj_align(btn2, nullptr, LV_ALIGN_IN_TOP_RIGHT, -buttonXOffset, barHeight);
@@ -58,7 +58,7 @@ void QuickSettings::Load() {
 
   btn3 = lv_btn_create(lv_scr_act(), nullptr);
   btn3->user_data = this;
-  lv_obj_set_event_cb(btn3, ButtonEventHandler);
+  lv_obj_set_event_cb(btn3, buttonEventHandler);
   lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_style_local_bg_color(btn3, LV_BTN_PART_MAIN, static_cast<lv_state_t>(ButtonState::NotificationsOff), LV_COLOR_RED);
   static constexpr lv_color_t violet = LV_COLOR_MAKE(0x60, 0x00, 0xff);
@@ -81,7 +81,7 @@ void QuickSettings::Load() {
 
   btn4 = lv_btn_create(lv_scr_act(), nullptr);
   btn4->user_data = this;
-  lv_obj_set_event_cb(btn4, ButtonEventHandler);
+  lv_obj_set_event_cb(btn4, buttonEventHandler);
   lv_obj_add_style(btn4, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_size(btn4, buttonWidth, buttonHeight);
   lv_obj_align(btn4, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, -buttonXOffset, 0);
@@ -116,14 +116,14 @@ void QuickSettings::Refresh() {
 }
 
 
-  void QuickSettings::ButtonEventHandler(lv_obj_t* obj, lv_event_t event) {
+  void QuickSettings::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_CLICKED) {
-      static_cast<QuickSettings*>(obj->user_data)->OnButtonEvent(obj);
+      static_cast<QuickSettings*>(obj->user_data)->onButtonEvent(obj);
     }
   }
 
 
-void QuickSettings::OnButtonEvent(lv_obj_t* object) {
+void QuickSettings::onButtonEvent(lv_obj_t* object) {
   if (object == btn2) {
     System::SystemTask::displayApp->StartApp(new FlashLight());
   } else if (object == btn1) {

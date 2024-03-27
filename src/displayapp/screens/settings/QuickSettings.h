@@ -11,13 +11,12 @@ namespace Pinetime {
       class QuickSettings : public Screen {
       public:
         QuickSettings();
-
         ~QuickSettings() override;
         void Load() override;
         bool UnLoad() override;
-        void OnButtonEvent(lv_obj_t* object);
-
+      
       private:
+        void onButtonEvent(lv_obj_t* object);
         enum class ButtonState : lv_state_t {
           NotificationsOn = LV_STATE_CHECKED,
           NotificationsOff = LV_STATE_DEFAULT,
@@ -26,7 +25,7 @@ namespace Pinetime {
 
         void Refresh() override;
 
-        static void ButtonEventHandler(lv_obj_t* obj, lv_event_t event);
+        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
 
         lv_task_t* taskUpdate;
         lv_obj_t* label_time;
