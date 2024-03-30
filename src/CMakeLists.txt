@@ -399,6 +399,10 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Calculator.cpp
         displayapp/screens/FileView.cpp
         displayapp/screens/Gallery.cpp
+        displayapp/screens/Paddle.cpp
+        displayapp/screens/Twos.cpp
+        displayapp/screens/Dice.cpp
+        displayapp/screens/InfiniPaint.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
         displayapp/widgets/PageIndicator.cpp
@@ -616,6 +620,10 @@ set(INCLUDE_FILES
         displayapp/screens/Calculator.h
         displayapp/screens/FileView.h
         displayapp/screens/Gallery.h
+        displayapp/screens/Paddle.h
+        displayapp/screens/Twos.h
+        displayapp/screens/Dice.h
+        displayapp/screens/InfiniPaint.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h
         displayapp/widgets/PageIndicator.h

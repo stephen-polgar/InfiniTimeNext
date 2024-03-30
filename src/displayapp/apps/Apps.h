@@ -38,6 +38,18 @@ namespace Pinetime {
       Gallery,
       FileView,
 #endif
+#ifdef UseTwos
+      Twos,
+#endif
+#ifdef UseDice
+      Dice,
+#endif
+#ifdef UseInfiniPaint
+      Paint,
+#endif
+#ifdef UsePaddle
+      Paddle,
+#endif
       Steps,
       PassKey,
       QuickSettings,
@@ -91,6 +103,22 @@ namespace Pinetime {
 #ifdef UseCalculator
                                   ,
                                   Apps::Calculator
+#endif
+#ifdef UsePaddle
+                                  ,
+                                  Apps::Paddle
+#endif
+#ifdef UseTwos
+                                  ,
+                                  Apps::Twos
+#endif
+#ifdef UseInfiniPaint
+                                  ,
+                                  Apps::Paint
+#endif
+#ifdef UseDice
+                                  ,
+                                  Apps::Dice
 #endif
 #ifdef UseMotion
                                   ,

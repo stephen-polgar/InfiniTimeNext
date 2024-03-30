@@ -1,6 +1,6 @@
 
 #include "WatchFaceScreen.h"
-#include "WatchFaceDigital.h"
+#include "WatchFaceDigital.h"  //  default if not found
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 

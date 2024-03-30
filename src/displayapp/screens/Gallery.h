@@ -33,7 +33,7 @@ namespace Pinetime {
     template <>
     struct AppTraits<Apps::Gallery> {
       static constexpr Apps app = Apps::Gallery;
-      static constexpr const char* icon = Screens::Symbols::paintbrush;  // TODO: create icon
+      static constexpr const char* icon = "G";  // TODO: create icon
 
       static Screens::Screen* Create() {
         return new Screens::Gallery();
