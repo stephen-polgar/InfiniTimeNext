@@ -2,24 +2,23 @@
 
 #include "Screen.h"
 #ifdef UseWatchFaceTerminal
-#include "components/fs/FS.h"
-#include "utility/DirtyValue.h"
-#include <chrono>
-
+  #include "components/fs/FS.h"
+  #include "utility/DirtyValue.h"
+  #include <chrono>
 
 namespace Pinetime {
-   namespace Applications {
+  namespace Applications {
     namespace Screens {
 
       class WatchFaceTerminal : public Screen {
       public:
         WatchFaceTerminal();
         ~WatchFaceTerminal() override;
-        void Load() override; 
-        bool UnLoad() override; 
+        void Load() override;
+        bool UnLoad() override;
+        void Refresh() override;
 
       private:
-       void Refresh() override;
         Utility::DirtyValue<int> batteryPercentRemaining {};
         Utility::DirtyValue<bool> powerPresent {};
         Utility::DirtyValue<bool> bleState {};
@@ -40,8 +39,6 @@ namespace Pinetime {
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
         lv_obj_t* connectState;
-     
-        lv_task_t* taskRefresh;
       };
     }
 

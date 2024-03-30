@@ -44,9 +44,9 @@ namespace Pinetime {
       void PushMessage(Display::Messages id);
 
       void StartApp(Apps app, Screen::FullRefreshDirections direction = Screen::FullRefreshDirections::Up);
-      void StartApp(Screens::Screen* screen, Screen::FullRefreshDirections direction = Screen::FullRefreshDirections::Up);
+      void StartApp(Screen* screen, Screen::FullRefreshDirections direction = Screen::FullRefreshDirections::Up);
       void SetFullRefresh(Screen::FullRefreshDirections direction);
-
+      Screen * GetSelectedWatchFace();
 
       Controllers::DateTime dateTimeController;
       System::SystemTask* systemTask;
@@ -76,7 +76,7 @@ namespace Pinetime {
       static constexpr uint8_t queueSize = 10;
       static constexpr uint8_t itemSize = 1;
 
-      Screens::Screen *currentScreen = NULL, *nextScreen = NULL;
+      Screen *currentScreen = NULL, *nextScreen = NULL;
       Utility::ScreenStack<10> screenStack;
       Apps nextApp = Apps::None;
       Screen::FullRefreshDirections nextDirection;
@@ -85,9 +85,8 @@ namespace Pinetime {
       static void Process(void* instance);
       void InitHw();
       void refresh();
-      void loadNewScreen(Apps app, Screen::FullRefreshDirections direction);
-      void loadNewScreen(Screens::Screen* screen, Screen::FullRefreshDirections direction);
-      void loadScreen(Screens::Screen* screen, Screen::FullRefreshDirections direction);
+      void loadScreen(Apps app, Screen::FullRefreshDirections direction);
+      void loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store = true);
       void PushMessageToSystemTask(System::Messages id);
 
       System::BootErrors bootError;

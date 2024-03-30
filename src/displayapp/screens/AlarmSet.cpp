@@ -11,7 +11,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-AlarmSet::AlarmSet(bool showAlarm) : clockType {System::SystemTask::displayApp->settingsController.GetClockType()}, Screen(Apps::AlarmSet) {
+AlarmSet::AlarmSet(bool showAlarm) : Screen(Apps::AlarmSet), clockType {System::SystemTask::displayApp->settingsController.GetClockType()} {
 #ifdef Log
   NRF_LOG_INFO("new AlarmSet=%d", this);
 #endif
@@ -103,10 +103,10 @@ void AlarmSet::Load() {
 
 bool AlarmSet::UnLoad() {
   if (running) {
-     running = false;
+    running = false;
     if (alarmController->State() != AlarmController::AlarmState::Not_Set)
       alarmController->ScheduleAlarm();
-    lv_obj_clean(lv_scr_act());    
+    lv_obj_clean(lv_scr_act());
   }
   return true;
 }
@@ -136,11 +136,9 @@ bool AlarmSet::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   return alarmController->State() == AlarmController::AlarmState::Alerting && event == TouchEvents::SwipeDown;
 }
 
-
 void AlarmSet::valueChangedHandler(void* userData) {
   (static_cast<AlarmSet*>(userData))->onValueChanged();
 }
-
 
 void AlarmSet::onValueChanged() {
   // DisableAlarm();

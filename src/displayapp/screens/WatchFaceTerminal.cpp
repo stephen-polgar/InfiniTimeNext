@@ -10,7 +10,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-WatchFaceTerminal::WatchFaceTerminal() : currentDateTime {{}}, Screen(Apps::Clock) {
+WatchFaceTerminal::WatchFaceTerminal() : Screen(WatchFace::Terminal) {
 }
 
 void WatchFaceTerminal::Load() {   
@@ -48,14 +48,10 @@ void WatchFaceTerminal::Load() {
   stepValue = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_recolor(stepValue, true);
   lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, 0);
-
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-  Refresh();
 }
 
 bool WatchFaceTerminal::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
+  if (running) {   
     running = false;
     lv_obj_clean(lv_scr_act());
   }

@@ -12,8 +12,6 @@ using namespace std::chrono_literals;
 
 std::vector<AlarmController*> AlarmController::alarmControllers;
 
-// std::vector<AlarmController*> AlarmController::alarmControllers(MaxElements); ?
-
 AlarmController::AlarmController(timeData& time) {
   t = time;
   createTimer();
@@ -158,6 +156,7 @@ void AlarmController::StopAlerting() {
 }
 
 void AlarmController::Init() {
+  alarmControllers.reserve(MaxElements);
   timeData buffer;
   lfs_file_t file;
   auto* fs = &System::SystemTask::displayApp->filesystem;

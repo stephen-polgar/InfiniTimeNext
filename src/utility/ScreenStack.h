@@ -1,7 +1,7 @@
 #include <array>
 #include "displayapp/screens/Screen.h"
 
-// #define StackLog
+//#define StackLog
 
 #ifdef StackLog
   #include <nrf_log.h>
@@ -15,7 +15,7 @@ namespace Pinetime {
     class ScreenStack {
     public:
       Screen* Pop();
-      bool Push(Screen*);
+      void Push(Screen*);
       void Reset();
       Screen* Top();
       bool Empty();
@@ -31,7 +31,7 @@ namespace Pinetime {
     Screen* ScreenStack<N>::Pop() {
 #ifdef StackLog
       Screen* screen = stackPointer ? elementArray[--stackPointer] : NULL;
-      NRF_LOG_INFO("ScreenStack:Pop %d %d", screen, stackPointer);
+      NRF_LOG_INFO("ScreenStack:Pop %d %d %d", screen, (screen ? uint8_t(screen->Id) : 0), stackPointer);
       return screen;
 #else
       return stackPointer ? elementArray[--stackPointer] : NULL;
@@ -41,30 +41,37 @@ namespace Pinetime {
     template <uint8_t N>
     Screen* ScreenStack<N>::Get(Applications::Apps id) {
       Screen* screen = NULL;
-      uint8_t i = stackPointer;
-      while (i) {
-        if (id == elementArray[--i]->Id) {
-          screen = elementArray[i];
-          while (i < stackPointer) {
-            elementArray[i] = elementArray[++i];
+      if (stackPointer) {
+        uint8_t i = stackPointer;
+        while (--i) {
+          if (id == elementArray[i]->Id) {
+            screen = elementArray[i];
+            stackPointer--;
+            while (i < stackPointer) {
+              elementArray[i] = elementArray[++i];
+            }
+            break;
           }
-          stackPointer--;
-          break;
         }
       }
+#ifdef StackLog
+      NRF_LOG_INFO("ScreenStack:Get %d %d %d", screen, uint8_t(id), stackPointer);
+#endif
       return screen;
     }
 
     template <uint8_t N>
-    bool ScreenStack<N>::Push(Screen* screen) {
-      bool ok = stackPointer < elementArray.size();
-      if (ok) {
-        elementArray[stackPointer++] = screen;
+    void ScreenStack<N>::Push(Screen* screen) {
+      if (stackPointer == N) {
+        delete elementArray[0];
+        for (uint8_t i = 0; i < --stackPointer; i++) {
+          elementArray[i] = elementArray[i + 1];
+        }
       }
+      elementArray[stackPointer++] = screen;
 #ifdef StackLog
-      NRF_LOG_INFO("ScreenStack:Push %d %d", screen, stackPointer);
+      NRF_LOG_INFO("ScreenStack:Push %d %d %d", screen, uint8_t(screen->Id), stackPointer);
 #endif
-      return ok;
     }
 
     template <uint8_t N>

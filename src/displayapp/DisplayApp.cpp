@@ -1,30 +1,7 @@
+#include "UserApps.h" // Must be first include
+
 #include "displayapp/DisplayApp.h"
-#include "displayapp/screens/HeartRate.h"
-#include "displayapp/screens/Motion.h"
-#include "displayapp/screens/Alarm.h"
-#include "displayapp/screens/Timer.h"
-#include "displayapp/screens/AlarmSet.h"
-#include "displayapp/screens/TimerSet.h"
-#include "displayapp/screens/ApplicationList.h"
-#include "displayapp/screens/FirmwareUpdate.h"
-#include "displayapp/screens/FirmwareValidation.h"
-#include "displayapp/screens/StopWatch.h"
-#include "displayapp/screens/Music.h"
-#include "displayapp/screens/Navigation.h"
-#include "displayapp/screens/Notifications.h"
-#include "displayapp/screens/SystemInfo.h"
-#include "displayapp/screens/Tile.h"
-#include "displayapp/screens/FlashLight.h"
-#include "displayapp/screens/BatteryInfo.h"
-#include "displayapp/screens/Steps.h"
-#include "displayapp/screens/PassKey.h"
-#include "displayapp/screens/Error.h"
-
-#include "displayapp/screens/Weather.h"
-#include "displayapp/screens/Calendar.h"
-#include "displayapp/screens/Calculator.h"
-#include "displayapp/screens/Gallery.h"
-
+#include "displayapp/screens/WatchFaceScreen.h"
 #include "displayapp/screens/settings/QuickSettings.h"
 #include "displayapp/screens/settings/Settings.h"
 #include "displayapp/screens/settings/SettingWatchFace.h"
@@ -36,14 +13,19 @@
 #include "displayapp/screens/settings/SettingSetDateTime.h"
 #include "displayapp/screens/settings/SettingShakeThreshold.h"
 #include "displayapp/screens/settings/SettingBluetooth.h"
+#include "displayapp/screens/AlarmSet.h"
+#include "displayapp/screens/TimerSet.h"
 
-#include "displayapp/screens/WatchFaceDigital.h"
-#include "displayapp/screens/WatchFaceAnalog.h"
-#include "displayapp/screens/WatchFaceCasioStyleG7710.h"
-#include "displayapp/screens/WatchFaceTerminal.h"
-
-
-#include "UserApps.h"
+#include "displayapp/screens/ApplicationList.h"
+#include "displayapp/screens/FirmwareUpdate.h"
+#include "displayapp/screens/FirmwareValidation.h"
+#include "displayapp/screens/Notifications.h"
+#include "displayapp/screens/SystemInfo.h"
+#include "displayapp/screens/Tile.h"
+#include "displayapp/screens/FlashLight.h"
+#include "displayapp/screens/BatteryInfo.h"
+#include "displayapp/screens/PassKey.h"
+#include "displayapp/screens/Error.h"
 
 // #define Log
 
@@ -69,11 +51,8 @@ void DisplayApp::Start(System::BootErrors error) {
   bootError = error;
   lvgl.Init();
   if (error == System::BootErrors::TouchController) {
-    loadNewScreen(Apps::Error, Screen::FullRefreshDirections::None);
-  } else {
-    loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::None);
+    loadScreen(Apps::Error, Screen::FullRefreshDirections::None);
   }
-
   if (pdPASS != xTaskCreate(DisplayApp::Process, "displayapp", 800, this, 0, &taskHandle)) {
     APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
   }
@@ -100,8 +79,8 @@ void DisplayApp::refresh() {
   auto loadPreviousScreen = [this]() {
     Screen::FullRefreshDirections returnDirection;
     if (screenStack.Empty())
-      returnDirection = Screen::FullRefreshDirections::None;
-    else
+      loadScreen(Apps::Clock, Screen::FullRefreshDirections::None);
+    else {
       switch (screenStack.Top()->direction) {
         case Screen::FullRefreshDirections::Up:
           returnDirection = Screen::FullRefreshDirections::Down;
@@ -119,7 +98,8 @@ void DisplayApp::refresh() {
           returnDirection = Screen::FullRefreshDirections::None;
           break;
       }
-    loadScreen(screenStack.Pop(), returnDirection);
+      loadScreen(screenStack.Pop(), returnDirection, false);
+    }
   };
 
   auto DimScreen = [this]() {
@@ -176,7 +156,7 @@ void DisplayApp::refresh() {
   Messages msg;
   if (xQueueReceive(msgQueue, &msg, queueTimeout) == pdTRUE) {
 #ifdef Log
-    // NRF_LOG_INFO("DisplayApp msg=%d", msg);
+    //  NRF_LOG_INFO("DisplayApp msg=%d", msg);
 #endif
     switch (msg) {
       case Messages::DimScreen:
@@ -217,7 +197,7 @@ void DisplayApp::refresh() {
             screen->Id = Apps::NotificationsPreview;
           else
             screen = new Notifications(Apps::NotificationsPreview);
-          loadNewScreen(screen, Screen::FullRefreshDirections::Down);
+          loadScreen(screen, Screen::FullRefreshDirections::Down);
         }
         break;
       case Messages::TimerDone: {
@@ -229,7 +209,7 @@ void DisplayApp::refresh() {
           lv_disp_trig_activity(NULL);
           (static_cast<Screens::TimerSet*>(currentScreen))->TimerDone();
         } else
-          loadNewScreen(new TimerSet(), Screen::FullRefreshDirections::Up);
+          loadScreen(new TimerSet(), Screen::FullRefreshDirections::Up);
       } break;
       case Messages::AlarmTriggered:
         systemTask->PushMessage(System::Messages::DisableSleeping);
@@ -241,10 +221,10 @@ void DisplayApp::refresh() {
             break;
           }
         }
-        loadNewScreen(new AlarmSet(true), Screen::FullRefreshDirections::None);
+        loadScreen(new AlarmSet(true), Screen::FullRefreshDirections::None);
         break;
       case Messages::ShowPairingKey:
-        loadNewScreen(Apps::PassKey, Screen::FullRefreshDirections::Up);
+        loadScreen(Apps::PassKey, Screen::FullRefreshDirections::Up);
         motorController.RunForDuration(35);
         break;
       case Messages::TouchEvent: {
@@ -273,13 +253,13 @@ void DisplayApp::refresh() {
           if (currentScreen->Id == Apps::Clock) {
             switch (gesture) {
               case TouchEvents::SwipeUp:
-                loadNewScreen(Apps::Launcher, Screen::FullRefreshDirections::Up);
+                loadScreen(Apps::Launcher, Screen::FullRefreshDirections::Up);
                 break;
               case TouchEvents::SwipeDown:
-                loadNewScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
+                loadScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
                 break;
               case TouchEvents::SwipeRight:
-                loadNewScreen(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
+                loadScreen(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
                 break;
               case TouchEvents::DoubleTap:
                 PushMessageToSystemTask(System::Messages::GoToSleep);
@@ -308,11 +288,11 @@ void DisplayApp::refresh() {
         screenStack.Reset();
         if (currentScreen->Id != Apps::Clock) {
           if (currentScreen->Id == Apps::Notifications) {
-            loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::Up);
+            loadScreen(Apps::Clock, Screen::FullRefreshDirections::Up);
           } else if (currentScreen->Id == Apps::QuickSettings) {
-            loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::LeftAnim);
+            loadScreen(Apps::Clock, Screen::FullRefreshDirections::LeftAnim);
           } else {
-            loadNewScreen(Apps::Clock, Screen::FullRefreshDirections::Down);
+            loadScreen(Apps::Clock, Screen::FullRefreshDirections::Down);
           }
         }
         break;
@@ -321,15 +301,14 @@ void DisplayApp::refresh() {
         // LoadScreen(Apps::SysInfo, Screen::FullRefreshDirections::Up);
         break;
       case Messages::ButtonDoubleClicked:
-        // if (currentApp != Apps::Weather && controllers.weatherController->has_value()) {
-        if (currentScreen->Id != Apps::Weather) {
-          loadNewScreen(Apps::Weather, Screen::FullRefreshDirections::Down);
+        if (currentScreen->Id != Apps::Weather && systemTask->nimbleController.weatherService.Current().has_value()) {
+          loadScreen(Apps::Weather, Screen::FullRefreshDirections::Down);
         } else if (currentScreen->Id != Apps::Notifications) {
-          loadNewScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
+          loadScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
         }
         break;
       case Messages::BleFirmwareUpdateStarted:
-        loadNewScreen(Apps::FirmwareUpdate, Screen::FullRefreshDirections::Down);
+        loadScreen(Apps::FirmwareUpdate, Screen::FullRefreshDirections::Down);
         break;
       case Messages::BleRadioEnableToggle:
         PushMessageToSystemTask(System::Messages::BleRadioEnableToggle);
@@ -350,180 +329,148 @@ void DisplayApp::refresh() {
   }
 
   if (nextApp != Apps::None) {
-    loadNewScreen(nextApp, nextDirection);
+    loadScreen(nextApp, nextDirection);
     nextApp = Apps::None;
   } else {
-    Screens::Screen* screen = nextScreen;
+    Screen* screen = nextScreen;
     if (screen) {
       nextScreen = NULL;
-      loadNewScreen(screen, screen->direction);
+      loadScreen(screen, screen->direction);
     }
   }
 }
 
-// use StartApp(Screens::Screen* screen, Screen::FullRefreshDirections direction) instead if possible
 void DisplayApp::StartApp(Apps app, Screen::FullRefreshDirections direction) {
   nextApp = app;
   nextDirection = direction;
 }
 
-void DisplayApp::StartApp(Screens::Screen* screen, Screen::FullRefreshDirections direction) {
+void DisplayApp::StartApp(Screen* screen, Screen::FullRefreshDirections direction) {
   screen->direction = direction;
   nextScreen = screen;
 }
 
-void DisplayApp::loadScreen(Screens::Screen* screen, Screen::FullRefreshDirections direction) {
+void DisplayApp::loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store) {
+#ifdef Log
+  NRF_LOG_INFO("DisplayApp:loadScreen screen=%d", uint8_t(screen->Id));
+#endif
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
   if (currentScreen) {
-    delete currentScreen;
-    currentScreen = NULL;
+    if (currentScreen != screen) {
+      if (currentScreen->UnLoad() && store) {
+        screenStack.Push(currentScreen);
+        currentScreen->direction = direction;
+      } else
+        delete currentScreen;
+    } else
+      currentScreen->UnLoad();
   }
-  SetFullRefresh(direction);
   currentScreen = screen;
+  SetFullRefresh(direction);
   screen->Load();
 }
 
-void DisplayApp::loadNewScreen(Screens::Screen* screen, Screen::FullRefreshDirections direction) {
-  // Don't add the same screen to the stack back to back.
-  // This is mainly to fix an issue with receiving two notifications at the same time and shouldn't happen otherwise.
-  if (currentScreen && screen->Id != currentScreen->Id) {
-    if (currentScreen->UnLoad()) {
-      if (screenStack.Push(currentScreen)) {
-        currentScreen->direction = direction;
-        currentScreen = NULL; // do not delete stored screen
-      }
-    }
-  }
-  loadScreen(screen, direction);
-}
-
-void DisplayApp::loadNewScreen(Apps app, Screen::FullRefreshDirections direction) {
+void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
+#ifdef Log
+  NRF_LOG_INFO("DisplayApp:loadScreen app=%d", uint8_t(app));
+#endif
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
-  Screens::Screen* screen = (app != Apps::None && app != Apps::Clock) ? screenStack.Get(app) : NULL;
-
-  switch (app) {
-    case Apps::Launcher: {
-      if (!screen) {
-        std::array<Screens::Tile::Applications, UserAppTypes::Count> apps;
+  if (currentScreen && currentScreen->Id == app) {
+    loadScreen(currentScreen, direction, false);
+    return;
+  }
+  Screen* screen = (app != Apps::None) ? screenStack.Get(app) : NULL;
+  if (!screen)
+    switch (app) {
+      case Apps::Launcher: {
+        std::array<Tile::Applications, UserAppTypes::Count> apps;
         int i = 0;
         for (const auto& userApp : userApps) {
-          apps[i++] = Screens::Tile::Applications {userApp.icon, userApp.app, true};
+          apps[i++] = Tile::Applications {userApp.icon, userApp.app, true};
         }
-        screen = new Screens::ApplicationList(std::move(apps));
-      }
-    } break;
-    case Apps::Clock: {
-      screenStack.DeleteAll(Apps::Clock);
-      const auto* watchFace =
-        std::find_if(userWatchFaces.begin(), userWatchFaces.end(), [this](const WatchFaceDescription& watchfaceDescription) {
-          return watchfaceDescription.watchFace == settingsController.GetWatchFace();
-        });
-      if (watchFace != userWatchFaces.end())
-        screen = watchFace->create();
-      else {
-        screen = new WatchFaceDigital();
-      }
-    } break;
-    case Apps::Error:
-      if (!screen)
-        screen = new Screens::Error(bootError);
-      break;
-    case Apps::FirmwareValidation:
-      if (!screen)
-        screen = new Screens::FirmwareValidation(validator);
-      break;
-    case Apps::FirmwareUpdate:
-      if (!screen)
-        screen = new Screens::FirmwareUpdate(bleController);
-      break;
-    case Apps::PassKey:
-      if (!screen)
-        screen = new Screens::PassKey(bleController.GetPairingKey());
-      break;
-    case Apps::NotificationsPreview:
-    case Apps::Notifications:
-      if (!screen)
-        screen = new Screens::Notifications(app);
-      break;
-    case Apps::QuickSettings:
-      if (!screen)
-        screen = new Screens::QuickSettings();
-      break;
-    case Apps::Settings:
-      if (!screen)
-        screen = new Screens::Settings();
-      break;
-    case Apps::SettingWatchFace: {
-      if (!screen) {
-        std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
-        int i = 0;
+        screen = new ApplicationList(std::move(apps));
+      } break;
+      case Apps::Clock:
+        screen = new WatchFaceScreen();
+        break;
+      case Apps::Error:
+        screen = new Error(bootError);
+        break;
+      case Apps::FirmwareValidation:
+        screen = new FirmwareValidation(validator);
+        break;
+      case Apps::FirmwareUpdate:
+        screen = new FirmwareUpdate(bleController);
+        break;
+      case Apps::PassKey:
+        screen = new PassKey(bleController.GetPairingKey());
+        break;
+      case Apps::NotificationsPreview:
+      case Apps::Notifications:
+        screen = new Notifications(app);
+        break;
+      case Apps::QuickSettings:
+        screen = new QuickSettings();
+        break;
+      case Apps::Settings:
+        screen = new Settings();
+        break;
+      case Apps::SettingWatchFace: {
+        std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count> items;
+        uint8_t i = 0;
         for (const auto& userWatchFace : userWatchFaces) {
-          items[i++] = Screens::SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
+          items[i++] = SettingWatchFace::Item {userWatchFace.name, userWatchFace.watchFace, userWatchFace.isAvailable(filesystem)};
         }
-        screen = new Screens::SettingWatchFace(std::move(items));
-      }
-    } break;
-    case Apps::SettingTimeFormat:
-      if (!screen)
-        screen = new Screens::SettingTimeFormat();
-      break;
-    case Apps::SettingWeatherFormat:
-      if (!screen)
-        screen = new Screens::SettingWeatherFormat();
-      break;
-    case Apps::SettingWakeUp:
-      if (!screen)
-        screen = new Screens::SettingWakeUp();
-      break;
-    case Apps::SettingDisplay:
-      if (!screen)
-        screen = new Screens::SettingDisplay();
-      break;
-    case Apps::SettingSteps:
-      if (!screen)
-        screen = new Screens::SettingSteps();
-      break;
-    case Apps::SettingSetDateTime:
-      if (!screen)
-        screen = new Screens::SettingSetDateTime();
-      break;
-    case Apps::SettingShakeThreshold:
-      if (!screen)
+        screen = new SettingWatchFace(std::move(items));
+      } break;
+      case Apps::SettingTimeFormat:
+        screen = new SettingTimeFormat();
+        break;
+      case Apps::SettingWeatherFormat:
+        screen = new SettingWeatherFormat();
+        break;
+      case Apps::SettingWakeUp:
+        screen = new SettingWakeUp();
+        break;
+      case Apps::SettingDisplay:
+        screen = new SettingDisplay();
+        break;
+      case Apps::SettingSteps:
+        screen = new SettingSteps();
+        break;
+      case Apps::SettingSetDateTime:
+        screen = new SettingSetDateTime();
+        break;
+      case Apps::SettingShakeThreshold:
         screen = new SettingShakeThreshold();
-      break;
-    case Apps::SettingBluetooth:
-      if (!screen)
-        screen = new Screens::SettingBluetooth();
-      break;
-    case Apps::BatteryInfo:
-      if (!screen)
-        screen = new Screens::BatteryInfo();
-      break;
-    case Apps::SysInfo:
-      if (!screen)
-        screen = new Screens::SystemInfo();
-      break;
-    case Apps::FlashLight:
-      if (!screen)
-        screen = new Screens::FlashLight();
-      break;
-    default: {
-      if (!screen) {
+        break;
+      case Apps::SettingBluetooth:
+        screen = new SettingBluetooth();
+        break;
+      case Apps::BatteryInfo:
+        screen = new BatteryInfo();
+        break;
+      case Apps::SysInfo:
+        screen = new SystemInfo();
+        break;
+      case Apps::FlashLight:
+        screen = new FlashLight();
+        break;
+      default: {
         const auto* d = std::find_if(userApps.begin(), userApps.end(), [app](const AppDescription& appDescription) {
           return appDescription.app == app;
         });
         if (d != userApps.end()) {
           screen = d->create();
         } else {
-          screen = new WatchFaceDigital();
+          screen = new WatchFaceScreen();
         }
+        break;
       }
-      break;
     }
-  }
-  loadNewScreen(screen, direction);
+  loadScreen(screen, direction);
 }
 
 void DisplayApp::PushMessage(Messages msg) {
@@ -571,6 +518,15 @@ void DisplayApp::SetFullRefresh(Screen::FullRefreshDirections direction) {
     default:
       break;
   }
+}
+
+Screen* DisplayApp::GetSelectedWatchFace() {
+  const WatchFace selected = settingsController.GetWatchFace();
+  for (WatchFaceDescription watchFaceDescription : userWatchFaces) {
+    if (watchFaceDescription.watchFace == selected)
+      return watchFaceDescription.create();
+  }
+  return NULL;
 }
 
 void DisplayApp::PushMessageToSystemTask(System::Messages id) {

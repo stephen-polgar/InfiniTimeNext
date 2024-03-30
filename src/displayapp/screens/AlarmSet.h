@@ -27,7 +27,6 @@ namespace Pinetime {
       private:
         void onValueChanged();
         static void valueChangedHandler(void* userData);
-
         bool changed = false;
         static constexpr uint8_t optionsSize = 8;
         const char* options[optionsSize] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Once"};

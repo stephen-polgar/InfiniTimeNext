@@ -42,14 +42,14 @@ namespace Pinetime {
         Apps Id;
         FullRefreshDirections direction = FullRefreshDirections::None;
 
-      protected:
-        explicit Screen(Apps Id = Apps::None);
-        bool running = false;
-        static void RefreshTaskCallback(lv_task_t* task);
-
-      private:
         virtual void Refresh() {
         }
+
+      protected:
+        Screen(Apps Id = Apps::None);
+        Screen(WatchFace Id);
+        bool running = false;
+        static void RefreshTaskCallback(lv_task_t* task);
       };
     }
   }

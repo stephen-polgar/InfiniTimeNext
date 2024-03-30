@@ -44,6 +44,7 @@ void TimerController::displayAppCallbackTimer(TimerHandle_t xTimer) {
 }
 
 void TimerController::Init() {
+  timers.reserve(MaxElements);
   std::chrono::milliseconds buffer;
   lfs_file_t file;
   auto* fs = &System::SystemTask::displayApp->filesystem;

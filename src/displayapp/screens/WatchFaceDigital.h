@@ -18,24 +18,20 @@ namespace Pinetime {
 
         void Load() override;
         bool UnLoad() override;
-
+        void Refresh() override;
         bool OnTouchEvent(uint16_t /*x*/, uint16_t /*y*/) override;
 
       private:
-        void Refresh() override;
+        
         uint8_t displayedHour;
         uint8_t displayedMinute;
        
-        Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
-        Utility::DirtyValue<bool> powerPresent {};
-        Utility::DirtyValue<bool> bleState {};
-        Utility::DirtyValue<bool> bleRadioEnabled {};
-        Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>> currentDateTime {};
-        Utility::DirtyValue<uint32_t> stepCount {};
-        Utility::DirtyValue<uint8_t> heartbeat {};
-        Utility::DirtyValue<bool> heartbeatRunning {};
-        Utility::DirtyValue<bool> notificationState {};
-        Utility::DirtyValue<std::optional<Pinetime::Controllers::SimpleWeatherService::CurrentWeather>> currentWeather {};
+        Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>> currentDateTime;
+        Utility::DirtyValue<uint32_t> stepCount;
+        Utility::DirtyValue<uint8_t> heartbeat;
+        Utility::DirtyValue<bool> heartbeatRunning;
+        Utility::DirtyValue<bool> notificationState;
+        Utility::DirtyValue<std::optional<Pinetime::Controllers::SimpleWeatherService::CurrentWeather>> currentWeather;
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;
 
         lv_obj_t* label_time;
@@ -48,8 +44,6 @@ namespace Pinetime {
         lv_obj_t* notificationIcon;
         lv_obj_t* weatherIcon;
         lv_obj_t* temperature;
-
-        lv_task_t* taskRefresh;
         Widgets::StatusIcons statusIcons;
       };
     }

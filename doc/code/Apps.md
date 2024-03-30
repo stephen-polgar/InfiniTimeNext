@@ -49,14 +49,14 @@ without overflowing the system memory.
 
 ## Apps and watch faces initialization
 
-The UI of the current app are loaded by `DisplayApp` in `DisplayApp::loadScreen()`.
-This method simply call the Screen::Load() method.
+The UI of the current app are loaded by `DisplayApp` in `DisplayApp::loadScreen.
+This method calls the Screen::Load() method.
 
 The constructor of **system** apps is called directly. If the application is a **user** app,
 the corresponding `AppDescription` is first retrieved from `userApps`
 and then the function `create` is called to create an instance of the app.
 
-Watch faces are handled in a very similar way as the **user** apps : they are created by `DisplayApp` in the method `DisplayApp::LoadScreen()` when the application type is `Apps::Clock`.
+Watch faces are handled in a similar way as the **user** apps : they are created by `DisplayApp` in the method `DisplayApp::loadScreen` when the application type is `Apps::Clock`.
 
 ## User application selection at build time
 
@@ -88,7 +88,7 @@ to list all available applications.
 ## Watch face selection at build time
 
 The list of available watch faces is also generated at build time by the `consteval`
-function `CreateWatchFaceDescriptions()` in `UserApps.h` in the same way as the **user** apps.
+function `CreateWatchFaceDescriptions()` in [`UserApps.h`](/src/displayapp/UserApps.h) in the same way as the **user** apps.
 Watch faces must declare a `WatchFaceTraits` so that the corresponding `WatchFaceDescription` can be generated.
 Here is an example of `WatchFaceTraits`:
 ```c++
@@ -195,7 +195,7 @@ in the compilation by adding it to [CMakeLists.txt](/CMakeLists.txt).
 The next step to making it launch-able is to give your app an id.
 To do this, add an entry in the enum class `Pinetime::Applications::Apps` [displayapp/apps/Apps.h](/src/displayapp/apps/Apps.h).
 Name this entry after your app. Add `#include "displayapp/screens/MyApp.h"`
-to the file [displayapp/DisplayApp.cpp](/src/displayapp/DisplayApp.cpp).
+to the file [`displayapp/UserApps.h`](/src/displayapp/UserApps.h).
 
 If your application is a **system** application, go to the function `DisplayApp::loadNewScreen`
 and add another case to the switch statement.

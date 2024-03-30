@@ -11,7 +11,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-WatchFaceCasioStyleG7710::WatchFaceCasioStyleG7710() : currentDateTime {{}}, batteryIcon(false), Screen(Apps::Clock) {
+WatchFaceCasioStyleG7710::WatchFaceCasioStyleG7710() : batteryIcon(false), Screen(WatchFace::CasioStyleG7710) {
   font_dot40 = lv_font_load("F:/fonts/lv_font_dots_40.bin");
   font_segment40 = lv_font_load("F:/fonts/7segments_40.bin");
   font_segment115 = lv_font_load("F:/fonts/7segments_115.bin");
@@ -145,14 +145,10 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_set_style_local_text_color(stepIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
-
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-  Refresh();
 }
 
 bool WatchFaceCasioStyleG7710::UnLoad() {
-  if (running) {    
-    lv_task_del(taskRefresh);
+  if (running) {      
     running = false;
     lv_obj_clean(lv_scr_act());
     lv_style_reset(&style_line);

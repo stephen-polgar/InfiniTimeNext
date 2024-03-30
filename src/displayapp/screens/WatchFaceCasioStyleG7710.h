@@ -13,14 +13,12 @@ namespace Pinetime {
       public:
         WatchFaceCasioStyleG7710();
         ~WatchFaceCasioStyleG7710() override;
-
         void Load() override;
         bool UnLoad() override;
-
+        void Refresh() override;
         static bool IsAvailable(Controllers::FS& filesystem);
 
       private:
-        void Refresh() override;      
         Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
         Utility::DirtyValue<bool> powerPresent {};
         Utility::DirtyValue<bool> bleState {};
@@ -29,10 +27,10 @@ namespace Pinetime {
         Utility::DirtyValue<uint32_t> stepCount {};
         Utility::DirtyValue<uint8_t> heartbeat {};
         Utility::DirtyValue<bool> heartbeatRunning {};
-        Utility::DirtyValue<bool> notificationState {};        
+        Utility::DirtyValue<bool> notificationState {};
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;
 
-        const lv_color_t color_text = LV_COLOR_WHITE;//  lv_color_hex(0x98B69A);
+        const lv_color_t color_text = LV_COLOR_WHITE; //  lv_color_hex(0x98B69A);
 
         lv_style_t style_line;
         lv_style_t style_border;
@@ -53,10 +51,7 @@ namespace Pinetime {
         lv_obj_t* stepIcon;
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
-
         BatteryIcon batteryIcon;
-
-        lv_task_t* taskRefresh;
         lv_font_t* font_dot40;
         lv_font_t* font_segment40;
         lv_font_t* font_segment115;

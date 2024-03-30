@@ -24,7 +24,6 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-     
         static uint8_t indexOf(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, WatchFace watchface);
         static WatchFace indexToWatchFace(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, uint8_t index);
         Screen* createScreen(uint8_t screenNum);

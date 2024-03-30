@@ -1,8 +1,6 @@
 #include "WatchFaceAnalog.h"
 #include "components/ble/NotificationManager.h"
 #include "components/motion/MotionController.h"
-#include "components/battery/BatteryController.h"
-#include "components/ble/BleController.h"
 #include "systemtask/SystemTask.h"
 #include "displayapp/screens/NotificationIcon.h"
 #include "Symbols.h"
@@ -41,14 +39,15 @@ namespace {
 
 }
 
-WatchFaceAnalog::WatchFaceAnalog() : currentDateTime {{}}, batteryIcon(true), Screen(Apps::Clock) {
+WatchFaceAnalog::WatchFaceAnalog() : Screen(WatchFace::Analog) {
 }
 
 void WatchFaceAnalog::Load() {
   sHour = 99;
   sMinute = 99;
   sSecond = 99;
-
+  
+  statusIcons.Create();
   lv_obj_t* minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);
   lv_linemeter_set_angle_offset(minor_scales, 180);
@@ -84,17 +83,6 @@ void WatchFaceAnalog::Load() {
   lv_label_set_text_static(twelve, "12");
   lv_obj_set_pos(twelve, 110, 10);
   lv_obj_set_style_local_text_color(twelve, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_AQUA);
-
-  batteryIcon.Create(lv_scr_act());
-  lv_obj_align(batteryIcon.GetObject(), NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
-
-  plugIcon = lv_label_create(lv_scr_act(), NULL);
-  lv_label_set_text_static(plugIcon, Symbols::plug);
-  lv_obj_align(plugIcon, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
-
-  bleIcon = lv_label_create(lv_scr_act(), NULL);
-  lv_label_set_text_static(bleIcon, "");
-  lv_obj_align(bleIcon, NULL, LV_ALIGN_IN_TOP_RIGHT, -30, 0);
 
   notificationIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
@@ -143,14 +131,12 @@ void WatchFaceAnalog::Load() {
   lv_style_set_line_color(&hour_line_style_trace, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_style_set_line_rounded(&hour_line_style_trace, LV_STATE_DEFAULT, false);
   lv_obj_add_style(hour_body_trace, LV_LINE_PART_MAIN, &hour_line_style_trace);
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-  Refresh();
+ 
   lv_obj_move_foreground(label_date_day);
 }
 
 bool WatchFaceAnalog::UnLoad() {
   if (running) {
-    lv_task_del(taskRefresh);
     running = false;
     lv_obj_clean(lv_scr_act());
     lv_style_reset(&hour_line_style);
@@ -213,39 +199,12 @@ void WatchFaceAnalog::updateClock() {
 }
 
 void WatchFaceAnalog::Refresh() {
+  statusIcons.Update();
   auto* app = System::SystemTask::displayApp;
-  isCharging = app->batteryController.IsCharging();
-  if (!running || isCharging.IsUpdated()) {
-    if (isCharging.Get()) {
-      lv_obj_set_hidden(batteryIcon.GetObject(), true);
-      lv_obj_set_hidden(plugIcon, false);
-    } else {
-      lv_obj_set_hidden(batteryIcon.GetObject(), false);
-      lv_obj_set_hidden(plugIcon, true);
-      batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
-    }
-  }
-  if (!isCharging.Get()) {
-    batteryPercentRemaining = app->batteryController.PercentRemaining();
-    if (!running || batteryPercentRemaining.IsUpdated()) {
-      batteryIcon.SetBatteryPercentage(batteryPercentRemaining.Get());
-    }
-  }
-
-  bleState = app->bleController.IsConnected();
-  if (!running || bleState.IsUpdated()) {
-    if (bleState.Get()) {
-      lv_label_set_text_static(bleIcon, Symbols::bluetooth);
-    } else {
-      lv_label_set_text_static(bleIcon, "");
-    }
-  }
-
   notificationState = app->notificationManager.AreNewNotificationsAvailable();
   if (!running || notificationState.IsUpdated()) {
     lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(notificationState.Get()));
   }
-
   currentDateTime = app->dateTimeController.CurrentDateTime();
   if (!running || currentDateTime.IsUpdated()) {
     updateClock();

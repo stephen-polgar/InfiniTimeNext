@@ -35,12 +35,12 @@ namespace Pinetime {
         std::array<Item, MaxItems> options;
         std::array<lv_obj_t*, MaxItems> cbOption;
         uint8_t value, originalValue;
-
+       
         const char* optionsTitle;
         const char* optionsSymbol;
 
         Widgets::PageIndicator& pageIndicator;
-        void updateSelected(lv_obj_t* object, lv_event_t event);
+        void updateSelected(lv_obj_t* object);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
       };
     }

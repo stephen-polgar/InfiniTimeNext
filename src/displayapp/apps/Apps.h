@@ -8,8 +8,8 @@ namespace Pinetime {
   namespace Applications {
     enum class Apps : uint8_t {
       None,
-      Launcher,
       Clock,
+      Launcher,
       SysInfo,
       FirmwareUpdate,
       FirmwareValidation,
@@ -56,7 +56,7 @@ namespace Pinetime {
     };
 
     enum class WatchFace : uint8_t {
-      Digital,
+      Digital = uint8_t(Apps::Weather) + 1, // first elem = last Apps +1 for start with a different ID
       Analog,
 #ifdef UseWatchFaceTerminal
       Terminal,
@@ -75,7 +75,7 @@ namespace Pinetime {
       static constexpr uint8_t Count = sizeof...(As);
     };
 
-// Change the order if you want different order in application list
+    // Change the order if you want different order in application list
     using UserAppTypes = TypeList<Apps::StopWatch,
                                   Apps::Alarm,
                                   Apps::Timer,

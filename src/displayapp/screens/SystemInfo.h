@@ -19,9 +19,9 @@ namespace Pinetime {
         bool UnLoad() override;
 
         bool OnTouchEvent(TouchEvents event) override;
-        static constexpr uint8_t screenNumber = 5;
-
+   
       private:
+        static constexpr uint8_t screenNumber = 5;
         Widgets::PageIndicator pageIndicator;
         static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
         ScreenList<screenNumber> screens;
