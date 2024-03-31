@@ -10,6 +10,8 @@ FlashLight::FlashLight() : Screen(Apps::FlashLight) {
 
 void FlashLight::Load() {
   running = true;
+  auto& settingsController = System::SystemTask::displayApp->settingsController;
+  restore = settingsController.GetBrightness();
   System::SystemTask::displayApp->brightnessController.Set(Controllers::BrightnessController::Levels::Low);
   flashLight = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(flashLight, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
@@ -37,15 +39,17 @@ void FlashLight::Load() {
   lv_obj_set_click(backgroundAction, true);
   backgroundAction->user_data = this;
   lv_obj_set_event_cb(backgroundAction, eventHandler);
-  screenTimeout = System::SystemTask::displayApp->settingsController.GetScreenTimeOut();
-  System::SystemTask::displayApp->settingsController.SetScreenTimeOut(60000);
+  screenTimeout = settingsController.GetScreenTimeOut();
+  settingsController.SetScreenTimeOut(60000);
   // System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::DisableSleeping);
 }
 
 bool FlashLight::UnLoad() {
   if (running) {
+    auto& settingsController = System::SystemTask::displayApp->settingsController;
     // System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
-    System::SystemTask::displayApp->settingsController.SetScreenTimeOut(screenTimeout);
+    settingsController.SetScreenTimeOut(screenTimeout);   
+    System::SystemTask::displayApp->brightnessController.Set(restore);
     running = false;
     lv_obj_clean(lv_scr_act());
     lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);

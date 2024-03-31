@@ -48,7 +48,8 @@ void Calculator::Load() {
   lv_obj_set_style_local_bg_opa(buttonMatrix, LV_BTNMATRIX_PART_BTN, LV_STATE_CHECKED, LV_OPA_COVER);
   lv_obj_set_style_local_bg_grad_stop(buttonMatrix, LV_BTNMATRIX_PART_BTN, LV_STATE_CHECKED, 128);
   lv_obj_set_style_local_bg_main_stop(buttonMatrix, LV_BTNMATRIX_PART_BTN, LV_STATE_CHECKED, 128);
-  UpdateResultLabel();
+  UpdateResultLabel();  // show last result on restart and reload
+  UpdateValueLabel();   // show value after reload
 }
 
 bool Calculator::UnLoad() {

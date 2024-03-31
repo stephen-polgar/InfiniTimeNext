@@ -7,7 +7,7 @@ Only these settings are valid for the InfiniSimNext simulator.
 #define UseCalendar
 #define UseCalculator
 #define UseMotion
-#define UsePaddle 
+// #define UsePaddle 
 // #define UseDice   
 // #define UseTwos    
 // #define UseInfiniPaint  

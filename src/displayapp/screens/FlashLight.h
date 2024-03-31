@@ -12,7 +12,7 @@ namespace Pinetime {
         ~FlashLight()override;
         void Load() override;
         bool UnLoad() override;
-        bool OnTouchEvent(Pinetime::Applications::TouchEvents event) override;       
+        bool OnTouchEvent(Applications::TouchEvents event) override;       
 
       private:     
         uint32_t screenTimeout;
@@ -20,6 +20,7 @@ namespace Pinetime {
         void setIndicators();
         void setColors();
         static void eventHandler(lv_obj_t* obj, lv_event_t event);
+        Controllers::BrightnessController::Levels restore;
         Controllers::BrightnessController::Levels brightnessLevel = Controllers::BrightnessController::Levels::High;
 
         lv_obj_t* flashLight;

@@ -12,8 +12,7 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
 
 ### Removed apps
- - Chimes 
- - All games
+ - Chimes  
  - Metronome
  - WatchFace: InfiniTime, PineTime
 ### [Changes](doc/code/Apps.md)

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose Debug or Release")
 
-project(pinetime VERSION 1.14.3 LANGUAGES C CXX ASM)
+project(pinetime VERSION 1.14.4 LANGUAGES C CXX ASM)
 
 
 set(CMAKE_C_STANDARD 99)
