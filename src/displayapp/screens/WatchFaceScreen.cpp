@@ -1,10 +1,10 @@
 
 #include "WatchFaceScreen.h"
-#include "WatchFaceDigital.h"  //  default if not found
+#include "WatchFaceDigital.h" //  default if not found
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 
-//#define Log
+// #define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -31,6 +31,7 @@ void WatchFaceScreen::Load() {
     }
   }
   current->Load();
+  current->Refresh();
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
   Refresh();
 }
