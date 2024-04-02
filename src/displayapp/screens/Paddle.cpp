@@ -37,7 +37,7 @@ void Paddle::Load() {
 
 bool Paddle::UnLoad() {
   if (running) {
-    running = true;
+    running = false;
     lv_task_del(taskRefresh);
     lv_obj_clean(lv_scr_act());
   }
