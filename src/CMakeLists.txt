@@ -402,6 +402,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Paddle.cpp
         displayapp/screens/Twos.cpp
         displayapp/screens/Dice.cpp
+        displayapp/screens/Metronome.cpp
         displayapp/screens/InfiniPaint.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
@@ -429,6 +430,8 @@ list(APPEND SOURCE_FILES
         displayapp/screens/WatchFaceDigital.cpp       
         displayapp/screens/WatchFaceTerminal.cpp
         displayapp/screens/WatchFaceCasioStyleG7710.cpp
+        displayapp/screens/WatchFaceInfineat.cpp
+        displayapp/screens/WatchFacePineTimeStyle.cpp
 
         ##
 
@@ -624,6 +627,7 @@ set(INCLUDE_FILES
         displayapp/screens/Twos.h
         displayapp/screens/Dice.h
         displayapp/screens/InfiniPaint.h
+        displayapp/screens/Metronome.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h
         displayapp/widgets/PageIndicator.h

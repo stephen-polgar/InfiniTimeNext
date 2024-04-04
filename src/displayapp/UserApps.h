@@ -5,6 +5,8 @@
 #include "displayapp/screens/WatchFaceAnalog.h"
 #include "displayapp/screens/WatchFaceCasioStyleG7710.h"
 #include "displayapp/screens/WatchFaceTerminal.h"
+#include "displayapp/screens/WatchFaceInfineat.h"
+#include "displayapp/screens/WatchFacePineTimeStyle.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -47,6 +49,8 @@ namespace Pinetime {
 #include "displayapp/screens/Twos.h"
 #include "displayapp/screens/Dice.h"
 #include "displayapp/screens/InfiniPaint.h"
+#include "displayapp/screens/Metronome.h"
+
 
 namespace Pinetime {
   namespace Applications {

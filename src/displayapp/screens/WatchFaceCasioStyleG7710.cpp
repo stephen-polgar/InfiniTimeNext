@@ -154,7 +154,7 @@ bool WatchFaceCasioStyleG7710::UnLoad() {
     lv_style_reset(&style_line);
     lv_style_reset(&style_border);
   }
-  return true;
+  return (font_dot40 && font_segment40 && font_segment115);
 }
 
 WatchFaceCasioStyleG7710::~WatchFaceCasioStyleG7710() {

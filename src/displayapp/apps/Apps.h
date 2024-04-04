@@ -47,6 +47,9 @@ namespace Pinetime {
 #ifdef UseInfiniPaint
       Paint,
 #endif
+#ifdef UseMetronome
+      Metronome,
+#endif
 #ifdef UsePaddle
       Paddle,
 #endif
@@ -72,6 +75,12 @@ namespace Pinetime {
       Analog,
 #ifdef UseWatchFaceTerminal
       Terminal,
+#endif
+#ifdef UseWatchFaceInfineat
+      Infineat,
+#endif
+#ifdef UseWatchFacePineTimeStyle
+      PineTimeStyle,
 #endif
       CasioStyleG7710
     };
@@ -120,6 +129,10 @@ namespace Pinetime {
                                   ,
                                   Apps::Dice
 #endif
+#ifdef UseMetronome
+                                  ,
+                                  Apps::Metronome
+#endif
 #ifdef UseMotion
                                   ,
                                   Apps::Motion
@@ -139,6 +152,12 @@ namespace Pinetime {
                                                  WatchFace::Analog,
 #ifdef UseWatchFaceTerminal
                                                  WatchFace::Terminal,
+#endif
+#ifdef UseWatchFaceInfineat
+                                                 WatchFace::Infineat,
+#endif
+#ifdef UseWatchFacePineTimeStyle
+                                                 WatchFace::PineTimeStyle,
 #endif
                                                  WatchFace::CasioStyleG7710>;
 

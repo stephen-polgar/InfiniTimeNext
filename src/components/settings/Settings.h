@@ -1,8 +1,8 @@
 #pragma once
 
-#include "components/brightness/BrightnessController.h"
-#include "components/fs/FS.h"
 #include "displayapp/apps/Apps.h"
+#include "components/fs/FS.h"
+#include "components/brightness/BrightnessController.h"
 #include <bitset>
 
 namespace Pinetime {
@@ -36,7 +36,44 @@ namespace Pinetime {
       enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
       enum class PTSWeather : uint8_t { On, Off };
 
+      struct PineTimeStyle {
+        Colors ColorTime = Colors::Teal;
+        Colors ColorBar = Colors::Teal;
+        Colors ColorBG = Colors::Black;
+        PTSGaugeStyle gaugeStyle = PTSGaugeStyle::Full;
+        PTSWeather weatherEnable = PTSWeather::Off;
+      };
+
       Settings(Controllers::FS& fs);
+
+#ifdef UseWatchFaceInfineat
+      struct WatchFaceInfineat {
+        bool showSideCover = true;
+        int8_t colorIndex = 0;
+      };
+
+      void SetInfineatShowSideCover(bool show) {
+        if (show != settings.watchFaceInfineat.showSideCover) {
+          settings.watchFaceInfineat.showSideCover = show;
+          settingsChanged = true;
+        }
+      };
+
+      bool GetInfineatShowSideCover() const {
+        return settings.watchFaceInfineat.showSideCover;
+      };
+
+      void SetInfineatColorIndex(int8_t index) {
+        if (index != settings.watchFaceInfineat.colorIndex) {
+          settings.watchFaceInfineat.colorIndex = index;
+          settingsChanged = true;
+        }
+      };
+
+      int8_t GetInfineatColorIndex() const {
+        return settings.watchFaceInfineat.colorIndex;
+      };
+#endif
 
       Settings(const Settings&) = delete;
       Settings& operator=(const Settings&) = delete;
@@ -53,7 +90,7 @@ namespace Pinetime {
         settings.watchFace = face;
       };
 
-      Pinetime::Applications::WatchFace GetWatchFace() const {
+      Applications::WatchFace GetWatchFace() const {
         return settings.watchFace;
       };
 
@@ -140,14 +177,14 @@ namespace Pinetime {
         return getWakeUpModes()[static_cast<size_t>(mode)];
       }
 
-      void SetBrightness(Controllers::BrightnessController::Levels level) {
+      void SetBrightness(BrightnessController::Levels level) {
         if (level != settings.brightLevel) {
           settingsChanged = true;
         }
         settings.brightLevel = level;
       };
 
-      Controllers::BrightnessController::Levels GetBrightness() const {
+      BrightnessController::Levels GetBrightness() const {
         return settings.brightLevel;
       };
 
@@ -183,8 +220,7 @@ namespace Pinetime {
 
     private:
       Controllers::FS& fs;
-
-      static constexpr uint32_t settingsVersion = 0x0007;
+      static constexpr uint32_t settingsVersion = 0x0001;
 
       struct SettingsData {
         uint32_t version = settingsVersion;
@@ -200,18 +236,20 @@ namespace Pinetime {
         uint16_t shakeWakeThreshold = 150;
 
         Controllers::BrightnessController::Levels brightLevel = Controllers::BrightnessController::Levels::Medium;
+#ifdef UseWatchFaceInfineat
+        WatchFaceInfineat watchFaceInfineat;
+#endif
       };
 
       SettingsData settings;
       bool settingsChanged = false;
-    
+
       /* ble state is intentionally not saved with the other watch settings and initialized
        * to off (false) on every boot because we always want ble to be enabled on startup
        */
       bool bleRadioEnabled = true;
 
-      void LoadSettingsFromFile();
-      void SaveSettingsToFile();
+      static constexpr const char* file = "/settings.dat";
     };
   }
 }

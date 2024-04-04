@@ -16,7 +16,6 @@ WatchFaceScreen::WatchFaceScreen() : Screen(Apps::Clock) {
 }
 
 void WatchFaceScreen::Load() {
-  running = true;
   Apps selected = Apps(System::SystemTask::displayApp->settingsController.GetWatchFace());
   if (!current || current->Id != selected) {
 #ifdef Log
@@ -32,15 +31,19 @@ void WatchFaceScreen::Load() {
   }
   current->Load();
   current->Refresh();
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-  Refresh();
+  running = current->IsRunning();
+  if (running) {
+    taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  } else {
+    System::SystemTask::displayApp->settingsController.SetWatchFace(WatchFace::Digital);
+  }
 }
 
 bool WatchFaceScreen::UnLoad() {
   if (running) {
     lv_task_del(taskRefresh);
     running = false;
-    current->UnLoad();
+    return current->UnLoad();
   }
   return true;
 }
