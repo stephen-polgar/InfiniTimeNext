@@ -64,7 +64,12 @@ bool WatchFaceScreen::UnLoad() {
 }
 
 WatchFaceScreen::~WatchFaceScreen() {
-  UnLoad();
+  if (running) {
+    lv_task_del(taskRefresh);
+  }
+  if (current) {
+    delete current;
+  }
 #ifdef Log
   NRF_LOG_INFO("WatchFaceScreen delete=%d", this);
 #endif
