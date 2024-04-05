@@ -1,71 +1,47 @@
 #pragma once
 
-
 #include "displayapp/screens/Screen.h"
 #ifdef UseWatchFacePineTimeStyle
-#include <lvgl/src/lv_core/lv_obj.h>
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include "displayapp/screens/BatteryIcon.h"
-#include "displayapp/Colors.h"
-#include "components/datetime/DateTimeController.h"
-#include "components/ble/SimpleWeatherService.h"
-#include "components/ble/BleController.h"
-#include "utility/DirtyValue.h"
+  #include "components/fs/FS.h"
+  #include <chrono>
+  #include "displayapp/screens/BatteryIcon.h"
+  #include "displayapp/Colors.h"
+  #include "components/datetime/DateTimeController.h"
+  #include "components/ble/SimpleWeatherService.h"
+  #include "utility/DirtyValue.h"
 
 namespace Pinetime {
-  namespace Controllers {
-    class Settings;
-    class Battery;
-    class Ble;
-    class NotificationManager;
-    class HeartRateController;
-    class MotionController;
-  }
-
   namespace Applications {
     namespace Screens {
       class WatchFacePineTimeStyle : public Screen {
       public:
-        WatchFacePineTimeStyle(Controllers::DateTime& dateTimeController,
-                               const Controllers::Battery& batteryController,
-                               const Controllers::Ble& bleController,
-                               Controllers::NotificationManager& notificationManager,
-                               Controllers::Settings& settingsController,
-                               Controllers::MotionController& motionController,
-                               Controllers::SimpleWeatherService& weather);
+        WatchFacePineTimeStyle();
         ~WatchFacePineTimeStyle() override;
-
+        void Load() override;
+        bool UnLoad() override;
         bool OnTouchEvent(TouchEvents event) override;
         bool OnButtonPushed() override;
-
         void Refresh() override;
 
-        void UpdateSelected(lv_obj_t* object, lv_event_t event);
-
       private:
-        uint8_t displayedHour = -1;
-        uint8_t displayedMinute = -1;
-        uint8_t displayedSecond = -1;
+        uint8_t displayedHour, displayedMinute, displayedSecond;
+        uint16_t currentYear;
+        Controllers::DateTime::Months currentMonth;
+        Controllers::DateTime::Days currentDayOfWeek;
+        uint8_t currentDay;
+        uint32_t savedTick;
 
-        uint16_t currentYear = 1970;
-        Controllers::DateTime::Months currentMonth = Pinetime::Controllers::DateTime::Months::Unknown;
-        Controllers::DateTime::Days currentDayOfWeek = Pinetime::Controllers::DateTime::Days::Unknown;
-        uint8_t currentDay = 0;
-        uint32_t savedTick = 0;
+        Utility::DirtyValue<uint8_t> batteryPercentRemaining;
+        Utility::DirtyValue<bool> isCharging;
+        Utility::DirtyValue<bool> bleState;
+        Utility::DirtyValue<bool> bleRadioEnabled;
+        Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>> currentDateTime;
+        Utility::DirtyValue<uint32_t> stepCount;
+        Utility::DirtyValue<bool> notificationState;
+        Utility::DirtyValue<std::optional<Controllers::SimpleWeatherService::CurrentWeather>> currentWeather;
 
-        Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
-        Utility::DirtyValue<bool> isCharging {};
-        Utility::DirtyValue<bool> bleState {};
-        Utility::DirtyValue<bool> bleRadioEnabled {};
-        Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>> currentDateTime {};
-        Utility::DirtyValue<uint32_t> stepCount {};
-        Utility::DirtyValue<bool> notificationState {};
-        Utility::DirtyValue<std::optional<Pinetime::Controllers::SimpleWeatherService::CurrentWeather>> currentWeather {};
-
-        static Pinetime::Controllers::Settings::Colors GetNext(Controllers::Settings::Colors color);
-        static Pinetime::Controllers::Settings::Colors GetPrevious(Controllers::Settings::Colors color);
+        static Controllers::Settings::Colors GetNext(Controllers::Settings::Colors color);
+        static Controllers::Settings::Colors GetPrevious(Controllers::Settings::Colors color);
 
         lv_obj_t* btnNextTime;
         lv_obj_t* btnPrevTime;
@@ -105,20 +81,15 @@ namespace Pinetime {
         lv_obj_t* stepValue;
         lv_color_t needle_colors[1];
 
-        BatteryIcon batteryIcon;
+        BatteryIcon batteryIcon {false};
 
-        Controllers::DateTime& dateTimeController;
-        const Controllers::Battery& batteryController;
-        const Controllers::Ble& bleController;
-        Controllers::NotificationManager& notificationManager;
-        Controllers::Settings& settingsController;
-        Controllers::MotionController& motionController;
-        Controllers::SimpleWeatherService& weatherService;
+        Controllers::Settings* settingsController;
+
+        void updateSelected(lv_obj_t* object);
+        static void event_handler(lv_obj_t* obj, lv_event_t event);
 
         void SetBatteryIcon();
         void CloseMenu();
-
-        lv_task_t* taskRefresh;
       };
     }
 
@@ -127,17 +98,11 @@ namespace Pinetime {
       static constexpr WatchFace watchFace = WatchFace::PineTimeStyle;
       static constexpr const char* name = "PineTimeStyle";
 
-      static Screens::Screen* Create(AppControllers& controllers) {
-        return new Screens::WatchFacePineTimeStyle(controllers.dateTimeController,
-                                                   controllers.batteryController,
-                                                   controllers.bleController,
-                                                   controllers.notificationManager,
-                                                   controllers.settingsController,
-                                                   controllers.motionController,
-                                                   *controllers.weatherController);
+      static Screens::Screen* Create() {
+        return new Screens::WatchFacePineTimeStyle();
       };
 
-      static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {
+      static bool IsAvailable(Controllers::FS& /*filesystem*/) {
         return true;
       }
     };

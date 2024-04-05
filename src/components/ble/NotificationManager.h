@@ -1,5 +1,6 @@
 #pragma once
 
+#include "displayapp/apps/UsedAppsConfig.h"
 #include <array>
 #include <atomic>
 
@@ -54,7 +55,7 @@ namespace Pinetime {
       uint8_t nextId = 0;     
       Notification& At(uint8_t idx);
       void DismissIdx(uint8_t idx);
-      static constexpr uint8_t TotalNbNotifications = 8;
+      static constexpr uint8_t TotalNbNotifications = MaxNotifications;
       std::array<Notification, TotalNbNotifications> notifications;
       uint8_t beginIdx = TotalNbNotifications - 1; // index of the newest notification
       uint8_t size = 0;                           // number of valid notifications in buffer

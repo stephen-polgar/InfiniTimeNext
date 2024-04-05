@@ -1,6 +1,22 @@
+/*
+ * This file is part of the InfinitimeNext distribution (https://github.com/stephen-polgar/InfiniTimeNext).
+ * Copyright (c) 2024 Istvan Polgar.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "WatchFaceScreen.h"
-#include "WatchFaceDigital.h" //  default if not found
+#include "WatchFaceDigital.h" //  default if not found or not working
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 
@@ -30,7 +46,6 @@ void WatchFaceScreen::Load() {
     }
   }
   current->Load();
-  current->Refresh();
   running = current->IsRunning();
   if (running) {
     taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
@@ -63,14 +78,38 @@ bool WatchFaceScreen::OnTouchEvent(uint16_t x, uint16_t y) {
   return running ? current->OnTouchEvent(x, y) : false;
 }
 
+bool WatchFaceScreen::OnButtonPushed() {
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::GoToSleep);
+  return true;
+}
+
 bool WatchFaceScreen::OnTouchEvent(TouchEvents event) {
-  if (running) {
-    if (current->OnTouchEvent(event))
-      return true;
-    if (event == TouchEvents::LongTap) {
-      System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace);
-      return true;
+  if (running && !current->OnTouchEvent(event)) {
+    switch (event) {
+      case TouchEvents::LongTap:
+        System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace);
+        break;
+      case TouchEvents::SwipeUp:
+        System::SystemTask::displayApp->StartApp(Apps::Launcher, Screen::FullRefreshDirections::Up);
+        break;
+      case TouchEvents::SwipeDown:
+        if (System::SystemTask::displayApp->notificationManager.IsEmpty() &&
+            System::SystemTask::displayApp->systemTask->nimbleController.weatherService.Current().has_value()) {
+          System::SystemTask::displayApp->StartApp(Apps::Weather, Screen::FullRefreshDirections::Down);
+        } else {
+          System::SystemTask::displayApp->StartApp(Apps::Notifications, Screen::FullRefreshDirections::Down);
+        }
+        break;
+      case TouchEvents::SwipeRight:
+        System::SystemTask::displayApp->StartApp(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
+        break;
+      case TouchEvents::DoubleTap:
+        System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::GoToSleep);
+        break;
+      default:
+        return false;
     }
+    return true;
   }
   return false;
 }

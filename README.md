@@ -11,9 +11,6 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
 * [Gallery](https://github.com/InfiniTimeOrg/InfiniTime/pull/1384) (Additional set-up is required to add external resources. Read instructions in pull.)
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
 
-### Removed apps
- - Chimes  
- - WatchFace: InfiniTime
 ### [Changes](doc/code/Apps.md)
 Now most system and user application constructors are empty and are used to create new `Screen` based objects with different arguments.
 Constructors do not load the screen. The watch screen are filled and cleaned by the `Screen::Load()` and `Screen::UnLoad()` methods.
@@ -23,13 +20,11 @@ interrupted apps (for example, game results are not lost due to new notification
 Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on [PineTime smartwatch](https://pine64.org/devices/pinetime/).
 
 ## New to InfiniTime?
-
 - [Getting started with InfiniTime](doc/gettingStarted/gettingStarted-1.0.md)
 - [Updating the software](doc/gettingStarted/updating-software.md)
 - [About the firmware and bootloader](doc/gettingStarted/about-software.md)
 
 ### Companion apps
-
 - [Gadgetbridge](https://gadgetbridge.org/) (Android)
 - [AmazFish](https://openrepos.net/content/piggz/amazfish/) (SailfishOS)
 - [Siglo](https://github.com/alexr4535/siglo) (Linux)
@@ -40,7 +35,6 @@ Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in t
 ***Note**: We removed mentions to NRFConnect as this app is closed source and recent versions do not work anymore with InfiniTime (the last version known to work is 4.24.3). If you used NRFConnect in the past, we recommend you switch to [Gadgetbridge](https://gadgetbridge.org/).*
 
 ## Development
-
 - [InfiniTime Vision](doc/InfiniTimeVision.md)
 - [Rough structure of the code](doc/code/Intro.md)
 - [How to implement an application](doc/code/Apps.md)
@@ -50,12 +44,10 @@ Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in t
 - [External resources](doc/ExternalResources.md)
 
 ### Contributing
-
 - [How to contribute?](CONTRIBUTING.md)
 - [Coding conventions](doc/coding-convention.md)
 
 ### Build, flash and debug
-
 - [InfiniTimeNext simulator](https://github.com/stephen-polgar/InfiniSimNext)
 - [Build the project](doc/buildAndProgram.md)
 - [Build the project with Docker](doc/buildWithDocker.md)
@@ -67,22 +59,18 @@ Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in t
 - [Stub using NRF52-DK](doc/PinetimeStubWithNrf52DK.md)
 
 ### API
-
 - [BLE implementation and API](doc/ble.md)
 
 ### Architecture and technical topics
-
 - [Memory analysis](doc/MemoryAnalysis.md)
 
 ### Project management
-
 - [Maintainer's guide](doc/maintainer-guide.md)
 - [Versioning](doc/versioning.md)
 - [Files included in the release notes](doc/filesInReleaseNotes.md)
 - [Files needed by the factory](doc/files-needed-by-factory.md)
 
 ## Licenses
-
 This project is released under the GNU General Public License version 3 or, at your option, any later version.
 
 It integrates the following projects:
@@ -93,7 +81,6 @@ It integrates the following projects:
 - Font: **[Jetbrains Mono](https://www.jetbrains.com/fr-fr/lp/mono/)** under the Apache 2.0 license
 
 ## Credits
-
 I’m not working alone on this project. First, many people create pull requests for this project. Then, there is the whole #pinetime community: a lot of people all around the world who are hacking, searching, experimenting and programming the Pinetime. We exchange our ideas, experiments and code in the chat rooms and forums.
 
 Here are some people I would like to highlight:

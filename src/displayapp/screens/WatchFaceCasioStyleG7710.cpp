@@ -145,6 +145,7 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_set_style_local_text_color(stepIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+  Refresh();
 }
 
 bool WatchFaceCasioStyleG7710::UnLoad() {

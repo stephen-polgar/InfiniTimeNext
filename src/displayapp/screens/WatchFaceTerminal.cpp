@@ -48,6 +48,7 @@ void WatchFaceTerminal::Load() {
   stepValue = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_recolor(stepValue, true);
   lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, 0);
+  Refresh();
 }
 
 bool WatchFaceTerminal::UnLoad() {

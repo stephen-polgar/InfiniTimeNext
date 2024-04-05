@@ -36,17 +36,14 @@ namespace Pinetime {
     public:
       enum class States : uint8_t { Idle, Running };
 
-      DisplayApp(Drivers::St7789& lcd,
-                 Drivers::Cst816S& touchPanel,                                            
-                  Drivers::SpiNorFlash& spiNorFlash);
+      DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Drivers::SpiNorFlash& spiNorFlash);
 
       void Start(System::BootErrors error);
       void PushMessage(Display::Messages id);
-
       void StartApp(Apps app, Screen::FullRefreshDirections direction = Screen::FullRefreshDirections::Up);
       void StartApp(Screen* screen, Screen::FullRefreshDirections direction = Screen::FullRefreshDirections::Up);
       void SetFullRefresh(Screen::FullRefreshDirections direction);
-      Screen * GetSelectedWatchFace();
+      Screen* GetSelectedWatchFace();
 
       Controllers::DateTime dateTimeController;
       System::SystemTask* systemTask;
@@ -87,7 +84,6 @@ namespace Pinetime {
       void refresh();
       void loadScreen(Apps app, Screen::FullRefreshDirections direction);
       void loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store = true);
-      void PushMessageToSystemTask(System::Messages id);
 
       System::BootErrors bootError;
       void ApplyBrightness();

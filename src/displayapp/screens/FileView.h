@@ -19,7 +19,7 @@ namespace Pinetime {
 
       private:
         char name[LFS_NAME_MAX];
-        lv_obj_t* label = NULL;
+        lv_obj_t* label;
 
         Widgets::PageIndicator& pageIndicator;
         const uint8_t screenID, nScreens;
@@ -28,6 +28,8 @@ namespace Pinetime {
       class ImageView : public FileView {
       public:
         ImageView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets::PageIndicator& pageIndicator);
+        void Load() override;
+        bool UnLoad() override;
       };
 
       class TextView : public FileView {
@@ -37,6 +39,8 @@ namespace Pinetime {
                  const char* path,                
                  Widgets::PageIndicator& pageIndicator);
         ~TextView() override;
+        void Load() override;
+        bool UnLoad() override;
 
       private:
         char* buf;

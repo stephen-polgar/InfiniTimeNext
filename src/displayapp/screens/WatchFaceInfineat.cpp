@@ -11,7 +11,6 @@
 
 using namespace Pinetime::Applications::Screens;
 
-
 WatchFaceInfineat::WatchFaceInfineat() : Screen(WatchFace::Infineat) {
   font_teko = lv_font_load("F:/fonts/teko.bin");
   font_bebas = lv_font_load("F:/fonts/bebas.bin");
@@ -30,7 +29,7 @@ void WatchFaceInfineat::Load() {
     lines[i] = lv_line_create(lv_scr_act(), nullptr);
     lv_obj_set_style_local_line_width(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, lineWidths[i]);
     lv_color_t color = (*colors)[i];
-    lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, color);  
+    lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, color);
     lv_line_set_points(lines[i], linePoints[i], 2);
   }
 
@@ -163,6 +162,7 @@ void WatchFaceInfineat::Load() {
   lv_obj_set_style_local_text_font(labelBtnSettings, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
   lv_label_set_text_static(labelBtnSettings, Symbols::settings);
   lv_obj_set_hidden(btnSettings, true);
+  Refresh();
 }
 
 bool WatchFaceInfineat::UnLoad() {
@@ -182,14 +182,16 @@ WatchFaceInfineat::~WatchFaceInfineat() {
 }
 
 bool WatchFaceInfineat::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  if ((event == Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnSettings)) {
-    lv_obj_set_hidden(btnSettings, false);
-    savedTick = lv_tick_get();
-    return true;
-  }
-  // Prevent screen from sleeping when double tapping with settings on
-  if ((event == Applications::TouchEvents::DoubleTap) && !lv_obj_get_hidden(btnClose)) {
-    return true;
+  if (running) {
+    if ((event == Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnSettings)) {
+      lv_obj_set_hidden(btnSettings, false);
+      savedTick = lv_tick_get();
+      return true;
+    }
+    // Prevent screen from sleeping when double tapping with settings on
+    if ((event == Applications::TouchEvents::DoubleTap) && !lv_obj_get_hidden(btnClose)) {
+      return true;
+    }
   }
   return false;
 }
@@ -203,14 +205,16 @@ void WatchFaceInfineat::closeMenu() {
 }
 
 bool WatchFaceInfineat::OnButtonPushed() {
-  if (!lv_obj_get_hidden(btnClose)) {
-    closeMenu();
-    return true;
+  if (running) {
+    if (!lv_obj_get_hidden(btnClose)) {
+      closeMenu();
+      return true;
+    }
   }
   return false;
 }
 
-void WatchFaceInfineat::updateSelected(lv_obj_t* object) { 
+void WatchFaceInfineat::updateSelected(lv_obj_t* object) {
   bool showSideCover = settingsController->GetInfineatShowSideCover();
   int8_t colorIndex = settingsController->GetInfineatColorIndex();
 
@@ -231,7 +235,7 @@ void WatchFaceInfineat::updateSelected(lv_obj_t* object) {
       lv_obj_set_hidden(line, showSideCover);
     }
     lv_obj_set_hidden(btnNextColor, showSideCover);
-    lv_obj_set_hidden(btnPrevColor, showSideCover);    
+    lv_obj_set_hidden(btnPrevColor, showSideCover);
     lv_label_set_text_static(lblToggle, showSideCover ? "OFF" : "ON");
   }
   if (object == btnNextColor) {

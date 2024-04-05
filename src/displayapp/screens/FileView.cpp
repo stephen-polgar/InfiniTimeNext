@@ -9,7 +9,7 @@ FileView::FileView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets
   : screenID(screenID), nScreens(nScreens), Screen(Apps::FileView), pageIndicator{pageIndicator} {
   
   const char* c = strrchr(path, '/') + 1;
-  if (c == nullptr)
+  if (!c)
     c = path;
 
   strncpy(name, c, LFS_NAME_MAX - 1);
@@ -22,9 +22,6 @@ FileView::FileView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets
 
 void FileView::Load() {
   running = true;
-  if (label != nullptr) {
-    return;
-  }
   label = lv_btn_create(lv_scr_act(), nullptr);
   label->user_data = this;
 
@@ -42,18 +39,15 @@ void FileView::Load() {
 bool FileView::UnLoad() {
   if (running) {
     running = false;
-  lv_obj_del(label);
-  //pageIndicator.Hide();
-  label = nullptr;
+  lv_obj_del(label); 
   }
   return true;
 }
 
 void FileView::ToggleInfo() {
-  if (label == nullptr)
-    Load();
+  if (running) UnLoad();
   else
-    UnLoad();
+    Load(); 
 }
 
 FileView::~FileView() {
@@ -73,7 +67,7 @@ TextView::TextView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets
   lv_obj_set_width(label, LV_HOR_RES);
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 
-  lfs_info info = {0};
+  lfs_info info;
   auto& fs = System::SystemTask::displayApp->filesystem;
   if (fs.Stat(path + 2, &info) != LFS_ERR_OK) {
     lv_label_set_text_static(label, "could not stat file");

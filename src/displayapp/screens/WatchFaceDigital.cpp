@@ -8,9 +8,7 @@
 #include "WeatherSymbols.h"
 #include "Symbols.h"
 #include "NotificationIcon.h"
-#include "Weather.h"
-#include "Steps.h"
-#include "HeartRate.h"
+
 
 using namespace Pinetime::Applications::Screens;
 
@@ -72,6 +70,7 @@ void WatchFaceDigital::Load() {
   lv_obj_set_style_local_text_color(stepIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0x00FFE7));
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+  Refresh();
 }
 
 bool WatchFaceDigital::UnLoad() {
@@ -189,24 +188,26 @@ void WatchFaceDigital::Refresh() {
 }
 
 bool WatchFaceDigital::OnTouchEvent(uint16_t x, uint16_t y) {
+  if (running) {
   if (x < 80 && y > LV_VER_RES - 60) { // heartbeatIcon
-    System::SystemTask::displayApp->StartApp(new HeartRate());
+    System::SystemTask::displayApp->StartApp(Apps::HeartRate);
     return true;
   }
   uint16_t w = lv_obj_get_width(weatherIcon);
   if (w > 8) { // weather loaded
     uint16_t o = lv_obj_get_x(weatherIcon);
-    if (x > o && x < o + 2 * w) {
+    if (x > o && x < o + 3 * w) {
       o = lv_obj_get_y(weatherIcon);
       if (y > o && y < o + w) {
-        System::SystemTask::displayApp->StartApp(new Weather());
+        System::SystemTask::displayApp->StartApp(Apps::Weather);
         return true;
       }
     }
   }
   if (x > LV_HOR_RES - 80 && y > LV_VER_RES - 60) { // stepIcon
-    System::SystemTask::displayApp->StartApp(new Steps());
+    System::SystemTask::displayApp->StartApp(Apps::Steps);
     return true;
+  }
   }
   return false;
 }

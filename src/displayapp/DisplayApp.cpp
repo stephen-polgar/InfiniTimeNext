@@ -171,7 +171,7 @@ void DisplayApp::refresh() {
           vTaskDelay(100);
         }
         lcd.Sleep();
-        PushMessageToSystemTask(System::Messages::OnDisplayTaskSleeping);
+        systemTask->PushMessage(System::Messages::OnDisplayTaskSleeping);
         state = States::Idle;
         break;
       case Messages::GoToRunning:
@@ -202,7 +202,7 @@ void DisplayApp::refresh() {
         break;
       case Messages::TimerDone: {
         if (state != States::Running)
-          PushMessageToSystemTask(System::Messages::GoToRunning);
+          systemTask->PushMessage(System::Messages::GoToRunning);
         // motorController.StartRinging();
         motorController.RunForDuration(255);
         if (currentScreen->Id == Apps::TimerSet) {
@@ -250,24 +250,7 @@ void DisplayApp::refresh() {
           }
         };
         if (!currentScreen->OnTouchEvent(gesture)) {
-          if (currentScreen->Id == Apps::Clock) {
-            switch (gesture) {
-              case TouchEvents::SwipeUp:
-                loadScreen(Apps::Launcher, Screen::FullRefreshDirections::Up);
-                break;
-              case TouchEvents::SwipeDown:
-                loadScreen(Apps::Notifications, Screen::FullRefreshDirections::Down);
-                break;
-              case TouchEvents::SwipeRight:
-                loadScreen(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
-                break;
-              case TouchEvents::DoubleTap:
-                PushMessageToSystemTask(System::Messages::GoToSleep);
-                break;
-              default:
-                break;
-            }
-          } else if (!screenStack.Empty() && gesture == LoadDirToReturnSwipe(screenStack.Top()->direction)) {
+          if (!screenStack.Empty() && gesture == LoadDirToReturnSwipe(screenStack.Top()->direction)) {
             loadPreviousScreen();
           }
         } else {
@@ -277,11 +260,7 @@ void DisplayApp::refresh() {
       case Messages::ButtonPushed:
         motorController.StopRinging();
         if (!currentScreen->OnButtonPushed()) {
-          if (currentScreen->Id == Apps::Clock) {
-            PushMessageToSystemTask(System::Messages::GoToSleep);
-          } else {
-            loadPreviousScreen();
-          }
+          loadPreviousScreen();
         }
         break;
       case Messages::ButtonLongPressed:
@@ -311,7 +290,7 @@ void DisplayApp::refresh() {
         loadScreen(Apps::FirmwareUpdate, Screen::FullRefreshDirections::Down);
         break;
       case Messages::BleRadioEnableToggle:
-        PushMessageToSystemTask(System::Messages::BleRadioEnableToggle);
+        systemTask->PushMessage(System::Messages::BleRadioEnableToggle);
         break;
       case Messages::UpdateDateTime:
         // Added to remove warning
@@ -527,10 +506,6 @@ Screen* DisplayApp::GetSelectedWatchFace() {
       return watchFaceDescription.create();
   }
   return NULL;
-}
-
-void DisplayApp::PushMessageToSystemTask(System::Messages id) {
-  systemTask->PushMessage(id);
 }
 
 void DisplayApp::ApplyBrightness() {

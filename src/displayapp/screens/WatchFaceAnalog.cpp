@@ -133,6 +133,7 @@ void WatchFaceAnalog::Load() {
   lv_obj_add_style(hour_body_trace, LV_LINE_PART_MAIN, &hour_line_style_trace);
  
   lv_obj_move_foreground(label_date_day);
+  Refresh();
 }
 
 bool WatchFaceAnalog::UnLoad() {

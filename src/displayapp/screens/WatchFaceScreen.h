@@ -11,17 +11,16 @@ namespace Pinetime {
       public:
         WatchFaceScreen();
         ~WatchFaceScreen() override;
-
         void Load() override;
         bool UnLoad() override;
-
+        bool OnButtonPushed() override;
         bool OnTouchEvent(uint16_t, uint16_t) override;
         bool OnTouchEvent(TouchEvents) override;
 
       private:
         void Refresh() override;
         lv_task_t* taskRefresh;
-        Screen* current = NULL;       
+        Screen* current = NULL;
       };
     }
   }

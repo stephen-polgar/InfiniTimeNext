@@ -33,16 +33,6 @@ namespace Pinetime {
         Orange,
         Pink
       };
-      enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
-      enum class PTSWeather : uint8_t { On, Off };
-
-      struct PineTimeStyle {
-        Colors ColorTime = Colors::Teal;
-        Colors ColorBar = Colors::Teal;
-        Colors ColorBG = Colors::Black;
-        PTSGaugeStyle gaugeStyle = PTSGaugeStyle::Full;
-        PTSWeather weatherEnable = PTSWeather::Off;
-      };
 
       Settings(Controllers::FS& fs);
 
@@ -72,6 +62,68 @@ namespace Pinetime {
 
       int8_t GetInfineatColorIndex() const {
         return settings.watchFaceInfineat.colorIndex;
+      };
+#endif
+#ifdef UseWatchFacePineTimeStyle
+      enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
+      enum class PTSWeather : uint8_t { On, Off };
+
+      struct PineTimeStyle {
+        Colors ColorTime = Colors::Teal;
+        Colors ColorBar = Colors::Teal;
+        Colors ColorBG = Colors::Black;
+        PTSGaugeStyle gaugeStyle = PTSGaugeStyle::Full;
+        PTSWeather weatherEnable = PTSWeather::Off;
+      };
+
+      void SetPTSColorTime(Colors colorTime) {
+        if (colorTime != settings.PTS.ColorTime)
+          settingsChanged = true;
+        settings.PTS.ColorTime = colorTime;
+      };
+
+      Colors GetPTSColorTime() const {
+        return settings.PTS.ColorTime;
+      };
+
+      void SetPTSColorBar(Colors colorBar) {
+        if (colorBar != settings.PTS.ColorBar)
+          settingsChanged = true;
+        settings.PTS.ColorBar = colorBar;
+      };
+
+      Colors GetPTSColorBar() const {
+        return settings.PTS.ColorBar;
+      };
+
+      void SetPTSColorBG(Colors colorBG) {
+        if (colorBG != settings.PTS.ColorBG)
+          settingsChanged = true;
+        settings.PTS.ColorBG = colorBG;
+      };
+
+      Colors GetPTSColorBG() const {
+        return settings.PTS.ColorBG;
+      };
+
+      void SetPTSGaugeStyle(PTSGaugeStyle gaugeStyle) {
+        if (gaugeStyle != settings.PTS.gaugeStyle)
+          settingsChanged = true;
+        settings.PTS.gaugeStyle = gaugeStyle;
+      };
+
+      PTSGaugeStyle GetPTSGaugeStyle() const {
+        return settings.PTS.gaugeStyle;
+      };
+
+      void SetPTSWeather(PTSWeather weatherEnable) {
+        if (weatherEnable != settings.PTS.weatherEnable)
+          settingsChanged = true;
+        settings.PTS.weatherEnable = weatherEnable;
+      };
+
+      PTSWeather GetPTSWeather() const {
+        return settings.PTS.weatherEnable;
       };
 #endif
 
@@ -238,6 +290,9 @@ namespace Pinetime {
         Controllers::BrightnessController::Levels brightLevel = Controllers::BrightnessController::Levels::Medium;
 #ifdef UseWatchFaceInfineat
         WatchFaceInfineat watchFaceInfineat;
+#endif
+#ifdef UseWatchFacePineTimeStyle
+        PineTimeStyle PTS;
 #endif
       };
 
