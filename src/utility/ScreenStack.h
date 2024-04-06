@@ -15,7 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "displayapp/screens/Screen.h"
 #include <array>
 
@@ -41,54 +40,68 @@ namespace Pinetime {
       Screen* Get(Applications::Apps id);
 
     private:
-      std::array<Screen*, N> elementArray;
-      uint8_t stackPointer = 0;
+      std::array<Screen*, N> screenArray;
+      uint8_t size = 0;
     };
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Pop() {
 #ifdef StackLog
-      Screen* screen = stackPointer ? elementArray[--stackPointer] : NULL;
-      NRF_LOG_INFO("ScreenStack:Pop %d %d %d", screen, (screen ? uint8_t(screen->Id) : 0), stackPointer);
+      Screen* screen = size ? screenArray[--size] : NULL;
+      NRF_LOG_INFO("ScreenStack:Pop %d %d %d", screen, (screen ? uint8_t(screen->Id) : 0), size);
       return screen;
 #else
-      return stackPointer ? elementArray[--stackPointer] : NULL;
+      return size ? screenArray[--size] : NULL;
 #endif
     }
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Get(Applications::Apps id) {
       Screen* screen = NULL;
-      if (stackPointer) {
-        uint8_t i = stackPointer;
-        while (--i) {
-          if (id == elementArray[i]->Id) {
-            screen = elementArray[i];
-            stackPointer--;
-            while (i < stackPointer) {
-              elementArray[i] = elementArray[++i];
-            }
-            break;
+      uint8_t i = size;
+      while (i--) {
+        if (id == screenArray[i]->Id) {
+          screen = screenArray[i];
+          size--;
+          while (i < size) {
+            screenArray[i] = screenArray[++i];
           }
+          break;
         }
       }
 #ifdef StackLog
-      NRF_LOG_INFO("ScreenStack:Get %d %d %d", screen, uint8_t(id), stackPointer);
+      NRF_LOG_INFO("ScreenStack:Get %d %d %d", screen, uint8_t(id), size);
 #endif
       return screen;
     }
 
     template <uint8_t N>
     void ScreenStack<N>::Push(Screen* screen) {
-      if (stackPointer == N) {
-        delete elementArray[0];
-        for (uint8_t i = 0; i < --stackPointer; i++) {
-          elementArray[i] = elementArray[i + 1];
+      uint8_t i;
+      for (i = 0; i < size; i++) {
+        if (screenArray[i] == screen) {
+#ifdef StackLog
+          NRF_LOG_INFO("ScreenStack:Push remove %d %d %d", screenArray[0], uint8_t(screenArray[0]->Id), size);
+#endif
+          size--;
+          for (uint8_t i2 = i; i2 < size; i2++) {
+            screenArray[i2] = screenArray[i2 + 1];
+          }
         }
       }
-      elementArray[stackPointer++] = screen;
+      if (size == N) {
 #ifdef StackLog
-      NRF_LOG_INFO("ScreenStack:Push %d %d %d", screen, uint8_t(screen->Id), stackPointer);
+        NRF_LOG_INFO("ScreenStack:Push delete %d %d %d", screenArray[0], uint8_t(screenArray[0]->Id), size);
+#endif
+        delete screenArray[0];
+        size--;
+        for (i = 0; i < size; i++) {
+          screenArray[i] = screenArray[i + 1];
+        }
+      }
+      screenArray[size++] = screen;
+#ifdef StackLog
+      NRF_LOG_INFO("ScreenStack:Push %d %d %d", screen, uint8_t(screen->Id), size);
 #endif
     }
 
@@ -97,29 +110,19 @@ namespace Pinetime {
 #ifdef StackLog
       NRF_LOG_INFO("ScreenStack:Reset");
 #endif
-      while (stackPointer) {
-        delete elementArray[--stackPointer];
+      while (size) {
+        delete screenArray[--size];
       }
     }
 
     template <uint8_t N>
     void ScreenStack<N>::DeleteAll(Applications::Apps id) {
-      bool ready = false;
-      uint8_t i = 0;
-      while (!ready) {
-        while (i < stackPointer) {
-          if (id == elementArray[i]->Id) {
-            delete elementArray[i];
-            break;
-          } else
-            i++;
-        }
-        if (i == stackPointer)
-          ready = true;
-        else {
-          stackPointer--;
-          for (uint8_t i2 = i; i2 < stackPointer; i2++) {
-            elementArray[i2] = elementArray[i2 + 1];
+      for (uint8_t i = 0; i < size; i++) {
+        if (id == screenArray[i]->Id) {
+          delete screenArray[i];
+          size--;
+          for (uint8_t i2 = i; i2 < size; i2++) {
+            screenArray[i2] = screenArray[i2 + 1];
           }
         }
       }
@@ -127,12 +130,12 @@ namespace Pinetime {
 
     template <uint8_t N>
     bool ScreenStack<N>::Empty() {
-      return !stackPointer;
+      return !size;
     }
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Top() {
-      return stackPointer ? elementArray[stackPointer - 1] : NULL;
+      return size ? screenArray[size - 1] : NULL;
     }
   }
 }

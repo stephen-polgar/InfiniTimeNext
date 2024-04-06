@@ -36,7 +36,7 @@ void SettingDisplay::Load() {
   lv_obj_align(icon, title, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
   char buffer[4];
-  for (unsigned int i = 0; i < options.size(); i++) {
+  for (uint8_t i = 0; i < options.size(); i++) {
     cbOption[i] = lv_checkbox_create(container1, nullptr);
     snprintf(buffer, sizeof(buffer), "%2" PRIu16 "s", options[i] / 1000);
     lv_checkbox_set_text(cbOption[i], buffer);
@@ -55,7 +55,7 @@ bool SettingDisplay::UnLoad() {
     running = false;
     lv_obj_clean(lv_scr_act());
   }
-  return true;
+  return false;
 }
 
 SettingDisplay::~SettingDisplay() {
@@ -64,10 +64,11 @@ SettingDisplay::~SettingDisplay() {
 }
 
 void SettingDisplay::updateSelected(lv_obj_t* object) {
-  for (unsigned int i = 0; i < options.size(); i++) {
+  for (uint8_t i = 0; i < options.size(); i++) {
     if (object == cbOption[i]) {
       lv_checkbox_set_checked(cbOption[i], true);
       System::SystemTask::displayApp->settingsController.SetScreenTimeOut(options[i]);
+      System::SystemTask::displayApp->StartApp(Apps::Clock, Screen::FullRefreshDirections::None);     
     } else {
       lv_checkbox_set_checked(cbOption[i], false);
     }

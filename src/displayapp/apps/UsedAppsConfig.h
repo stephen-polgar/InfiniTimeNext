@@ -24,8 +24,8 @@ InfiniSimNext simulator uses this settings too.
 
 #define UseCalendar
 #define UseCalculator
-// #define UseMotion
-// #define UsePaddle
+#define UseMotion
+#define UsePaddle
 // #define UseDice
 // #define UseTwos
 // #define UseMetronome

@@ -1,6 +1,5 @@
 #include "SettingWatchFace.h"
 #include "systemtask/SystemTask.h"
-#include "displayapp/screens/CheckboxList.h"
 
 constexpr const char* SettingWatchFace::title;
 constexpr const char* SettingWatchFace::symbol;
@@ -36,12 +35,12 @@ bool SettingWatchFace::OnTouchEvent(TouchEvents event) {
 }
 
 Screen* SettingWatchFace::createScreen(uint8_t screenNum) {
-  std::array<Screens::CheckboxList::Item, settingsPerScreen> watchfacesOnThisScreen;
-  for (uint8_t i = 0; i < settingsPerScreen; i++) {
-    if (i + (screenNum * settingsPerScreen) >= (uint8_t)watchfaceItems.size()) {
-      watchfacesOnThisScreen[i] = {"", false};
+  std::array<Screens::CheckboxList::Item, CheckboxList::MaxItems> watchfacesOnThisScreen;
+  for (uint8_t i = 0; i < CheckboxList::MaxItems; i++) {
+    if (i + (screenNum * CheckboxList::MaxItems) >= (uint8_t) watchfaceItems.size()) {
+      watchfacesOnThisScreen[i] = {NULL, false};
     } else {
-      auto& item = watchfaceItems[i + (screenNum * settingsPerScreen)];
+      auto& item = watchfaceItems[i + (screenNum * CheckboxList::MaxItems)];
       watchfacesOnThisScreen[i] = Screens::CheckboxList::Item {item.name, item.enabled};
     }
   }
@@ -50,13 +49,16 @@ Screen* SettingWatchFace::createScreen(uint8_t screenNum) {
     nScreens,
     title,
     symbol,
-    static_cast<uint8_t>(indexOf(watchfaceItems, System::SystemTask::displayApp->settingsController.GetWatchFace())),
+    [this]() {
+      return indexOf(watchfaceItems, System::SystemTask::displayApp->settingsController.GetWatchFace());
+    },
     [this, &settings = System::SystemTask::displayApp->settingsController](uint8_t index) {
       settings.SetWatchFace(indexToWatchFace(watchfaceItems, index));
       settings.SaveSettings();
-      System::SystemTask::displayApp->StartApp(Apps::Clock);
+      System::SystemTask::displayApp->StartApp(Apps::Clock, Screen::FullRefreshDirections::None);
     },
-    watchfacesOnThisScreen, pageIndicator);
+    watchfacesOnThisScreen,
+    pageIndicator);
 }
 
 uint8_t SettingWatchFace::indexOf(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, WatchFace watchface) {

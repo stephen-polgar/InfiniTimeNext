@@ -372,6 +372,7 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
         screen = new ApplicationList(std::move(apps));
       } break;
       case Apps::Clock:
+        screenStack.Reset();
         screen = new WatchFaceScreen();
         break;
       case Apps::Error:

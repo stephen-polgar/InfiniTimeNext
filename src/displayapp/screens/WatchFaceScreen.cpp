@@ -20,7 +20,7 @@
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 
-// #define Log
+//#define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -29,14 +29,14 @@
 using namespace Pinetime::Applications::Screens;
 
 WatchFaceScreen::WatchFaceScreen() : Screen(Apps::Clock) {
+#ifdef Log
+  NRF_LOG_INFO("WatchFaceScreen new=%d, %d", this, uint8_t(Id));
+#endif
 }
 
 void WatchFaceScreen::Load() {
   Apps selected = Apps(System::SystemTask::displayApp->settingsController.GetWatchFace());
   if (!current || current->Id != selected) {
-#ifdef Log
-    NRF_LOG_INFO("WatchFaceScreen::Load current=%d sel=%d", current, selected);
-#endif
     if (current)
       delete current;
     current = System::SystemTask::displayApp->GetSelectedWatchFace();
@@ -64,9 +64,14 @@ bool WatchFaceScreen::UnLoad() {
 }
 
 WatchFaceScreen::~WatchFaceScreen() {
-  UnLoad();
+  if (running) {
+    lv_task_del(taskRefresh);
+  }
+  if (current) {
+    delete current;
+  }
 #ifdef Log
-  NRF_LOG_INFO("WatchFaceScreen delete=%d", this);
+  NRF_LOG_INFO("WatchFaceScreen delete=%d %d", this, uint8_t(Id));
 #endif
 }
 

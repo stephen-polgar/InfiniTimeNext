@@ -21,7 +21,7 @@ namespace Pinetime {
                      const uint8_t numScreens,
                      const char* optionsTitle,
                      const char* optionsSymbol,
-                     uint8_t originalValue,
+                     std::function<uint8_t()> currentValue,
                      std::function<void(uint8_t)> OnValueChanged,
                      std::array<Item, MaxItems> options,
                      Widgets::PageIndicator& pageIndicator);
@@ -34,7 +34,7 @@ namespace Pinetime {
         std::function<void(uint8_t)> OnValueChanged;
         std::array<Item, MaxItems> options;
         std::array<lv_obj_t*, MaxItems> cbOption;
-        uint8_t value, originalValue;
+        std::function<uint8_t()> currentValue;
        
         const char* optionsTitle;
         const char* optionsSymbol;

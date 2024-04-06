@@ -17,7 +17,7 @@ namespace Pinetime {
         bool UnLoad() override;
 
       private:
-         Widgets::PageIndicator pageIndicator;
+        Widgets::PageIndicator pageIndicator;
         CheckboxList checkboxList;
 
         struct Option {

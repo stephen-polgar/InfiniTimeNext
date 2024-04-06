@@ -1,6 +1,7 @@
 #pragma once
 
 #include "displayapp/screens/ScreenList.h"
+#include "displayapp/screens/CheckboxList.h"
 #include "displayapp/widgets/PageIndicator.h"
 #include "components/settings/Settings.h"
 #include "displayapp/screens/Symbols.h"
@@ -27,10 +28,9 @@ namespace Pinetime {
         static uint8_t indexOf(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, WatchFace watchface);
         static WatchFace indexToWatchFace(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, uint8_t index);
         Screen* createScreen(uint8_t screenNum);
-
-        static constexpr uint8_t settingsPerScreen = 4;
+      
         std::array<Item, UserWatchFaceTypes::Count> watchfaceItems;
-        static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / settingsPerScreen + 1 : 1;
+        static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / CheckboxList::MaxItems + 1 : 1;
 
         static constexpr const char* title = "Watch face";
         static constexpr const char* symbol = Symbols::home;

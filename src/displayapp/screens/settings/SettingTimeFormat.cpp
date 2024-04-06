@@ -11,12 +11,15 @@ SettingTimeFormat::SettingTimeFormat()
       1,
       "Time format",
       Symbols::clock,
-      GetDefaultOption(System::SystemTask::displayApp->settingsController.GetClockType()),
+      [this]() {
+        return GetDefaultOption(System::SystemTask::displayApp->settingsController.GetClockType());
+      },
       [&settings = System::SystemTask::displayApp->settingsController](uint32_t index) {
         settings.SetClockType(options[index].clockType);
         settings.SaveSettings();
       },
-      CreateOptionArray(), pageIndicator) {
+      CreateOptionArray(),
+      pageIndicator) {
 }
 
 void SettingTimeFormat::Load() {
@@ -27,7 +30,7 @@ void SettingTimeFormat::Load() {
 bool SettingTimeFormat::UnLoad() {
   if (running) {
     running = false;
-    checkboxList.UnLoad();  
+    checkboxList.UnLoad();
   }
   return true;
 }
@@ -40,7 +43,7 @@ std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingTimeFormat::Create
   std::array<Applications::Screens::CheckboxList::Item, CheckboxList::MaxItems> optionArray;
   for (size_t i = 0; i < CheckboxList::MaxItems; i++) {
     if (i >= options.size()) {
-      optionArray[i].name = "";
+      optionArray[i].name = NULL;
       optionArray[i].enabled = false;
     } else {
       optionArray[i].name = options[i].name;

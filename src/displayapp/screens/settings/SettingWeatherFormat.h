@@ -30,7 +30,7 @@ namespace Pinetime {
         std::array<CheckboxList::Item, CheckboxList::MaxItems> CreateOptionArray();
 
         uint8_t GetDefaultOption(Controllers::Settings::WeatherFormat currentOption);
- Widgets::PageIndicator pageIndicator;
+        Widgets::PageIndicator pageIndicator;
         CheckboxList checkboxList;
       };
     }

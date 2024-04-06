@@ -11,12 +11,15 @@ SettingWeatherFormat::SettingWeatherFormat()
       1,
       "Weather format",
       Symbols::cloudSunRain,
-      GetDefaultOption(System::SystemTask::displayApp->settingsController.GetWeatherFormat()),
+      [this]() {
+        return GetDefaultOption(System::SystemTask::displayApp->settingsController.GetWeatherFormat());
+      },
       [&settings = System::SystemTask::displayApp->settingsController](uint32_t index) {
         settings.SetWeatherFormat(options[index].weatherFormat);
         settings.SaveSettings();
       },
-      CreateOptionArray(), pageIndicator) {
+      CreateOptionArray(),
+      pageIndicator) {
 }
 
 void SettingWeatherFormat::Load() {
@@ -27,7 +30,7 @@ void SettingWeatherFormat::Load() {
 bool SettingWeatherFormat::UnLoad() {
   if (running) {
     running = false;
-    checkboxList.UnLoad();    
+    checkboxList.UnLoad();
   }
   return true;
 }
@@ -40,7 +43,7 @@ std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingWeatherFormat::Cre
   std::array<Applications::Screens::CheckboxList::Item, CheckboxList::MaxItems> optionArray;
   for (uint8_t i = 0; i < CheckboxList::MaxItems; i++) {
     if (i >= options.size()) {
-      optionArray[i].name = "";
+      optionArray[i].name = NULL;
       optionArray[i].enabled = false;
     } else {
       optionArray[i].name = options[i].name;
