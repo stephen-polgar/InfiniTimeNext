@@ -16,22 +16,18 @@ namespace Pinetime {
         void Load() override;
         bool UnLoad() override;
 
-      private:
-        Widgets::PageIndicator pageIndicator;
+      private:      
         CheckboxList checkboxList;
 
         struct Option {
           Controllers::Settings::ClockType clockType;
           const char* name;
         };
-
         static constexpr std::array<Option, 2> options = {{
           {Controllers::Settings::ClockType::H12, "12-hour"},
           {Controllers::Settings::ClockType::H24, "24-hour"},
         }};
-
-        std::array<CheckboxList::Item, CheckboxList::MaxItems> CreateOptionArray();
-        uint8_t GetDefaultOption(Controllers::Settings::ClockType currentOption);
+        uint8_t getCurrentOption(Controllers::Settings::ClockType currentOption);
       };
     }
   }

@@ -7,19 +7,18 @@ using namespace Pinetime::Applications::Screens;
 SettingTimeFormat::SettingTimeFormat()
   : Screen(Apps::SettingTimeFormat),
     checkboxList(
-      0,
-      1,
       "Time format",
       Symbols::clock,
-      [this]() {
-        return GetDefaultOption(System::SystemTask::displayApp->settingsController.GetClockType());
+      [this](uint8_t) {
+        return getCurrentOption(System::SystemTask::displayApp->settingsController.GetClockType());
       },
-      [&settings = System::SystemTask::displayApp->settingsController](uint32_t index) {
-        settings.SetClockType(options[index].clockType);
-        settings.SaveSettings();
-      },
-      CreateOptionArray(),
-      pageIndicator) {
+      [](uint8_t, uint8_t index) {
+        System::SystemTask::displayApp->settingsController.SetClockType(options[index].clockType);
+      }) {
+
+  for (uint8_t i = 0; i < options.size(); i++) {    
+    checkboxList.Add({options[i].name, true});
+  }
 }
 
 void SettingTimeFormat::Load() {
@@ -37,23 +36,10 @@ bool SettingTimeFormat::UnLoad() {
 
 SettingTimeFormat::~SettingTimeFormat() {
   UnLoad();
+  System::SystemTask::displayApp->settingsController.SaveSettings();
 }
 
-std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingTimeFormat::CreateOptionArray() {
-  std::array<Applications::Screens::CheckboxList::Item, CheckboxList::MaxItems> optionArray;
-  for (size_t i = 0; i < CheckboxList::MaxItems; i++) {
-    if (i >= options.size()) {
-      optionArray[i].name = NULL;
-      optionArray[i].enabled = false;
-    } else {
-      optionArray[i].name = options[i].name;
-      optionArray[i].enabled = true;
-    }
-  }
-  return optionArray;
-}
-
-uint8_t SettingTimeFormat::GetDefaultOption(Controllers::Settings::ClockType currentOption) {
+uint8_t SettingTimeFormat::getCurrentOption(Controllers::Settings::ClockType currentOption) {
   for (uint8_t i = 0; i < options.size(); i++) {
     if (options[i].clockType == currentOption) {
       return i;

@@ -9,7 +9,7 @@ extern int mallocFailedCount;
 extern int stackOverflowCount;
 
 SystemInfo::TasksScreen::TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator)
-  : Label(screenID, screenNumber, pageIndicator) {
+  : Label(screenID, &pageIndicator) {
 }
 
 void SystemInfo::TasksScreen::Load() {
@@ -164,7 +164,7 @@ const char* SystemInfo::toString(const Controllers::MotionController::DeviceType
   return "???";
 }
 
-SystemInfo::MemoryInfo::MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
+SystemInfo::MemoryInfo::MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
 }
 
 void SystemInfo::MemoryInfo::Load() {

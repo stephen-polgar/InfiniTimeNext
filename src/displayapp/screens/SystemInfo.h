@@ -17,15 +17,13 @@ namespace Pinetime {
         ~SystemInfo() override;
         void Load() override;
         bool UnLoad() override;
-
         bool OnTouchEvent(TouchEvents event) override;
-   
+
       private:
         static constexpr uint8_t screenNumber = 5;
-        Widgets::PageIndicator pageIndicator;
-        static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
+        Widgets::PageIndicator pageIndicator {screenNumber};
         ScreenList<screenNumber> screens;
-
+        static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
         static bool sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs);
 
         class MemoryInfo : public Label {
@@ -41,13 +39,12 @@ namespace Pinetime {
 
         private:
           static constexpr uint8_t maxTaskCount = 9;
-
           TaskStatus_t tasksStatus[maxTaskCount];
         };
 
         class HardverScreen : public Label {
         public:
-          HardverScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
+          HardverScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
             uptimeSeconds = uptimeSeconds % secondsInADay;
             uptimeHours = uptimeSeconds / secondsInAnHour;
             uptimeSeconds = uptimeSeconds % secondsInAnHour;
@@ -96,15 +93,15 @@ namespace Pinetime {
 
         class FirmwareScreen : public Label {
         public:
-          FirmwareScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator)
-            : Label(screenID, SystemInfo::screenNumber, pageIndicator) {
+          FirmwareScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
           }
+
           void Load() override;
         };
 
         class LicenseScreen : public Label {
         public:
-          LicenseScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, screenNumber, pageIndicator) {
+          LicenseScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
           }
 
           void Load() override;

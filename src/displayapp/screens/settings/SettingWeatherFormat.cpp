@@ -7,19 +7,21 @@ using namespace Pinetime::Applications::Screens;
 SettingWeatherFormat::SettingWeatherFormat()
   : Screen(Apps::SettingWeatherFormat),
     checkboxList(
-      0,
-      1,
       "Weather format",
       Symbols::cloudSunRain,
-      [this]() {
-        return GetDefaultOption(System::SystemTask::displayApp->settingsController.GetWeatherFormat());
+      [this](uint8_t) {
+        return getCurrentOption(System::SystemTask::displayApp->settingsController.GetWeatherFormat());
       },
-      [&settings = System::SystemTask::displayApp->settingsController](uint32_t index) {
-        settings.SetWeatherFormat(options[index].weatherFormat);
-        settings.SaveSettings();
-      },
-      CreateOptionArray(),
-      pageIndicator) {
+      [](uint8_t, uint8_t index) {
+        System::SystemTask::displayApp->settingsController.SetWeatherFormat(options[index].weatherFormat);
+      }) {
+
+  for (uint8_t i = 0; i < options.size(); i++) {
+    CheckboxList::Item item;
+    item.name = options[i].name;
+    item.enabled = true;
+    checkboxList.Add(item);
+  }
 }
 
 void SettingWeatherFormat::Load() {
@@ -37,23 +39,10 @@ bool SettingWeatherFormat::UnLoad() {
 
 SettingWeatherFormat::~SettingWeatherFormat() {
   UnLoad();
+  System::SystemTask::displayApp->settingsController.SaveSettings();
 }
 
-std::array<CheckboxList::Item, CheckboxList::MaxItems> SettingWeatherFormat::CreateOptionArray() {
-  std::array<Applications::Screens::CheckboxList::Item, CheckboxList::MaxItems> optionArray;
-  for (uint8_t i = 0; i < CheckboxList::MaxItems; i++) {
-    if (i >= options.size()) {
-      optionArray[i].name = NULL;
-      optionArray[i].enabled = false;
-    } else {
-      optionArray[i].name = options[i].name;
-      optionArray[i].enabled = true;
-    }
-  }
-  return optionArray;
-}
-
-uint8_t SettingWeatherFormat::GetDefaultOption(Controllers::Settings::WeatherFormat currentOption) {
+uint8_t SettingWeatherFormat::getCurrentOption(Controllers::Settings::WeatherFormat currentOption) {
   for (uint8_t i = 0; i < options.size(); i++) {
     if (options[i].weatherFormat == currentOption) {
       return i;

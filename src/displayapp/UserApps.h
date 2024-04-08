@@ -44,7 +44,7 @@ namespace Pinetime {
 #include "displayapp/screens/Weather.h"
 #include "displayapp/screens/Calendar.h"
 #include "displayapp/screens/Calculator.h"
-#include "displayapp/screens/Gallery.h"
+#include "displayapp/screens/FileManager.h"
 #include "displayapp/screens/Paddle.h"
 #include "displayapp/screens/Twos.h"
 #include "displayapp/screens/Dice.h"

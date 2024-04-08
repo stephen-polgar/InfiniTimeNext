@@ -39,5 +39,5 @@ Screen* ApplicationList::CreateScreen(uint8_t screenNum) {
       pageApps[i] = apps[i + (screenNum * appsPerScreen)];
     }
   }
-  return new Screens::Tile(screenNum, nScreens, pageApps, pageIndicator);
+  return new Screens::Tile(screenNum, pageApps, &pageIndicator);
 }

@@ -4,11 +4,10 @@
 
 using namespace Pinetime::Applications::Screens;
 
-List::List(uint8_t screenID,
-           uint8_t numScreens,
+List::List(uint8_t screenID,          
            std::array<Applications, MAXLISTITEMS>& applications,
            Widgets::PageIndicator& pageIndicator)
-  : screenID {screenID}, applications {std::move(applications)}, numScreens {numScreens}, pageIndicator {pageIndicator} {
+  : screenID {screenID}, applications {std::move(applications)}, pageIndicator {pageIndicator} {
   
 }
 
@@ -17,7 +16,7 @@ void List::Load() {
   // Set the background to Black
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0, 0, 0));
   
-  pageIndicator.Create(screenID, numScreens);
+  pageIndicator.Create(screenID);
 
   lv_obj_t* container = lv_cont_create(lv_scr_act(), nullptr);
 

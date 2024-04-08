@@ -13,7 +13,7 @@ void DotIndicator::Create(uint8_t nCurrentScreen, uint8_t nScreens) {
   lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, dotSize);
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
 
-  for (int i = 0; i < nScreens; i++) {
+  for (uint8_t i = 0; i < nScreens; i++) {
     dotIndicator[i] = lv_obj_create(container, nullptr);
     lv_obj_set_size(dotIndicator[i], dotSize, dotSize);
     lv_obj_set_style_local_bg_color(dotIndicator[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_GRAY);

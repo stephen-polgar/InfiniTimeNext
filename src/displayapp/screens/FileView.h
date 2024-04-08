@@ -1,90 +1,40 @@
 #pragma once
 
 #include "displayapp/screens/Screen.h"
-#ifdef UseGallery
-#include "displayapp/widgets/PageIndicator.h"
-#include "components/fs/FS.h"
+#ifdef UseFileManager
+  #include "displayapp/widgets/PageIndicator.h"
+  #include <string>
+  #include "components/fs/FS.h"
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
+      class File {
+      public:
+        File(lfs_info& info);
+        File(const char* path, bool dir = true);
+        ~File();
+        bool IsDir();
+        bool Open();
+        File* parrent = NULL;
+
+      private:
+        bool dir;
+        std::string path;
+        lfs_size_t size;
+      };
+
       class FileView : public Screen {
       public:
-        FileView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets::PageIndicator& pageIndicator);
+        FileView();
+
         ~FileView() override;
         void Load() override;
         bool UnLoad() override;
 
-        void ToggleInfo();
-
       private:
-        char name[LFS_NAME_MAX];
-        lv_obj_t* label;
-
-        Widgets::PageIndicator& pageIndicator;
-        const uint8_t screenID, nScreens;
-      };
-
-      class ImageView : public FileView {
-      public:
-        ImageView(uint8_t screenID, uint8_t nScreens, const char* path, Widgets::PageIndicator& pageIndicator);
-        void Load() override;
-        bool UnLoad() override;
-      };
-
-      class TextView : public FileView {
-      public:
-        TextView(uint8_t screenID,
-                 uint8_t nScreens,
-                 const char* path,                
-                 Widgets::PageIndicator& pageIndicator);
-        ~TextView() override;
-        void Load() override;
-        bool UnLoad() override;
-
-      private:
-        char* buf;
       };
     }
   }
 }
 #endif
-
-/*
-namespace Pinetime {
-  namespace Applications {
-    namespace Screens {
-      class FileView : public Screen {
-      public:
-        FileView(uint8_t screenID, uint8_t nScreens, DisplayApp* app, const char* path);
-        ~FileView() override;
-
-        void ShowInfo();
-        void HideInfo();
-        void ToggleInfo();
-
-      private:
-        char name[LFS_NAME_MAX];
-        lv_obj_t* label;
-
-        Widgets::PageIndicator pageIndicator;
-        uint8_t screenID, nScreens;
-      };
-
-      class ImageView : public FileView {
-      public:
-        ImageView(uint8_t screenID, uint8_t nScreens, DisplayApp* app, const char* path);
-      };
-
-      class TextView : public FileView {
-      public:
-        TextView(uint8_t screenID, uint8_t nScreens, DisplayApp* app, const char* path, Pinetime::Controllers::FS& fs);
-        ~TextView() override;
-
-      private:
-        char *buf;
-      };
-    }
-  }
-}
-*/

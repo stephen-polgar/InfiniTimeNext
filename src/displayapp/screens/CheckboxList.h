@@ -2,7 +2,8 @@
 
 #include "Screen.h"
 #include "displayapp/widgets/PageIndicator.h"
-#include <array>
+#include <string>
+#include <vector>
 #include <functional>
 
 namespace Pinetime {
@@ -10,36 +11,41 @@ namespace Pinetime {
     namespace Screens {
       class CheckboxList : public Screen {
       public:
-        static constexpr uint8_t MaxItems = 4;
-
         struct Item {
-          const char* name;
+          std::string name;
           bool enabled;
+          lv_obj_t* cb;
         };
 
         CheckboxList(const uint8_t screenID,
-                     const uint8_t numScreens,
+                     Widgets::PageIndicator* pageIndicator,
                      const char* optionsTitle,
                      const char* optionsSymbol,
-                     std::function<uint8_t()> currentValue,
-                     std::function<void(uint8_t)> OnValueChanged,
-                     std::array<Item, MaxItems> options,
-                     Widgets::PageIndicator& pageIndicator);
+                     std::function<uint8_t(uint8_t screenId)> currentValue,
+                     std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged,
+                     lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
+
+        CheckboxList(const char* optionsTitle,
+                     const char* optionsSymbol,
+                     std::function<uint8_t(uint8_t screenId)> currentValue,
+                     std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged,
+                     lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
         ~CheckboxList() override;
         void Load() override;
         bool UnLoad() override;
 
+        void Add(Item);
+
       private:
-        const uint8_t screenID, numScreens;
-        std::function<void(uint8_t)> OnValueChanged;
-        std::array<Item, MaxItems> options;
-        std::array<lv_obj_t*, MaxItems> cbOption;
-        std::function<uint8_t()> currentValue;
-       
+        uint8_t screenID;
+        Widgets::PageIndicator* pageIndicator;
+        std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged;
+        std::vector<Item> options;
+        std::function<uint8_t(uint8_t screenId)> currentValue;
+        lv_layout_t layout;
+
         const char* optionsTitle;
         const char* optionsSymbol;
-
-        Widgets::PageIndicator& pageIndicator;
         void updateSelected(lv_obj_t* object);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
       };

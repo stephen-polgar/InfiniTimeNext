@@ -2,11 +2,10 @@
 #include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
 
-
 using namespace Pinetime::Applications::Screens;
 
-Tile::Tile(uint8_t screenID, uint8_t numScreens, std::array<Applications, 6>& applications, Widgets::PageIndicator& pageIndicator)
-  : screenID {screenID}, applications {std::move(applications)},  numScreens {numScreens}, pageIndicator {pageIndicator} {
+Tile::Tile(uint8_t screenID, std::array<Applications, 6>& applications, Widgets::PageIndicator* pageIndicator)
+  : screenID {screenID}, applications {std::move(applications)}, pageIndicator {pageIndicator} {
   taskUpdate = NULL;
 }
 
@@ -19,7 +18,7 @@ void Tile::Load() {
   lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_time, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
-  pageIndicator.Create(screenID, numScreens);
+  pageIndicator->Create(screenID);
 
   uint8_t btIndex = 0;
   for (uint8_t i = 0; i < 6; i++) {

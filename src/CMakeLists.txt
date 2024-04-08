@@ -398,7 +398,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Calendar.cpp
         displayapp/screens/Calculator.cpp
         displayapp/screens/FileView.cpp
-        displayapp/screens/Gallery.cpp
+        displayapp/screens/FileManager.cpp
         displayapp/screens/Paddle.cpp
         displayapp/screens/Twos.cpp
         displayapp/screens/Dice.cpp
@@ -622,7 +622,7 @@ set(INCLUDE_FILES
         displayapp/screens/Calendar.h
         displayapp/screens/Calculator.h
         displayapp/screens/FileView.h
-        displayapp/screens/Gallery.h
+        displayapp/screens/FileManager.h
         displayapp/screens/Paddle.h
         displayapp/screens/Twos.h
         displayapp/screens/Dice.h

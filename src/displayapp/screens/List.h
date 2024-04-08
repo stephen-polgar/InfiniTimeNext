@@ -17,13 +17,13 @@ namespace Pinetime {
           Pinetime::Applications::Apps application;
         };
 
-        explicit List(uint8_t screenID, uint8_t numScreens, std::array<Applications, MAXLISTITEMS>& applications, Widgets::PageIndicator& pageIndicator);
+        explicit List(uint8_t screenID, std::array<Applications, MAXLISTITEMS>& applications, Widgets::PageIndicator& pageIndicator);
         ~List() override;
         void Load() override;
         bool UnLoad() override;
 
       private:
-        const uint8_t screenID, numScreens;
+        const uint8_t screenID;
         bool loaded = false;
         std::array<Applications, MAXLISTITEMS> applications;
         Pinetime::Applications::Apps apps[MAXLISTITEMS];

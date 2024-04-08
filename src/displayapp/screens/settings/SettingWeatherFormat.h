@@ -26,11 +26,8 @@ namespace Pinetime {
           {Controllers::Settings::WeatherFormat::Metric, "Metric"},
           {Controllers::Settings::WeatherFormat::Imperial, "Imperial"},
         }};
-
-        std::array<CheckboxList::Item, CheckboxList::MaxItems> CreateOptionArray();
-
-        uint8_t GetDefaultOption(Controllers::Settings::WeatherFormat currentOption);
-        Widgets::PageIndicator pageIndicator;
+       
+        uint8_t getCurrentOption(Controllers::Settings::WeatherFormat currentOption);       
         CheckboxList checkboxList;
       };
     }

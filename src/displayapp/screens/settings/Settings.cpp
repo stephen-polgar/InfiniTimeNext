@@ -33,8 +33,8 @@ bool Settings::OnTouchEvent(Applications::TouchEvents event) {
 
 Screen* Settings::CreateScreen(uint8_t screenNum)  {
   std::array<List::Applications, entriesPerScreen> screens;
-  for (int i = 0; i < entriesPerScreen; i++) {
+  for (uint8_t i = 0; i < entriesPerScreen; i++) {
     screens[i] = entries[screenNum * entriesPerScreen + i];
   }
-  return new Screens::List(screenNum, nScreens, screens, pageIndicator);
+  return new Screens::List(screenNum, screens, pageIndicator);
 }

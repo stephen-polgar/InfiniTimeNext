@@ -34,8 +34,8 @@ namespace Pinetime {
 #ifdef UseCalendar
       Calendar,
 #endif
-#ifdef UseGallery
-      Gallery,
+#ifdef UseFileManager
+      FileManager,
       FileView,
 #endif
 #ifdef UseTwos

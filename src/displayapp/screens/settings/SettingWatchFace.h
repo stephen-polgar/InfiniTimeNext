@@ -25,16 +25,14 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-        static uint8_t indexOf(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, WatchFace watchface);
-        static WatchFace indexToWatchFace(const std::array<SettingWatchFace::Item, UserWatchFaceTypes::Count>& watchfaces, uint8_t index);
-        Screen* createScreen(uint8_t screenNum);
-      
-        std::array<Item, UserWatchFaceTypes::Count> watchfaceItems;
-        static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / CheckboxList::MaxItems + 1 : 1;
-
+        static constexpr uint8_t MaxCheckboxItems = 4;
         static constexpr const char* title = "Watch face";
         static constexpr const char* symbol = Symbols::home;
-        Widgets::PageIndicator pageIndicator;
+        uint8_t indexOf(const WatchFace watchface);
+        Screen* createScreen(uint8_t screenNum);
+        std::array<Item, UserWatchFaceTypes::Count> watchfaces;
+        static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / MaxCheckboxItems + 1                                                                          : 1;
+        Widgets::PageIndicator pageIndicator {nScreens};     
         ScreenList<nScreens> screens;
       };
     }

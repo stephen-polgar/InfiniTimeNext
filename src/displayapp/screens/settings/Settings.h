@@ -41,7 +41,7 @@ namespace Pinetime {
            {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
 
         ScreenList<nScreens> screens;
-        Widgets::PageIndicator pageIndicator;
+        Widgets::PageIndicator pageIndicator{nScreens};
       };
     }
   }

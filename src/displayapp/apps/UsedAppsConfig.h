@@ -34,7 +34,7 @@ InfiniSimNext simulator uses this settings too.
 
 #define UseWatchFaceInfineat
 #define UseWatchFacePineTimeStyle
-// #define UseGallery  // not ready
+// #define UseFileManager  // not ready
 
 /*
 Set the maximum number of shown notifications

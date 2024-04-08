@@ -8,8 +8,8 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Label::Label(uint8_t screenID, uint8_t numScreens, Widgets::PageIndicator& pageIndicator)
-  : screenID {screenID}, numScreens {numScreens}, pageIndicator {pageIndicator} {
+Label::Label(uint8_t screenID, Widgets::PageIndicator* pageIndicator)
+  : screenID {screenID}, pageIndicator {pageIndicator} {
 #ifdef Log
   NRF_LOG_INFO("Label created %d", this);
 #endif
@@ -20,7 +20,7 @@ void Label::Load() {
   NRF_LOG_INFO("Label:Load %d", this);
 #endif
   running = true;
-  pageIndicator.Create(screenID, numScreens);
+  pageIndicator->Create(screenID);
 }
 
 bool Label::UnLoad() {
