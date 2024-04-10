@@ -30,7 +30,8 @@ namespace Pinetime {
         Utility::DirtyValue<bool> notificationState;
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;
 
-        const lv_color_t color_text = LV_COLOR_WHITE; //  lv_color_hex(0x98B69A);
+        static constexpr lv_color_t color_text =  LV_COLOR_CYAN; 
+        static constexpr lv_color_t color_line = LV_COLOR_MAGENTA;
 
         lv_style_t style_line;
         lv_style_t style_border;

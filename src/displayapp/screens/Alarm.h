@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Screen.h"
+#include "displayapp/widgets/ButtonListItem.h"
 #include "components/alarm/AlarmController.h"
-#include "components/settings/Settings.h"
 #include "Symbols.h"
 
 namespace Pinetime {
@@ -16,10 +16,14 @@ namespace Pinetime {
         bool UnLoad() override;
 
       private:
-        void createElem(Controllers::AlarmController* alarmController);
-        lv_obj_t *last = NULL, *btnNew;
-        void updateAddButton();
+        void createNewItem(Controllers::AlarmController* alarmController);
         static bool changed;
+        void updateAddButton();
+        void on_checked(bool, Controllers::AlarmController*);
+        void on_open(Controllers::AlarmController*);
+        void on_removed(Controllers::AlarmController*);
+        void on_addNew();
+        Widgets::ButtonListItem buttonListItem;
       };
     }
 

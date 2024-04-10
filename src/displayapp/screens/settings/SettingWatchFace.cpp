@@ -6,33 +6,36 @@ using namespace Pinetime::Applications::Screens;
 SettingWatchFace::SettingWatchFace(std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count>&& watchfaceItems)
   : Screen(Apps::SettingWatchFace), watchfaces {std::move(watchfaceItems)} {
   for (uint8_t i = 0; i < nScreens; i++) {
-    screens.Add(createScreen(i));
+    if (i)
+      screens->Add(createScreen(i));
+    else
+      screens = createScreen(i);
   }
 }
 
 void SettingWatchFace::Load() {
+  screens->GetCurrent()->Load();
   running = true;
-  screens.Load();
 }
 
 bool SettingWatchFace::UnLoad() {
   if (running) {
     running = false;
-    screens.UnLoad();
+    screens->GetCurrent()->UnLoad();
   }
   return true;
 }
 
 SettingWatchFace::~SettingWatchFace() {
-  UnLoad();
+  screens->DeleteAll();
   System::SystemTask::displayApp->settingsController.SaveSettings();
 }
 
 bool SettingWatchFace::OnTouchEvent(TouchEvents event) {
-  return screens.OnTouchEvent(event);
+  return screens->OnTouchEvent(event);
 }
 
-Screen* SettingWatchFace::createScreen(uint8_t screenNum) {
+ScreenTree* SettingWatchFace::createScreen(uint8_t screenNum) {
   CheckboxList* checkboxList = new Screens::CheckboxList(
     screenNum,
     &pageIndicator,
@@ -45,7 +48,9 @@ Screen* SettingWatchFace::createScreen(uint8_t screenNum) {
       System::SystemTask::displayApp->settingsController.SetWatchFace(watchfaces[screenId * MaxCheckboxItems + index].watchface);
       System::SystemTask::displayApp->StartApp(Apps::Clock, Screen::FullRefreshDirections::None);
     });
-  uint8_t n = 0;
+  uint8_t n = watchfaces.size() - screenNum * MaxCheckboxItems;
+  checkboxList->Reserve(n >= MaxCheckboxItems ? MaxCheckboxItems : n);
+  n = 0;
   for (uint8_t i = (screenNum * MaxCheckboxItems); i < watchfaces.size() && n < MaxCheckboxItems; i++, n++) {
     auto& item = watchfaces[i];
     checkboxList->Add({item.name, item.enabled});

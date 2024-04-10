@@ -5,7 +5,7 @@
 using namespace Pinetime::Applications::Screens;
 
 List::List(uint8_t screenID,          
-           std::array<Applications, MAXLISTITEMS>& applications,
+           std::array<Applications, MaxElements>& applications,
            Widgets::PageIndicator& pageIndicator)
   : screenID {screenID}, applications {std::move(applications)}, pageIndicator {pageIndicator} {
   
@@ -30,11 +30,11 @@ void List::Load() {
   lv_obj_set_height(container, LV_VER_RES);
   lv_cont_set_layout(container, LV_LAYOUT_COLUMN_LEFT);
 
-  for (uint8_t i = 0; i < MAXLISTITEMS; i++) {
+  for (uint8_t i = 0; i < MaxElements; i++) {
     apps[i] = applications[i].application;
     if (applications[i].application != Apps::None) {
 
-      static constexpr int btnHeight = (LV_HOR_RES_MAX - ((MAXLISTITEMS - 1) * innerPad)) / MAXLISTITEMS;
+      static constexpr uint16_t btnHeight = (LV_HOR_RES_MAX - ((MaxElements - 1) * innerPad)) / MaxElements;
       itemApps[i] = lv_btn_create(container, nullptr);
       lv_obj_set_style_local_radius(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, btnHeight / 3);
       lv_obj_set_style_local_bg_color(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
@@ -74,7 +74,7 @@ List::~List() {
 
 void List::onButtonEvent(lv_obj_t* object, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
-    for (uint8_t i = 0; i < MAXLISTITEMS; i++) {
+    for (uint8_t i = 0; i < MaxElements; i++) {
       if (apps[i] != Apps::None && object == itemApps[i]) {
         System::SystemTask::displayApp->StartApp(apps[i]);
         running = false;

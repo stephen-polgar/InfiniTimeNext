@@ -6,32 +6,34 @@ constexpr std::array<List::Applications, Settings::entries.size()> Settings::ent
 
 Settings::Settings() : Screen(Apps::Settings) {
   for (uint8_t i = 0; i < nScreens; i++) {
-    screens.Add(CreateScreen(i));
+    if (i)
+    screens->Add(createScreen(i));
+    else screens = createScreen(i);
   }
 }
 
-void Settings::Load() {
-  running = true;
-  screens.Load();
+void Settings::Load() { 
+  screens->GetCurrent()->Load();
+  running = true;;
 }
 
 bool Settings::UnLoad() {
   if (running) {
     running = false;
-    screens.UnLoad();
+    screens->GetCurrent()->UnLoad();
   }
   return true;
 }
 
 Settings::~Settings() {
-  UnLoad();
+ screens->DeleteAll();
 }
 
 bool Settings::OnTouchEvent(Applications::TouchEvents event) {
-  return screens.OnTouchEvent(event);
+  return screens->OnTouchEvent(event);
 }
 
-Screen* Settings::CreateScreen(uint8_t screenNum)  {
+ScreenTree* Settings::createScreen(uint8_t screenNum)  {
   std::array<List::Applications, entriesPerScreen> screens;
   for (uint8_t i = 0; i < entriesPerScreen; i++) {
     screens[i] = entries[screenNum * entriesPerScreen + i];

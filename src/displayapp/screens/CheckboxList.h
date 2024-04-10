@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenTree.h"
 #include "displayapp/widgets/PageIndicator.h"
 #include <string>
 #include <vector>
@@ -9,7 +9,7 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class CheckboxList : public Screen {
+      class CheckboxList : public ScreenTree {
       public:
         struct Item {
           std::string name;
@@ -34,6 +34,7 @@ namespace Pinetime {
         void Load() override;
         bool UnLoad() override;
 
+        void Reserve(uint8_t size);
         void Add(Item);
 
       private:

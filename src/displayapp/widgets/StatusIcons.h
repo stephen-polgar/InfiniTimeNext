@@ -20,10 +20,10 @@ namespace Pinetime {
       private:
         bool update = false;
         Screens::BatteryIcon batteryIcon;
-        Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
-        Utility::DirtyValue<bool> powerPresent {};
-        Utility::DirtyValue<bool> bleState {};
-        Utility::DirtyValue<bool> bleRadioEnabled {};
+        Utility::DirtyValue<uint8_t> batteryPercentRemaining;
+        Utility::DirtyValue<bool> powerPresent;
+        Utility::DirtyValue<bool> bleState;
+        Utility::DirtyValue<bool> bleRadioEnabled;
 
         lv_obj_t* bleIcon;
         lv_obj_t* batteryPlug;

@@ -1,9 +1,6 @@
 #include "TimerController.h"
 #include "systemtask/SystemTask.h"
 
-#ifdef Log
-  #include <libraries/log/nrf_log.h>
-#endif
 
 using namespace Pinetime::Controllers;
 
@@ -12,9 +9,6 @@ std::vector<TimerController*> TimerController::timers;
 TimerController::TimerController(std::chrono::milliseconds duration) : duration {duration} {
   timer = xTimerCreate("Timer", 1, pdFALSE, this, displayAppCallbackTimer);
   timers.push_back(this);
-#ifdef Log
-  NRF_LOG_INFO("Timer::Timer()=%d", this);
-#endif
 }
 
 void TimerController::StartTimer(std::chrono::milliseconds duration) {
@@ -71,9 +65,6 @@ void TimerController::Save() {
 
 TimerController::~TimerController() {
   // xTimerDelete
-#ifdef Log
-  NRF_LOG_INFO("Timer::~Timer()=%d", this);
-#endif
   if (IsRunning())
     StopTimer();
   timers.erase(std::remove(timers.begin(), timers.end(), this), timers.end());

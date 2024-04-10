@@ -1,23 +1,23 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
+#include "displayapp/screens/ScreenTree.h"
 #include "displayapp/widgets/PageIndicator.h"
 #include <array>
-
-#define MAXLISTITEMS 4
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class List : public Screen {
+      class List : public ScreenTree {
       public:
+        static constexpr uint8_t MaxElements = 4;
+
         struct Applications {
           const char* icon;
           const char* name;
           Pinetime::Applications::Apps application;
         };
 
-        explicit List(uint8_t screenID, std::array<Applications, MAXLISTITEMS>& applications, Widgets::PageIndicator& pageIndicator);
+        explicit List(uint8_t screenID, std::array<Applications, MaxElements>& applications, Widgets::PageIndicator& pageIndicator);
         ~List() override;
         void Load() override;
         bool UnLoad() override;
@@ -25,11 +25,11 @@ namespace Pinetime {
       private:
         const uint8_t screenID;
         bool loaded = false;
-        std::array<Applications, MAXLISTITEMS> applications;
-        Pinetime::Applications::Apps apps[MAXLISTITEMS];
+        std::array<Applications, MaxElements> applications;
+        Pinetime::Applications::Apps apps[MaxElements];
         void onButtonEvent(lv_obj_t* object, lv_event_t event);
         static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
-        lv_obj_t* itemApps[MAXLISTITEMS];
+        lv_obj_t* itemApps[MaxElements];
         Widgets::PageIndicator& pageIndicator;
       };
     }

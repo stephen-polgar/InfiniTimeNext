@@ -5,11 +5,9 @@
 
 using namespace Pinetime::Applications::Screens;
 
-extern int mallocFailedCount;
-extern int stackOverflowCount;
+int SystemInfo::mallocFailedCount, SystemInfo::stackOverflowCount;
 
-SystemInfo::TasksScreen::TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator)
-  : Label(screenID, &pageIndicator) {
+SystemInfo::TasksScreen::TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
 }
 
 void SystemInfo::TasksScreen::Load() {
@@ -124,32 +122,32 @@ void SystemInfo::FirmwareScreen::Load() {
 }
 
 SystemInfo::SystemInfo() : Screen(Apps::SysInfo) {
-  screens.Add(new MemoryInfo(0, pageIndicator));
-  screens.Add(new TasksScreen(1, pageIndicator));
-  screens.Add(new HardverScreen(2, pageIndicator));
-  screens.Add(new FirmwareScreen(3, pageIndicator));
-  screens.Add(new LicenseScreen(4, pageIndicator));
+  screens = new MemoryInfo(0, pageIndicator);
+  screens->Add(new TasksScreen(1, pageIndicator));
+  screens->Add(new HardverScreen(2, pageIndicator));
+  screens->Add(new FirmwareScreen(3, pageIndicator));
+  screens->Add(new LicenseScreen(4, pageIndicator));
 }
 
 void SystemInfo::Load() {
+  screens->GetCurrent()->Load();
   running = true;
-  screens.Load();
 }
 
 bool SystemInfo::UnLoad() {
   if (running) {
     running = false;
-    screens.UnLoad();
+    screens->GetCurrent()->UnLoad();
   }
   return true;
 }
 
 SystemInfo::~SystemInfo() {
-  UnLoad();
+  screens->DeleteAll();
 }
 
 bool SystemInfo::OnTouchEvent(Applications::TouchEvents event) {
-  return screens.OnTouchEvent(event);
+  return screens->OnTouchEvent(event);
 }
 
 const char* SystemInfo::toString(const Controllers::MotionController::DeviceTypes deviceType) {

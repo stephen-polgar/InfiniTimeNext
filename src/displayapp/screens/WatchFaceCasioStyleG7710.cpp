@@ -11,7 +11,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-WatchFaceCasioStyleG7710::WatchFaceCasioStyleG7710() : batteryIcon(false), Screen(WatchFace::CasioStyleG7710) {
+WatchFaceCasioStyleG7710::WatchFaceCasioStyleG7710() : batteryIcon(true), Screen(WatchFace::CasioStyleG7710) {
   font_dot40 = lv_font_load("F:/fonts/lv_font_dots_40.bin");
   font_segment40 = lv_font_load("F:/fonts/7segments_40.bin");
   font_segment115 = lv_font_load("F:/fonts/7segments_115.bin");
@@ -65,12 +65,12 @@ void WatchFaceCasioStyleG7710::Load() {
 
   lv_style_init(&style_line);
   lv_style_set_line_width(&style_line, LV_STATE_DEFAULT, 2);
-  lv_style_set_line_color(&style_line, LV_STATE_DEFAULT, color_text);
+  lv_style_set_line_color(&style_line, LV_STATE_DEFAULT, color_line);
   lv_style_set_line_rounded(&style_line, LV_STATE_DEFAULT, true);
 
   lv_style_init(&style_border);
   lv_style_set_line_width(&style_border, LV_STATE_DEFAULT, 6);
-  lv_style_set_line_color(&style_border, LV_STATE_DEFAULT, color_text);
+  lv_style_set_line_color(&style_border, LV_STATE_DEFAULT, color_line);
   lv_style_set_line_rounded(&style_border, LV_STATE_DEFAULT, true);
 
   lv_obj_t* line_icons = lv_line_create(lv_scr_act(), NULL);
@@ -104,7 +104,7 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_align(line_date, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 100);
 
   label_time = lv_label_create(lv_scr_act(), NULL);
-  lv_obj_set_style_local_text_color(label_time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
+  lv_obj_set_style_local_text_color(label_time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(label_time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_segment115);
   lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_CENTER, 0, 40);
 

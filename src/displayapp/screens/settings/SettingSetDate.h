@@ -6,7 +6,7 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class SettingSetDate : public Screen {
+      class SettingSetDate : public ScreenTree {
       public:
         SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime);
         ~SettingSetDate()override;

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
 #include "SettingSetDateTime.h"
 #include "displayapp/widgets/Counter.h"
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class SettingSetTime : public Screen {
+      class SettingSetTime : public ScreenTree {
       public:
         SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime);
         ~SettingSetTime() override;

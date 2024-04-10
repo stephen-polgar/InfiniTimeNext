@@ -96,7 +96,7 @@ void SettingSetTime::setTime() {
               static_cast<uint8_t>(hoursValue),
               static_cast<uint8_t>(minutesValue),
               0);
-  settingSetDateTime.Quit();
+  settingSetDateTime.UnLoad();
 }
 
 void SettingSetTime::setTimeEventHandler(lv_obj_t* obj, lv_event_t event) {  

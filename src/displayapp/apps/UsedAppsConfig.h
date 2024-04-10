@@ -22,10 +22,11 @@ Comment or uncomment definitions for change built in apps.
 InfiniSimNext simulator uses this settings too.
 */
 
-#define UseCalendar
+// #define UseCalendar
+
 #define UseCalculator
-#define UseMotion
-#define UsePaddle
+// #define UseMotion
+// #define UsePaddle
 // #define UseDice
 // #define UseTwos
 // #define UseMetronome

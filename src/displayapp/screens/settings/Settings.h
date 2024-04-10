@@ -1,6 +1,6 @@
 #pragma once
 
-#include "displayapp/screens/ScreenList.h"
+#include "displayapp/screens/ScreenTree.h"
 #include "displayapp/screens/Symbols.h"
 #include "displayapp/screens/List.h"
 
@@ -15,15 +15,11 @@ namespace Pinetime {
         ~Settings() override;
         void Load() override;
         bool UnLoad() override;
-
         bool OnTouchEvent(Applications::TouchEvents event) override;
 
-      private:
-      
-        Screen* CreateScreen(uint8_t screenNum);
-
+      private:      
+        ScreenTree* createScreen(uint8_t screenNum);
         static constexpr uint8_t entriesPerScreen = 4;
-
         // Increment this when more space is needed
         static constexpr uint8_t nScreens = 3;
 
@@ -40,7 +36,7 @@ namespace Pinetime {
            {Symbols::cloudSunRain, "Weather", Apps::SettingWeatherFormat},
            {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
 
-        ScreenList<nScreens> screens;
+        ScreenTree* screens;
         Widgets::PageIndicator pageIndicator{nScreens};
       };
     }

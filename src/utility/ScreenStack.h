@@ -17,12 +17,7 @@
 
 #include "displayapp/screens/Screen.h"
 #include <array>
-
-//#define StackLog
-
-#ifdef StackLog
-  #include <nrf_log.h>
-#endif
+// #include <nrf_log.h>
 
 using namespace Pinetime::Applications::Screens;
 
@@ -46,7 +41,7 @@ namespace Pinetime {
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Pop() {
-#ifdef StackLog
+#ifdef NRF_LOG_INFO
       Screen* screen = size ? screenArray[--size] : NULL;
       NRF_LOG_INFO("ScreenStack:Pop %d %d %d", screen, (screen ? uint8_t(screen->Id) : 0), size);
       return screen;
@@ -69,7 +64,7 @@ namespace Pinetime {
           break;
         }
       }
-#ifdef StackLog
+#ifdef NRF_LOG_INFO
       NRF_LOG_INFO("ScreenStack:Get %d %d %d", screen, uint8_t(id), size);
 #endif
       return screen;
@@ -90,7 +85,7 @@ namespace Pinetime {
         }
       }
       if (size == N) {
-#ifdef StackLog
+#ifdef NRF_LOG_INFO
         NRF_LOG_INFO("ScreenStack:Push delete %d %d %d", screenArray[0], uint8_t(screenArray[0]->Id), size);
 #endif
         delete screenArray[0];
@@ -100,14 +95,14 @@ namespace Pinetime {
         }
       }
       screenArray[size++] = screen;
-#ifdef StackLog
+#ifdef NRF_LOG_INFO
       NRF_LOG_INFO("ScreenStack:Push %d %d %d", screen, uint8_t(screen->Id), size);
 #endif
     }
 
     template <uint8_t N>
     void ScreenStack<N>::Reset() {
-#ifdef StackLog
+#ifdef NRF_LOG_INFO
       NRF_LOG_INFO("ScreenStack:Reset");
 #endif
       while (size) {

@@ -17,6 +17,7 @@ SettingDisplay::SettingDisplay()
         System::SystemTask::displayApp->settingsController.SetScreenTimeOut(options[index]);
       },
       LV_LAYOUT_PRETTY_TOP) {
+  checkboxList.Reserve(options.size());
   static char buffer[4];
   for (uint8_t i = 0; i < options.size(); i++) {
     snprintf(buffer, sizeof(buffer), "%2" PRIu16 "s", options[i] / 1000);

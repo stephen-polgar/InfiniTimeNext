@@ -15,12 +15,9 @@ SettingWeatherFormat::SettingWeatherFormat()
       [](uint8_t, uint8_t index) {
         System::SystemTask::displayApp->settingsController.SetWeatherFormat(options[index].weatherFormat);
       }) {
-
+  checkboxList.Reserve(options.size());
   for (uint8_t i = 0; i < options.size(); i++) {
-    CheckboxList::Item item;
-    item.name = options[i].name;
-    item.enabled = true;
-    checkboxList.Add(item);
+    checkboxList.Add({options[i].name, true});
   }
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScreenList.h"
+#include "ScreenTree.h"
 #include "Label.h"
 #include "systemtask/SystemTask.h"
 #include "components/ble/BleController.h"
@@ -20,9 +20,10 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
+        static int mallocFailedCount, stackOverflowCount;
         static constexpr uint8_t screenNumber = 5;
         Widgets::PageIndicator pageIndicator {screenNumber};
-        ScreenList<screenNumber> screens;
+        ScreenTree* screens;
         static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
         static bool sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs);
 

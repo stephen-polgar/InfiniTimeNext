@@ -92,6 +92,10 @@ CheckboxList::~CheckboxList() {
   UnLoad();
 }
 
+void CheckboxList::Reserve(uint8_t size) {
+  options.reserve(size);
+}
+
 void CheckboxList::Add(Item item) {
   options.push_back(item);
 }

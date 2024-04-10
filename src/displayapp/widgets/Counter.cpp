@@ -5,17 +5,15 @@
 using namespace Pinetime::Applications::Widgets;
 
 namespace {
-  void upBtnEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* widget = static_cast<Counter*>(obj->user_data);
+  void upBtnEventHandler(lv_obj_t* obj, lv_event_t event) {    
     if (event == LV_EVENT_SHORT_CLICKED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
-      widget->UpBtnPressed();
+      static_cast<Counter*>(obj->user_data)->UpBtnPressed();
     }
   }
 
-  void downBtnEventHandler(lv_obj_t* obj, lv_event_t event) {
-    auto* widget = static_cast<Counter*>(obj->user_data);
+  void downBtnEventHandler(lv_obj_t* obj, lv_event_t event) {    
     if (event == LV_EVENT_SHORT_CLICKED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
-      widget->DownBtnPressed();
+       static_cast<Counter*>(obj->user_data)->DownBtnPressed();
     }
   }
 

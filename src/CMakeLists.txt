@@ -365,6 +365,7 @@ list(APPEND SOURCE_FILES
         logging/NrfLogger.cpp
         displayapp/DisplayApp.cpp
         displayapp/screens/Screen.cpp
+        displayapp/screens/ScreenTree.cpp
         displayapp/screens/WatchFaceScreen.cpp
         displayapp/screens/Tile.cpp              
         displayapp/screens/StopWatch.cpp
@@ -409,6 +410,7 @@ list(APPEND SOURCE_FILES
         displayapp/widgets/PageIndicator.cpp
         displayapp/widgets/DotIndicator.cpp
         displayapp/widgets/StatusIcons.cpp
+        displayapp/widgets/ButtonListItem.cpp
 
         ## Settings
         displayapp/screens/settings/QuickSettings.cpp
@@ -604,7 +606,7 @@ set(INCLUDE_FILES
         displayapp/screens/BleIcon.h
         displayapp/screens/NotificationIcon.h
         displayapp/screens/SystemInfo.h
-        displayapp/screens/ScreenList.h
+        displayapp/screens/ScreenTree.h
         displayapp/screens/Label.h
         displayapp/screens/FirmwareUpdate.h
         displayapp/screens/FirmwareValidation.h
@@ -633,6 +635,7 @@ set(INCLUDE_FILES
         displayapp/widgets/PageIndicator.h
         displayapp/widgets/DotIndicator.h
         displayapp/widgets/StatusIcons.h
+        displayapp/widgets/ButtonListItem.h
         drivers/St7789.h
         drivers/SpiNorFlash.h
         drivers/SpiMaster.h

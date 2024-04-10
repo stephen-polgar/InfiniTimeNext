@@ -5,36 +5,31 @@
 using namespace Pinetime::Applications::Screens;
 
 bool SettingSetDateTime::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  return screens.OnTouchEvent(event);
+  return screens->OnTouchEvent(event);
 }
 
 SettingSetDateTime::SettingSetDateTime() : Screen(Apps::SettingSetDateTime) {
-    screens.Add(new Screens::SettingSetDate(*this));
-    screens.Add(new Screens::SettingSetTime(*this));           
+    screens = new Screens::SettingSetDate(*this);
+    screens->Add(new Screens::SettingSetTime(*this));           
 }
 
 void SettingSetDateTime::Load() {
+  screens->GetCurrent()->Load();
   running = true;
-  loaded = true;
-  screens.Load();
 }
 
 bool SettingSetDateTime::UnLoad() {
-  if (loaded) {
-    loaded = false;
-    screens.UnLoad();
+  if (running) {
+    running = false;
+    screens->GetCurrent()->UnLoad();
   }
   return true;
 }
 
 SettingSetDateTime::~SettingSetDateTime() {
-  UnLoad();
+ screens->DeleteAll();
 }
 
 void SettingSetDateTime::Advance() {
-  screens.OnTouchEvent(Applications::TouchEvents::SwipeUp);
-}
-
-void SettingSetDateTime::Quit() {
-  running = false;
+  screens->OnTouchEvent(Applications::TouchEvents::SwipeUp);
 }

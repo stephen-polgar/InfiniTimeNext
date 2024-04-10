@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Screen.h"
+#include "displayapp/widgets/ButtonListItem.h"
 #include "components/timer/TimerController.h"
 #include "Symbols.h"
-
 
 namespace Pinetime::Applications {
   namespace Screens {
@@ -16,9 +16,13 @@ namespace Pinetime::Applications {
 
     private:
       static bool changed;
-      void createElem(Controllers::TimerController* timer);
-      lv_obj_t *last = NULL, *btnNew;
-      void updateAddButton();   
+      void createNewItem(Controllers::TimerController* timer);
+      void updateAddButton();
+      void on_checked(bool, Controllers::TimerController*);
+      void on_open(Controllers::TimerController*);
+      void on_removed(Controllers::TimerController*);
+      void on_addNew();
+      Widgets::ButtonListItem buttonListItem;
     };
   }
 
@@ -27,7 +31,7 @@ namespace Pinetime::Applications {
     static constexpr Apps app = Apps::Timer;
     static constexpr const char* icon = Screens::Symbols::hourGlass;
 
-    static Screens::Screen* Create() { 
+    static Screens::Screen* Create() {
       return new Screens::Timer();
     };
   };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "displayapp/screens/ScreenList.h"
+#include "displayapp/screens/ScreenTree.h"
 #include "displayapp/screens/CheckboxList.h"
 #include "displayapp/widgets/PageIndicator.h"
 #include "components/settings/Settings.h"
@@ -29,11 +29,11 @@ namespace Pinetime {
         static constexpr const char* title = "Watch face";
         static constexpr const char* symbol = Symbols::home;
         uint8_t indexOf(const WatchFace watchface);
-        Screen* createScreen(uint8_t screenNum);
+        ScreenTree* createScreen(uint8_t screenNum);
         std::array<Item, UserWatchFaceTypes::Count> watchfaces;
         static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / MaxCheckboxItems + 1                                                                          : 1;
         Widgets::PageIndicator pageIndicator {nScreens};     
-        ScreenList<nScreens> screens;
+        ScreenTree* screens;
       };
     }
   }
