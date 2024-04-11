@@ -21,15 +21,13 @@ void WatchFaceInfineat::Load() {
   if (!font_teko || !font_bebas) {
     return;
   }
-  savedTick = 0;
-  chargingBatteryPercent = 101;
+  savedTick = 0;  
   // Side Cover
   const std::array<lv_color_t, nLines>* colors = returnColor(static_cast<enum colors>(settingsController->GetInfineatColorIndex()));
   for (uint8_t i = 0; i < nLines; i++) {
     lines[i] = lv_line_create(lv_scr_act(), nullptr);
     lv_obj_set_style_local_line_width(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, lineWidths[i]);
-    lv_color_t color = (*colors)[i];
-    lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, color);
+    lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, (*colors)[i]);
     lv_line_set_points(lines[i], linePoints[i], 2);
   }
 
@@ -66,20 +64,14 @@ void WatchFaceInfineat::Load() {
   lv_obj_align(timeContainer, lv_scr_act(), LV_ALIGN_CENTER, 0, -10);
 
   labelHour = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_text_static(labelHour, "01");
   lv_obj_set_style_local_text_font(labelHour, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_bebas);
-  lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
 
   labelMinutes = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(labelMinutes, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_bebas);
-  lv_label_set_text_static(labelMinutes, "00");
-  lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
 
   labelTimeAmPm = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(labelTimeAmPm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_teko);
-
   lv_label_set_text_static(labelTimeAmPm, "");
-  lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 15);
 
   dateContainer = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_bg_opa(dateContainer, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
@@ -88,21 +80,17 @@ void WatchFaceInfineat::Load() {
 
   static constexpr lv_color_t grayColor = LV_COLOR_MAKE(0x99, 0x99, 0x99);
   labelDate = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_color(labelDate, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, grayColor);
+  lv_obj_set_style_local_text_color(labelDate, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(labelDate, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_teko);
-  lv_obj_align(labelDate, dateContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
-  lv_label_set_text_static(labelDate, "Mon 01");
 
   bleIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(bleIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, grayColor);
   lv_label_set_text_static(bleIcon, Symbols::bluetooth);
-  lv_obj_align(bleIcon, dateContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, grayColor);
+  lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_teko);
   lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_IN_BOTTOM_RIGHT, 10, 0);
-  lv_label_set_text_static(stepValue, "0");
 
   stepIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(stepIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, grayColor);
@@ -163,6 +151,11 @@ void WatchFaceInfineat::Load() {
   lv_label_set_text_static(labelBtnSettings, Symbols::settings);
   lv_obj_set_hidden(btnSettings, true);
   Refresh();
+  lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 15);
+  lv_obj_align(labelDate, dateContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(bleIcon, dateContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }
 
 bool WatchFaceInfineat::UnLoad() {

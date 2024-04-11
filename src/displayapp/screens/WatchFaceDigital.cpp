@@ -9,33 +9,25 @@
 #include "Symbols.h"
 #include "NotificationIcon.h"
 
-
 using namespace Pinetime::Applications::Screens;
 
 WatchFaceDigital::WatchFaceDigital() : Screen(WatchFace::Digital) {
 }
 
 void WatchFaceDigital::Load() {
-  displayedHour = -1;
-  displayedMinute = -1;
- 
   statusIcons.Create();
 
   notificationIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
-  lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(false));
   lv_obj_align(notificationIcon, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
   weatherIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &fontawesome_weathericons);
-  lv_label_set_text(weatherIcon, "");
   lv_obj_align(weatherIcon, NULL, LV_ALIGN_IN_TOP_MID, -20, 0);
-  lv_obj_set_auto_realign(weatherIcon, true);
 
   temperature = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-  lv_label_set_text(temperature, "");
   lv_obj_align(temperature, NULL, LV_ALIGN_IN_TOP_MID, 20, 0);
   label_date = lv_label_create(lv_scr_act(), NULL);
   lv_obj_align(label_date, lv_scr_act(), LV_ALIGN_CENTER, 0, 60);
@@ -59,11 +51,9 @@ void WatchFaceDigital::Load() {
   heartbeatValue = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(heartbeatValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0xCE1B1B));
   lv_label_set_text_static(heartbeatValue, "");
-  lv_obj_align(heartbeatValue, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
 
   stepValue = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0x00FFE7));
-  lv_label_set_text_static(stepValue, "0");
   lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
 
   stepIcon = lv_label_create(lv_scr_act(), NULL);
@@ -71,14 +61,16 @@ void WatchFaceDigital::Load() {
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
   Refresh();
+  lv_obj_set_auto_realign(weatherIcon, true);
+  lv_obj_align(heartbeatValue, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
 }
 
 bool WatchFaceDigital::UnLoad() {
-  if (running) {      
+  if (running) {
     running = false;
     lv_obj_clean(lv_scr_act());
   }
-  return true; 
+  return true;
 }
 
 WatchFaceDigital::~WatchFaceDigital() {
@@ -88,7 +80,7 @@ WatchFaceDigital::~WatchFaceDigital() {
 void WatchFaceDigital::Refresh() {
   statusIcons.Update();
 
-  auto * dateTimeController = &System::SystemTask::displayApp->dateTimeController;
+  auto* dateTimeController = &System::SystemTask::displayApp->dateTimeController;
 
   notificationState = System::SystemTask::displayApp->notificationManager.AreNewNotificationsAvailable();
   if (!running || notificationState.IsUpdated()) {
@@ -139,7 +131,7 @@ void WatchFaceDigital::Refresh() {
                               year);
       }
       lv_obj_realign(label_date);
-    }   
+    }
   }
 
   heartbeat = System::SystemTask::displayApp->heartRateController.HeartRate();
@@ -184,30 +176,30 @@ void WatchFaceDigital::Refresh() {
     lv_obj_realign(temperature);
     lv_obj_realign(weatherIcon);
   }
-    running = true;
+  running = true;
 }
 
 bool WatchFaceDigital::OnTouchEvent(uint16_t x, uint16_t y) {
   if (running) {
-  if (x < 80 && y > LV_VER_RES - 60) { // heartbeatIcon
-    System::SystemTask::displayApp->StartApp(Apps::HeartRate);
-    return true;
-  }
-  uint16_t w = lv_obj_get_width(weatherIcon);
-  if (w > 8) { // weather loaded
-    uint16_t o = lv_obj_get_x(weatherIcon);
-    if (x > o && x < o + 3 * w) {
-      o = lv_obj_get_y(weatherIcon);
-      if (y > o && y < o + w) {
-        System::SystemTask::displayApp->StartApp(Apps::Weather);
-        return true;
+    if (x < 80 && y > LV_VER_RES - 60) { // heartbeatIcon
+      System::SystemTask::displayApp->StartApp(Apps::HeartRate);
+      return true;
+    }
+    uint16_t w = lv_obj_get_width(weatherIcon);
+    if (w > 8) { // weather loaded
+      uint16_t o = lv_obj_get_x(weatherIcon);
+      if (x > o && x < o + 3 * w) {
+        o = lv_obj_get_y(weatherIcon);
+        if (y > o && y < o + w) {
+          System::SystemTask::displayApp->StartApp(Apps::Weather);
+          return true;
+        }
       }
     }
-  }
-  if (x > LV_HOR_RES - 80 && y > LV_VER_RES - 60) { // stepIcon
-    System::SystemTask::displayApp->StartApp(Apps::Steps);
-    return true;
-  }
+    if (x > LV_HOR_RES - 80 && y > LV_VER_RES - 60) { // stepIcon
+      System::SystemTask::displayApp->StartApp(Apps::Steps);
+      return true;
+    }
   }
   return false;
 }

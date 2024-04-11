@@ -129,7 +129,7 @@ namespace Pinetime {
         void updateSelected(lv_obj_t* object);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
         uint32_t savedTick;
-        uint8_t chargingBatteryPercent;
+        uint8_t chargingBatteryPercent = 101;
         Utility::DirtyValue<uint8_t> batteryPercentRemaining;
         Utility::DirtyValue<bool> isCharging;
         Utility::DirtyValue<bool> bleState;

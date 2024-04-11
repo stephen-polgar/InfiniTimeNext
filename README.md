@@ -11,10 +11,10 @@ It was optimized for my daily use. Since it seems stable and useful, I decided t
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
 
 ### [Changes](doc/code/Apps.md)
-Now most system and user application constructors are empty and are used to create new `Screen` based objects with different arguments.
+Most of system and user application constructors are empty, and are used to create new `Screen` based objects with different arguments.
 Constructors do not load the screen. The watch screen are filled and cleaned by the `Screen::Load()` and `Screen::UnLoad()` methods.
-The `utility/StaticStack.h` are replaced with `utility/ScreenStack.h` which can store `Screen objects` with different arguments, so it can continue
-interrupted apps (for example, game results are not lost due to new notifications and timers).
+The `utility/StaticStack.h` has been replaced with `utility/ScreenStack.h` which can store `Screen objects` with different arguments, so it can continue interrupted apps (for example, game results are not lost due to new notifications and timers). Watch faces are handled by `WatchFaceScreen class`. `ScreenList class` has been replaced with `ScreenTree` and lots of constant size `std::array` has been removed. I nave no debug device and  bug reports are welcome.
+
 ### Installations
 Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on [PineTime smartwatch](https://pine64.org/devices/pinetime/).
 

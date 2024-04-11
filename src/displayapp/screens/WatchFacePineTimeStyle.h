@@ -24,11 +24,10 @@ namespace Pinetime {
         void Refresh() override;
 
       private:
-        uint8_t displayedHour, displayedMinute, displayedSecond;
-        uint16_t currentYear;
-        Controllers::DateTime::Months currentMonth;
-        Controllers::DateTime::Days currentDayOfWeek;
-        uint8_t currentDay;
+        uint8_t displayedHour = -1, displayedMinute = -1, displayedSecond = -1, currentDay = 0;
+        uint16_t currentYear = 1970;
+        Controllers::DateTime::Months currentMonth = Controllers::DateTime::Months::Unknown;
+        Controllers::DateTime::Days currentDayOfWeek = Controllers::DateTime::Days::Unknown;      
         uint32_t savedTick;
 
         Utility::DirtyValue<uint8_t> batteryPercentRemaining;

@@ -43,10 +43,6 @@ WatchFaceAnalog::WatchFaceAnalog() : Screen(WatchFace::Analog) {
 }
 
 void WatchFaceAnalog::Load() {
-  sHour = 99;
-  sMinute = 99;
-  sSecond = 99;
-  
   statusIcons.Create();
   lv_obj_t* minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);
@@ -86,13 +82,11 @@ void WatchFaceAnalog::Load() {
 
   notificationIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
-  lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(false));
   lv_obj_align(notificationIcon, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
   // Date - Day / Week day
   label_date_day = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(label_date_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::green);
-  updateDate(&System::SystemTask::displayApp->dateTimeController);
   lv_label_set_align(label_date_day, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_date_day, NULL, LV_ALIGN_CENTER, 50, 0);
 
@@ -153,10 +147,6 @@ WatchFaceAnalog::~WatchFaceAnalog() {
   UnLoad();
 }
 
-void WatchFaceAnalog::updateDate(Controllers::DateTime* dt) {
-  lv_label_set_text_fmt(label_date_day, "%s\n%02i", dt->DayOfWeekShortToString(), dt->Day());
-}
-
 void WatchFaceAnalog::updateClock() {
   auto* dc = &System::SystemTask::displayApp->dateTimeController;
   uint8_t hour = dc->Hours();
@@ -211,7 +201,7 @@ void WatchFaceAnalog::Refresh() {
     updateClock();
     currentDate = std::chrono::time_point_cast<std::chrono::days>(currentDateTime.Get());
     if (!running || currentDate.IsUpdated()) {
-      updateDate(&app->dateTimeController);
+       lv_label_set_text_fmt(label_date_day, "%s\n%02i", app->dateTimeController.DayOfWeekShortToString(), app->dateTimeController.Day());      
     }
   }
   running = true;

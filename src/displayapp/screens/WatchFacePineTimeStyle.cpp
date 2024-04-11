@@ -38,13 +38,7 @@ WatchFacePineTimeStyle::WatchFacePineTimeStyle() : Screen(WatchFace::PineTimeSty
 }
 
 void WatchFacePineTimeStyle::Load() {
-
-  displayedHour = displayedMinute = displayedSecond = -1;
-  currentYear = 1970;
-  currentMonth = Controllers::DateTime::Months::Unknown;
-  currentDayOfWeek = Controllers::DateTime::Days::Unknown;
-  currentDay = savedTick = 0;
-
+  savedTick = 0;
   // Create a 200px wide background rectangle
   timebar = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_bg_color(timebar, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorBG()));
@@ -56,20 +50,15 @@ void WatchFacePineTimeStyle::Load() {
   timeDD1 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &open_sans_light);
   lv_obj_set_style_local_text_color(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
-  lv_label_set_text_static(timeDD1, "00");
-  lv_obj_align(timeDD1, timebar, LV_ALIGN_IN_TOP_MID, 5, 5);
 
   timeDD2 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &open_sans_light);
   lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
-  lv_label_set_text_static(timeDD2, "00");
-  lv_obj_align(timeDD2, timebar, LV_ALIGN_IN_BOTTOM_MID, 5, -5);
 
   timeAMPM = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
   lv_obj_set_style_local_text_line_space(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, -3);
   lv_label_set_text_static(timeAMPM, "");
-  lv_obj_align(timeAMPM, timebar, LV_ALIGN_IN_BOTTOM_LEFT, 2, -20);
 
   // Create a 40px wide bar down the right side of the screen
   sidebar = lv_obj_create(lv_scr_act(), nullptr);
@@ -94,8 +83,7 @@ void WatchFacePineTimeStyle::Load() {
 
   notificationIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
-  lv_obj_align(notificationIcon, timebar, LV_ALIGN_IN_TOP_LEFT, 5, 5);
-
+  
   weatherIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
   lv_obj_set_style_local_text_font(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &fontawesome_weathericons);
@@ -110,7 +98,6 @@ void WatchFacePineTimeStyle::Load() {
 
   temperature = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text(temperature, "--");
   lv_obj_align(temperature, sidebar, LV_ALIGN_IN_TOP_MID, 0, 65);
   if (settingsController->GetPTSWeather() == Controllers::Settings::PTSWeather::On) {
     lv_obj_set_hidden(temperature, false);
@@ -162,19 +149,13 @@ void WatchFacePineTimeStyle::Load() {
   // Display date
   dateDayOfWeek = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateDayOfWeek, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text_static(dateDayOfWeek, "THU");
-  lv_obj_align(dateDayOfWeek, calendarOuter, LV_ALIGN_CENTER, 0, -32);
-
+  
   dateDay = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateDay, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text_static(dateDay, "25");
-  lv_obj_align(dateDay, calendarOuter, LV_ALIGN_CENTER, 0, 3);
-
+  
   dateMonth = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateMonth, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text_static(dateMonth, "MAR");
-  lv_obj_align(dateMonth, calendarOuter, LV_ALIGN_CENTER, 0, 32);
-
+  
   // Step count gauge
   if (settingsController->GetPTSColorBar() == Controllers::Settings::Colors::White) {
     needle_colors[0] = LV_COLOR_BLACK;
@@ -214,8 +195,7 @@ void WatchFacePineTimeStyle::Load() {
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text_static(stepValue, "0");
-  lv_obj_align(stepValue, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  
   if (settingsController->GetPTSGaugeStyle() == Controllers::Settings::PTSGaugeStyle::Numeric) {
     lv_obj_set_hidden(stepValue, false);
   } else {
@@ -235,8 +215,7 @@ void WatchFacePineTimeStyle::Load() {
   // Display seconds
   timeDD3 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(timeDD3, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_label_set_text_static(timeDD3, ":00");
-  lv_obj_align(timeDD3, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  
   if (settingsController->GetPTSGaugeStyle() == Controllers::Settings::PTSGaugeStyle::Half) {
     lv_obj_set_hidden(timeDD3, false);
   } else {
@@ -377,6 +356,16 @@ void WatchFacePineTimeStyle::Load() {
   lv_label_set_text_static(lblSetOpts, Symbols::settings);
   lv_obj_set_hidden(btnSetOpts, true);
   Refresh();
+  lv_obj_align(timeDD1, timebar, LV_ALIGN_IN_TOP_MID, 5, 5);
+  lv_obj_align(timeDD2, timebar, LV_ALIGN_IN_BOTTOM_MID, 5, -5);
+  lv_obj_align(timeAMPM, timebar, LV_ALIGN_IN_BOTTOM_LEFT, 2, -20);
+  lv_obj_align(notificationIcon, timebar, LV_ALIGN_IN_TOP_LEFT, 5, 5);
+  lv_obj_align(temperature, sidebar, LV_ALIGN_IN_TOP_MID, 0, 65);
+  lv_obj_align(dateDayOfWeek, calendarOuter, LV_ALIGN_CENTER, 0, -32);
+  lv_obj_align(dateDay, calendarOuter, LV_ALIGN_CENTER, 0, 3);
+  lv_obj_align(dateMonth, calendarOuter, LV_ALIGN_CENTER, 0, 32);
+  lv_obj_align(stepValue, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  lv_obj_align(timeDD3, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
 }
 
 bool WatchFacePineTimeStyle::UnLoad() {
