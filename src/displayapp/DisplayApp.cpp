@@ -365,11 +365,11 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
     switch (app) {
       case Apps::Launcher: {
         std::array<Tile::Applications, UserAppTypes::Count> apps;
-        int i = 0;
+        uint8_t i = 0;
         for (const auto& userApp : userApps) {
-          apps[i++] = Tile::Applications {userApp.icon, userApp.app, true};
+          apps[i++] = Tile::Applications {userApp.icon, userApp.app};
         }
-        screen = new ApplicationList(std::move(apps));
+        screen = new ApplicationList(apps);
       } break;
       case Apps::Clock:
         screenStack.Reset();

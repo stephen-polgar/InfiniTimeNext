@@ -26,7 +26,7 @@ InfiniSimNext simulator uses this settings too.
 
 #define UseCalculator
 // #define UseMotion
-// #define UsePaddle
+ #define UsePaddle
 // #define UseDice
 // #define UseTwos
 // #define UseMetronome

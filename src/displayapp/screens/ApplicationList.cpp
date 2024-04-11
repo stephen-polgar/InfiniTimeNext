@@ -2,13 +2,19 @@
 
 using namespace Pinetime::Applications::Screens;
 
-ApplicationList::ApplicationList(std::array<Tile::Applications, UserAppTypes::Count>&& apps)
-  : Screen(Apps::Launcher), apps {std::move(apps)} {
-  for (uint8_t i = 0; i < nScreens; i++) {
+ApplicationList::ApplicationList(std::array<Tile::Applications, UserAppTypes::Count>& apps)
+  : Screen(Apps::Launcher) {
+  uint8_t i = 0;
+  while (i < apps.size()) {
+    Screens::Tile* list = new Screens::Tile(pageIndicator.nScreens++, &pageIndicator);
     if (i)
-      screens->Add(createScreen(i));
+      screens->Add(list);
     else
-      screens = createScreen(i);
+      screens = list;
+    while (list->Add(apps[i++])) {
+      if (i == apps.size())
+        return;
+    }
   }
 }
 
@@ -31,16 +37,4 @@ ApplicationList::~ApplicationList() {
 
 bool ApplicationList::OnTouchEvent(Applications::TouchEvents event) {
   return screens->OnTouchEvent(event);
-}
-
-ScreenTree* ApplicationList::createScreen(uint8_t screenNum) {
-  std::array<Tile::Applications, appsPerScreen> pageApps;
-  for (uint8_t i = 0; i < appsPerScreen; i++) {
-    if (i + (screenNum * appsPerScreen) >= (uint8_t) apps.size()) {
-      pageApps[i] = {"", Applications::Apps::None, false};
-    } else {
-      pageApps[i] = apps[i + (screenNum * appsPerScreen)];
-    }
-  }
-  return new Screens::Tile(screenNum, pageApps, &pageIndicator);
 }

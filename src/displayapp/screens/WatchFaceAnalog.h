@@ -19,7 +19,7 @@ namespace Pinetime {
         void Refresh() override;
 
       private:
-        uint8_t sHour = 99, sMinute = 99, sSecond = 99;
+        uint8_t sHour, sMinute, sSecond;
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>> currentDateTime;
         Utility::DirtyValue<bool> notificationState {false};
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;

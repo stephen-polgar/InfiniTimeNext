@@ -43,6 +43,7 @@ WatchFaceAnalog::WatchFaceAnalog() : Screen(WatchFace::Analog) {
 }
 
 void WatchFaceAnalog::Load() {
+  sHour = sMinute = sSecond = 99;
   statusIcons.Create();
   lv_obj_t* minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);

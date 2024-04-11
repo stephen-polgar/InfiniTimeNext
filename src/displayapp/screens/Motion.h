@@ -2,7 +2,6 @@
 
 #include "Screen.h"
 #ifdef UseMotion
-#include "displayapp/apps/Apps.h"
 
 namespace Pinetime {
   namespace Applications {

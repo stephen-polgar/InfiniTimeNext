@@ -11,30 +11,29 @@ namespace Pinetime {
       class Tile : public ScreenTree {
       public:
         static constexpr uint8_t MaxElements = 6;
+
         struct Applications {
           const char* icon;
-          Pinetime::Applications::Apps application;
-          bool enabled;
+          Pinetime::Applications::Apps app;
         };
 
-        explicit Tile(uint8_t screenID, std::array<Applications, MaxElements>& applications, Widgets::PageIndicator* pageIndicator);
-
+        explicit Tile(uint8_t screenID, Widgets::PageIndicator* pageIndicator);
         ~Tile() override;
         void Load() override;
         bool UnLoad() override;
+        bool Add(Applications item);
 
       private:
         void Refresh() override;
-        void onValueChangedEvent(uint8_t buttonId);
+        void onValueChangedEvent(uint8_t index);
         lv_task_t* taskUpdate = NULL;
         lv_obj_t* label_time;
-        lv_obj_t* btnm;
         const uint8_t screenID;
-        std::array<Applications, MaxElements> applications;
+        uint8_t size = 0;
+        const char* btnmMap[8];
+        std::array<Applications, MaxElements> apps;
         Widgets::PageIndicator* pageIndicator;
         Widgets::StatusIcons statusIcons;
-        const char* btnmMap[8];
-        Pinetime::Applications::Apps apps[MaxElements];
       };
     }
   }

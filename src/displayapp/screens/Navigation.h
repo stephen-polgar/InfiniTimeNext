@@ -18,18 +18,13 @@
 #pragma once
 
 #include "Screen.h"
-#include "displayapp/apps/Apps.h"
+#include "components/fs/FS.h"
 #include "Symbols.h"
 #include <string>
 
 
 namespace Pinetime {
-  namespace Controllers {
-    class NavigationService;
-    class FS;
-  }
-
-  namespace Applications {
+   namespace Applications {
     namespace Screens {
       class Navigation : public Screen {
       public:

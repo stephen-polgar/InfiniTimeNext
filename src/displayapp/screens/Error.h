@@ -2,7 +2,6 @@
 
 #include "displayapp/screens/Screen.h"
 #include "BootErrors.h"
-#include <lvgl/lvgl.h>
 
 namespace Pinetime {
   namespace Applications {

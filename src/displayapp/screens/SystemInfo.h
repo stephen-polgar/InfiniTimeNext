@@ -20,9 +20,8 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-        static int mallocFailedCount, stackOverflowCount;
-        static constexpr uint8_t screenNumber = 5;
-        Widgets::PageIndicator pageIndicator {screenNumber};
+        static int mallocFailedCount, stackOverflowCount;        
+        Widgets::PageIndicator pageIndicator;
         ScreenTree* screens;
         static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
         static bool sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs);

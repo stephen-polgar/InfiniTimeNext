@@ -38,7 +38,11 @@ WatchFacePineTimeStyle::WatchFacePineTimeStyle() : Screen(WatchFace::PineTimeSty
 }
 
 void WatchFacePineTimeStyle::Load() {
-  savedTick = 0;
+  displayedHour = displayedMinute = displayedSecond = -1;
+  currentDay = savedTick = 0;
+  currentMonth = Controllers::DateTime::Months::Unknown;
+  currentDayOfWeek = Controllers::DateTime::Days::Unknown;
+
   // Create a 200px wide background rectangle
   timebar = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_bg_color(timebar, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorBG()));
@@ -83,7 +87,7 @@ void WatchFacePineTimeStyle::Load() {
 
   notificationIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
-  
+
   weatherIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
   lv_obj_set_style_local_text_font(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &fontawesome_weathericons);
@@ -98,6 +102,7 @@ void WatchFacePineTimeStyle::Load() {
 
   temperature = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+   lv_label_set_text(temperature, "--");
   lv_obj_align(temperature, sidebar, LV_ALIGN_IN_TOP_MID, 0, 65);
   if (settingsController->GetPTSWeather() == Controllers::Settings::PTSWeather::On) {
     lv_obj_set_hidden(temperature, false);
@@ -149,13 +154,13 @@ void WatchFacePineTimeStyle::Load() {
   // Display date
   dateDayOfWeek = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateDayOfWeek, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  
+
   dateDay = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateDay, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  
+
   dateMonth = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(dateMonth, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  
+
   // Step count gauge
   if (settingsController->GetPTSColorBar() == Controllers::Settings::Colors::White) {
     needle_colors[0] = LV_COLOR_BLACK;
@@ -195,7 +200,7 @@ void WatchFacePineTimeStyle::Load() {
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  
+
   if (settingsController->GetPTSGaugeStyle() == Controllers::Settings::PTSGaugeStyle::Numeric) {
     lv_obj_set_hidden(stepValue, false);
   } else {
@@ -215,7 +220,7 @@ void WatchFacePineTimeStyle::Load() {
   // Display seconds
   timeDD3 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(timeDD3, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  
+
   if (settingsController->GetPTSGaugeStyle() == Controllers::Settings::PTSGaugeStyle::Half) {
     lv_obj_set_hidden(timeDD3, false);
   } else {

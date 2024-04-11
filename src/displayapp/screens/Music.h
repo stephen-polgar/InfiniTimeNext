@@ -21,7 +21,6 @@
 #include <FreeRTOS.h>
 #include <portmacro_cmsis.h>
 #include <string>
-#include "displayapp/apps/Apps.h"
 #include "Symbols.h"
 
 namespace Pinetime {

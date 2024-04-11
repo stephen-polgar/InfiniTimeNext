@@ -14,22 +14,22 @@ namespace Pinetime {
         struct Applications {
           const char* icon;
           const char* name;
-          Pinetime::Applications::Apps application;
+          Pinetime::Applications::Apps app;
         };
 
-        explicit List(uint8_t screenID, std::array<Applications, MaxElements>& applications, Widgets::PageIndicator& pageIndicator);
+        explicit List(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
         ~List() override;
         void Load() override;
         bool UnLoad() override;
+        bool Add(Applications item);
 
       private:
         const uint8_t screenID;
         bool loaded = false;
-        std::array<Applications, MaxElements> applications;
-        Pinetime::Applications::Apps apps[MaxElements];
-        void onButtonEvent(lv_obj_t* object, lv_event_t event);
-        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
-        lv_obj_t* itemApps[MaxElements];
+        uint8_t size = 0;
+        std::array<Applications, MaxElements> apps;      
+        void onButtonEvent(lv_obj_t* obj);
+        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);       
         Widgets::PageIndicator& pageIndicator;
       };
     }

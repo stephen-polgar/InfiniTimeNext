@@ -72,6 +72,7 @@ void CheckboxList::Load() {
     if (!option.enabled) {
       lv_checkbox_set_disabled(option.cb);
     }
+   // option.cb->user_data = &option;
     lv_obj_set_event_cb(option.cb, event_handler);
     SetRadioButtonStyle(option.cb);
     if (currentValue(screenID) == i++) {
@@ -105,10 +106,10 @@ void CheckboxList::event_handler(lv_obj_t* obj, lv_event_t event) {
     static_cast<CheckboxList*>(obj->parent->user_data)->updateSelected(obj);
 }
 
-void CheckboxList::updateSelected(lv_obj_t* object) {
+void CheckboxList::updateSelected(lv_obj_t* obj) {
   uint8_t i = 0;
   for (auto& option : options) {
-    if (object == option.cb) {
+    if (obj == option.cb) {
       lv_checkbox_set_checked(option.cb, true);
       OnValueChanged(screenID, i);
     } else {

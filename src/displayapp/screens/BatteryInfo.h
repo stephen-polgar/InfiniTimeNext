@@ -3,11 +3,7 @@
 #include "Screen.h"
 
 namespace Pinetime {
-  namespace Controllers {
-    class Battery;
-  }
-
-  namespace Applications {
+   namespace Applications {
     namespace Screens {
 
       class BatteryInfo : public Screen {

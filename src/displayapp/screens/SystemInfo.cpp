@@ -122,6 +122,7 @@ void SystemInfo::FirmwareScreen::Load() {
 }
 
 SystemInfo::SystemInfo() : Screen(Apps::SysInfo) {
+  pageIndicator.nScreens = 5;
   screens = new MemoryInfo(0, pageIndicator);
   screens->Add(new TasksScreen(1, pageIndicator));
   screens->Add(new HardverScreen(2, pageIndicator));

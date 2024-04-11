@@ -20,7 +20,7 @@
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 
-//#define Log
+// #define Log
 
 #ifdef Log
   #include <nrf_log.h>
@@ -91,9 +91,11 @@ bool WatchFaceScreen::OnButtonPushed() {
 bool WatchFaceScreen::OnTouchEvent(TouchEvents event) {
   if (running && !current->OnTouchEvent(event)) {
     switch (event) {
+      /*
       case TouchEvents::LongTap:
         System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace);
         break;
+        */
       case TouchEvents::SwipeUp:
         System::SystemTask::displayApp->StartApp(Apps::Launcher, Screen::FullRefreshDirections::Up);
         break;
@@ -107,6 +109,9 @@ bool WatchFaceScreen::OnTouchEvent(TouchEvents event) {
         break;
       case TouchEvents::SwipeRight:
         System::SystemTask::displayApp->StartApp(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
+        break;
+      case TouchEvents::SwipeLeft:
+        System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace, Screen::FullRefreshDirections::LeftAnim);
         break;
       case TouchEvents::DoubleTap:
         System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::GoToSleep);

@@ -278,7 +278,7 @@ void Navigation::Refresh() {
 }
 
 bool Navigation::IsAvailable(Controllers::FS& filesystem) {
-  lfs_file file = {};
+  lfs_file file;
 
   if (filesystem.FileOpen(&file, "/images/navigation0.bin", LFS_O_RDONLY) < 0) {
     return false;

@@ -2,19 +2,24 @@
 
 using namespace Pinetime::Applications::Screens;
 
-constexpr std::array<List::Applications, Settings::entries.size()> Settings::entries;
-
 Settings::Settings() : Screen(Apps::Settings) {
-  for (uint8_t i = 0; i < nScreens; i++) {
+  uint8_t i = 0;
+  while (i < apps.size()) {
+    Screens::List* list = new Screens::List(pageIndicator.nScreens++, pageIndicator);
     if (i)
-    screens->Add(createScreen(i));
-    else screens = createScreen(i);
+      screens->Add(list);
+    else
+      screens = list;
+    while (list->Add(apps[i++])) {
+      if (i == apps.size())
+        return;
+    }
   }
 }
 
-void Settings::Load() { 
+void Settings::Load() {
   screens->GetCurrent()->Load();
-  running = true;;
+  running = true;
 }
 
 bool Settings::UnLoad() {
@@ -26,17 +31,9 @@ bool Settings::UnLoad() {
 }
 
 Settings::~Settings() {
- screens->DeleteAll();
+  screens->DeleteAll();
 }
 
 bool Settings::OnTouchEvent(Applications::TouchEvents event) {
   return screens->OnTouchEvent(event);
-}
-
-ScreenTree* Settings::createScreen(uint8_t screenNum)  {
-  std::array<List::Applications, entriesPerScreen> screens;
-  for (uint8_t i = 0; i < entriesPerScreen; i++) {
-    screens[i] = entries[screenNum * entriesPerScreen + i];
-  }
-  return new Screens::List(screenNum, screens, pageIndicator);
 }

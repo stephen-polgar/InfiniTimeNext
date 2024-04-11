@@ -2,15 +2,9 @@
 #include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
 
-// #include <nrf_log.h>
-
 using namespace Pinetime::Applications::Screens;
 
-Tile::Tile(uint8_t screenID, std::array<Applications, MaxElements>& applications, Widgets::PageIndicator* pageIndicator)
-  : screenID {screenID}, applications {std::move(applications)}, pageIndicator {pageIndicator} { 
-#ifdef NRF_LOG_INFO
-  NRF_LOG_INFO("Tile new=%d", this);
-#endif
+Tile::Tile(uint8_t screenID, Widgets::PageIndicator* pageIndicator) : screenID {screenID}, pageIndicator {pageIndicator} {
 }
 
 void Tile::Load() {
@@ -25,23 +19,17 @@ void Tile::Load() {
   pageIndicator->Create(screenID);
 
   uint8_t btIndex = 0;
-  for (uint8_t i = 0; i < MaxElements; i++) {
+  for (uint8_t i = 0; i < size; i++) {
     if (i == 3) {
       btnmMap[btIndex++] = "\n";
     }
-    if (applications[i].application == Apps::None) {
-      btnmMap[btIndex] = " ";
-    } else {
-      btnmMap[btIndex] = applications[i].icon;
-    }
-    btIndex++;
-    apps[i] = applications[i].application;
+    btnmMap[btIndex++] = apps[i].icon;
   }
   btnmMap[btIndex] = "";
 
-  btnm = lv_btnmatrix_create(lv_scr_act(), nullptr);
+  lv_obj_t* btnm = lv_btnmatrix_create(lv_scr_act(), nullptr);
   lv_btnmatrix_set_map(btnm, btnmMap);
-  lv_obj_set_size(btnm, LV_HOR_RES - 16, LV_VER_RES - 60);
+  lv_obj_set_size(btnm, LV_HOR_RES - 16, size < 4 ? (LV_VER_RES - 60)/2 : (LV_VER_RES - 60));
   lv_obj_align(btnm, nullptr, LV_ALIGN_CENTER, 0, 10);
 
   lv_obj_set_style_local_radius(btnm, LV_BTNMATRIX_PART_BTN, LV_STATE_DEFAULT, 20);
@@ -52,23 +40,18 @@ void Tile::Load() {
   lv_obj_set_style_local_pad_all(btnm, LV_BTNMATRIX_PART_BG, LV_STATE_DEFAULT, 0);
   lv_obj_set_style_local_pad_inner(btnm, LV_BTNMATRIX_PART_BG, LV_STATE_DEFAULT, 10);
 
-  for (uint8_t i = 0; i < MaxElements; i++) {
+  for (uint8_t i = 0; i < size; i++) {
     lv_btnmatrix_set_btn_ctrl(btnm, i, LV_BTNMATRIX_CTRL_CLICK_TRIG);
-    if (applications[i].application == Apps::None || !applications[i].enabled) {
-      lv_btnmatrix_set_btn_ctrl(btnm, i, LV_BTNMATRIX_CTRL_DISABLED);
-    }
   }
 
   btnm->user_data = this;
   lv_obj_set_event_cb(btnm, [](lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_VALUE_CHANGED) {
-     uint32_t eventData = *(uint32_t*) lv_event_get_data();
-     static_cast<Tile*>(obj->user_data)->onValueChangedEvent(eventData);
+      static_cast<Tile*>(obj->user_data)->onValueChangedEvent(*(uint32_t*) lv_event_get_data());
     }
   });
 
   taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
-
   Refresh();
 }
 
@@ -83,10 +66,12 @@ bool Tile::UnLoad() {
 }
 
 Tile::~Tile() {
-#ifdef NRF_LOG_INFO
-  NRF_LOG_INFO("Tile del=%d", this);
-#endif
   UnLoad();
+}
+
+bool Tile::Add(Applications item) {
+  apps[size++] = item;
+  return size < MaxElements;
 }
 
 void Tile::Refresh() {
@@ -94,7 +79,7 @@ void Tile::Refresh() {
   statusIcons.Update();
 }
 
-void Tile::onValueChangedEvent(uint8_t buttonId) {
-   System::SystemTask::displayApp->StartApp(apps[buttonId]);
-   running = false;  
+void Tile::onValueChangedEvent(uint8_t index) {
+  System::SystemTask::displayApp->StartApp(apps[index].app);
+  running = false;
 }

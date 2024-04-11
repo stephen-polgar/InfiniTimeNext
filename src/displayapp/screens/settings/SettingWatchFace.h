@@ -32,7 +32,7 @@ namespace Pinetime {
         ScreenTree* createScreen(uint8_t screenNum);
         std::array<Item, UserWatchFaceTypes::Count> watchfaces;
         static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / MaxCheckboxItems + 1                                                                          : 1;
-        Widgets::PageIndicator pageIndicator {nScreens};     
+        Widgets::PageIndicator pageIndicator;     
         ScreenTree* screens;
       };
     }

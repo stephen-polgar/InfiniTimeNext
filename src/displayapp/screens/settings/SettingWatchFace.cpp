@@ -55,6 +55,7 @@ ScreenTree* SettingWatchFace::createScreen(uint8_t screenNum) {
     auto& item = watchfaces[i];
     checkboxList->Add({item.name, item.enabled});
   }
+  pageIndicator.nScreens++;
   return checkboxList;
 }
 

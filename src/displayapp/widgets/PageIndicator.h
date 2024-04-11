@@ -5,11 +5,10 @@ namespace Pinetime {
   namespace Applications {
     namespace Widgets {
       class PageIndicator {
-      public:
-        PageIndicator(const uint8_t nScreens);
+      public:        
         void Create(uint8_t nCurrentScreen);
         void Clean();
-        const uint8_t nScreens;
+        uint8_t nScreens = 0;
 
       private:
         lv_obj_t* pageIndicatorBase;

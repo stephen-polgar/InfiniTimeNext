@@ -86,7 +86,6 @@ SettingShakeThreshold::~SettingShakeThreshold() {
 }
 
 void SettingShakeThreshold::Refresh() {
-
   if (calibrating == 1) {
     if (xTaskGetTickCount() - vCalTime > pdMS_TO_TICKS(2000)) {
       vCalTime = xTaskGetTickCount();
