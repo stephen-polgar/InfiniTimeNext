@@ -16,15 +16,13 @@ namespace Pinetime {
         bool UnLoad() override;
 
       private:
-        void UpdateStartStopButton(bool isRunning);
+        void updateStartStopButton(bool isRunning);
         void Refresh() override;
         void onStartStopEvent();
         static void btnStartStopEventHandler(lv_obj_t* obj, lv_event_t event);
         static const char* toString(Controllers::HeartRateController::States s);
         lv_obj_t* label_hr;
-        lv_obj_t* label_bpm;
         lv_obj_t* label_status;
-        lv_obj_t* btn_startStop;
         lv_obj_t* label_startStop;
 
         lv_task_t* taskRefresh;
