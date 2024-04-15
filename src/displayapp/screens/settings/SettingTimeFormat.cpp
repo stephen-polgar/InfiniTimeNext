@@ -7,18 +7,18 @@ using namespace Pinetime::Applications::Screens;
 SettingTimeFormat::SettingTimeFormat()
   : Screen(Apps::SettingTimeFormat),
     checkboxList(
+      options.size(),
       "Time format",
       Symbols::clock,
-      [this](uint8_t) {
+      [this]() {
         return getCurrentOption(System::SystemTask::displayApp->settingsController.GetClockType());
       },
-      [](uint8_t, uint8_t index) {
+      [](uint8_t index) {
         System::SystemTask::displayApp->settingsController.SetClockType(options[index].clockType);
       }) {
-checkboxList.Reserve(options.size());
-  for (uint8_t i = 0; i < options.size(); i++) {    
-    checkboxList.Add({options[i].name, true});
-  }
+  uint8_t i = 0;
+  while (checkboxList.Add({options[i].name, true, i++})) {
+  };
 }
 
 void SettingTimeFormat::Load() {

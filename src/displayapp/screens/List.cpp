@@ -4,26 +4,24 @@
 
 using namespace Pinetime::Applications::Screens;
 
-List::List(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : screenID {screenID}, pageIndicator {pageIndicator} {
+List::List(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
 }
 
 void List::Load() {
   loaded = running = true;
+  ScreenTree::Load();
   // Set the background to Black
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0, 0, 0));
-
-  pageIndicator.Create(screenID);
-
   lv_obj_t* container = lv_cont_create(lv_scr_act(), nullptr);
   container->user_data = this;
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   static constexpr uint8_t innerPad = 4;
   lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, innerPad);
   lv_obj_set_style_local_border_width(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);
- // lv_obj_set_pos(container, 0, 0);
+  // lv_obj_set_pos(container, 0, 0);
   lv_obj_set_width(container, LV_HOR_RES - 8);
   lv_obj_set_height(container, LV_VER_RES);
-  lv_cont_set_layout(container, LV_LAYOUT_COLUMN_LEFT);  
+  lv_cont_set_layout(container, LV_LAYOUT_COLUMN_LEFT);
   static constexpr uint16_t btnHeight = (LV_HOR_RES_MAX - ((MaxElements - 1) * innerPad)) / MaxElements;
 
   for (uint8_t i = 0; i < size; i++) {

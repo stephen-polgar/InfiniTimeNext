@@ -4,19 +4,18 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Tile::Tile(uint8_t screenID, Widgets::PageIndicator* pageIndicator) : screenID {screenID}, pageIndicator {pageIndicator} {
+Tile::Tile(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
 }
 
 void Tile::Load() {
   running = true;
+  ScreenTree::Load();
   statusIcons.Create();
   lv_obj_align(statusIcons.GetObject(), lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, -8, 0);
 
   label_time = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_time, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-
-  pageIndicator->Create(screenID);
 
   uint8_t btIndex = 0;
   for (uint8_t i = 0; i < size; i++) {
@@ -29,7 +28,7 @@ void Tile::Load() {
 
   lv_obj_t* btnm = lv_btnmatrix_create(lv_scr_act(), nullptr);
   lv_btnmatrix_set_map(btnm, btnmMap);
-  lv_obj_set_size(btnm, LV_HOR_RES - 16, size < 4 ? (LV_VER_RES - 60)/2 : (LV_VER_RES - 60));
+  lv_obj_set_size(btnm, LV_HOR_RES - 16, size < 4 ? (LV_VER_RES - 60) / 2 : (LV_VER_RES - 60));
   lv_obj_align(btnm, nullptr, LV_ALIGN_CENTER, 0, 10);
 
   lv_obj_set_style_local_radius(btnm, LV_BTNMATRIX_PART_BTN, LV_STATE_DEFAULT, 20);

@@ -20,8 +20,7 @@ WatchFaceInfineat::WatchFaceInfineat() : Screen(WatchFace::Infineat) {
 void WatchFaceInfineat::Load() {
   if (!font_teko || !font_bebas) {
     return;
-  }
-  savedTick = 0;  
+  } 
   // Side Cover
   const std::array<lv_color_t, nLines>* colors = returnColor(static_cast<enum colors>(settingsController->GetInfineatColorIndex()));
   for (uint8_t i = 0; i < nLines; i++) {
@@ -50,8 +49,7 @@ void WatchFaceInfineat::Load() {
   lv_obj_set_size(notificationIcon, 13, 13);
   lv_obj_set_hidden(notificationIcon, true);
 
-  bool showSideCover = settingsController->GetInfineatShowSideCover();
-  if (!showSideCover) {
+  if (!settingsController->GetInfineatShowSideCover()) {
     toggleBatteryIndicatorColor(false);
     for (auto& line : lines) {
       lv_obj_set_hidden(line, true);
@@ -84,7 +82,7 @@ void WatchFaceInfineat::Load() {
   lv_obj_set_style_local_text_font(labelDate, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_teko);
 
   bleIcon = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_color(bleIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, grayColor);
+  lv_obj_set_style_local_text_color(bleIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLUE);
   lv_label_set_text_static(bleIcon, Symbols::bluetooth);
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
@@ -97,7 +95,16 @@ void WatchFaceInfineat::Load() {
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
 
-  // Setting buttons
+  Refresh();
+
+  lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 15);
+  lv_obj_align(labelDate, dateContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(bleIcon, dateContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+}
+
+void WatchFaceInfineat::showMenu() {
   btnClose = lv_btn_create(lv_scr_act(), nullptr);
   btnClose->user_data = this;
   lv_obj_set_size(btnClose, 60, 60);
@@ -106,56 +113,23 @@ void WatchFaceInfineat::Load() {
   lv_obj_t* lblClose = lv_label_create(btnClose, nullptr);
   lv_label_set_text_static(lblClose, "X");
   lv_obj_set_event_cb(btnClose, event_handler);
-  lv_obj_set_hidden(btnClose, true);
 
-  btnNextColor = lv_btn_create(lv_scr_act(), nullptr);
-  btnNextColor->user_data = this;
-  lv_obj_set_size(btnNextColor, 60, 60);
+  btnNextColor = lv_btn_create(lv_scr_act(), btnClose);
   lv_obj_align(btnNextColor, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, -15, 0);
-  lv_obj_set_style_local_bg_opa(btnNextColor, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
   lv_obj_t* lblNextColor = lv_label_create(btnNextColor, nullptr);
   lv_label_set_text_static(lblNextColor, ">");
-  lv_obj_set_event_cb(btnNextColor, event_handler);
-  lv_obj_set_hidden(btnNextColor, true);
 
-  btnPrevColor = lv_btn_create(lv_scr_act(), nullptr);
-  btnPrevColor->user_data = this;
-  lv_obj_set_size(btnPrevColor, 60, 60);
+  btnPrevColor = lv_btn_create(lv_scr_act(), btnClose);
   lv_obj_align(btnPrevColor, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 15, 0);
-  lv_obj_set_style_local_bg_opa(btnPrevColor, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
   lv_obj_t* lblPrevColor = lv_label_create(btnPrevColor, nullptr);
   lv_label_set_text_static(lblPrevColor, "<");
-  lv_obj_set_event_cb(btnPrevColor, event_handler);
-  lv_obj_set_hidden(btnPrevColor, true);
 
-  btnToggleCover = lv_btn_create(lv_scr_act(), nullptr);
-  btnToggleCover->user_data = this;
-  lv_obj_set_size(btnToggleCover, 60, 60);
+  btnToggleCover = lv_btn_create(lv_scr_act(), btnClose);
   lv_obj_align(btnToggleCover, lv_scr_act(), LV_ALIGN_CENTER, 0, 80);
-  lv_obj_set_style_local_bg_opa(btnToggleCover, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
   lblToggle = lv_label_create(btnToggleCover, nullptr);
-  lv_label_set_text_static(lblToggle, showSideCover ? "ON" : "OFF");
-  lv_obj_set_event_cb(btnToggleCover, event_handler);
-  lv_obj_set_hidden(btnToggleCover, true);
+  lv_label_set_text_static(lblToggle, settingsController->GetInfineatShowSideCover() ? "ON" : "OFF");
 
-  // Button to access the settings
-  btnSettings = lv_btn_create(lv_scr_act(), nullptr);
-  btnSettings->user_data = this;
-  lv_obj_set_size(btnSettings, 150, 150);
-  lv_obj_align(btnSettings, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-  lv_obj_set_style_local_radius(btnSettings, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 30);
-  lv_obj_set_style_local_bg_opa(btnSettings, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
-  lv_obj_set_event_cb(btnSettings, event_handler);
-  labelBtnSettings = lv_label_create(btnSettings, nullptr);
-  lv_obj_set_style_local_text_font(labelBtnSettings, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
-  lv_label_set_text_static(labelBtnSettings, Symbols::settings);
-  lv_obj_set_hidden(btnSettings, true);
-  Refresh();
-  lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
-  lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
-  lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 15);
-  lv_obj_align(labelDate, dateContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
-  lv_obj_align(bleIcon, dateContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+  savedTick = lv_tick_get();
 }
 
 bool WatchFaceInfineat::UnLoad() {
@@ -174,32 +148,32 @@ WatchFaceInfineat::~WatchFaceInfineat() {
     lv_font_free(font_teko);
 }
 
+void WatchFaceInfineat::closeMenu() {
+  lv_obj_del(btnClose);
+  lv_obj_del(btnNextColor);
+  lv_obj_del(btnPrevColor);
+  lv_obj_del(btnToggleCover);
+  btnClose = NULL;
+  settingsController->SaveSettings();
+}
+
 bool WatchFaceInfineat::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   if (running) {
-    if ((event == Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnSettings)) {
-      lv_obj_set_hidden(btnSettings, false);
-      savedTick = lv_tick_get();
+    if (event == Applications::TouchEvents::LongTap && !btnClose) {
+      showMenu();
       return true;
     }
     // Prevent screen from sleeping when double tapping with settings on
-    if ((event == Applications::TouchEvents::DoubleTap) && !lv_obj_get_hidden(btnClose)) {
+    if (event == Applications::TouchEvents::DoubleTap && btnClose) {
       return true;
     }
   }
   return false;
 }
 
-void WatchFaceInfineat::closeMenu() {
-  settingsController->SaveSettings();
-  lv_obj_set_hidden(btnClose, true);
-  lv_obj_set_hidden(btnNextColor, true);
-  lv_obj_set_hidden(btnPrevColor, true);
-  lv_obj_set_hidden(btnToggleCover, true);
-}
-
 bool WatchFaceInfineat::OnButtonPushed() {
   if (running) {
-    if (!lv_obj_get_hidden(btnClose)) {
+    if (btnClose) {
       closeMenu();
       return true;
     }
@@ -207,21 +181,23 @@ bool WatchFaceInfineat::OnButtonPushed() {
   return false;
 }
 
-void WatchFaceInfineat::updateSelected(lv_obj_t* object) {
-  bool showSideCover = settingsController->GetInfineatShowSideCover();
-  int8_t colorIndex = settingsController->GetInfineatColorIndex();
+void WatchFaceInfineat::updateColors(int8_t colorIndex) {
+  const std::array<lv_color_t, nLines>* colors = returnColor(static_cast<enum colors>(colorIndex));
+  for (uint8_t i = 0; i < nLines; i++) {
+    lv_color_t color = (*colors)[i];
+    lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, color);
+  }
+  lv_obj_set_style_local_line_color(lineBattery, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, (*colors)[4]);
+  lv_obj_set_style_local_bg_color(notificationIcon, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, (*colors)[7]);
+  settingsController->SetInfineatColorIndex(colorIndex);
+}
 
-  if (object == btnSettings) {
-    lv_obj_set_hidden(btnSettings, true);
-    lv_obj_set_hidden(btnClose, false);
-    lv_obj_set_hidden(btnNextColor, !showSideCover);
-    lv_obj_set_hidden(btnPrevColor, !showSideCover);
-    lv_obj_set_hidden(btnToggleCover, false);
-  }
-  if (object == btnClose) {
+void WatchFaceInfineat::updateSelected(lv_obj_t* obj) {
+  savedTick = lv_tick_get();
+  if (obj == btnClose) {
     closeMenu();
-  }
-  if (object == btnToggleCover) {
+  } else if (obj == btnToggleCover) {
+    bool showSideCover = settingsController->GetInfineatShowSideCover();
     settingsController->SetInfineatShowSideCover(!showSideCover);
     toggleBatteryIndicatorColor(!showSideCover);
     for (auto& line : lines) {
@@ -230,25 +206,15 @@ void WatchFaceInfineat::updateSelected(lv_obj_t* object) {
     lv_obj_set_hidden(btnNextColor, showSideCover);
     lv_obj_set_hidden(btnPrevColor, showSideCover);
     lv_label_set_text_static(lblToggle, showSideCover ? "OFF" : "ON");
-  }
-  if (object == btnNextColor) {
+  } else if (obj == btnNextColor) {
+    int8_t colorIndex = settingsController->GetInfineatColorIndex();
     colorIndex = (colorIndex + 1) % nColors;
-    settingsController->SetInfineatColorIndex(colorIndex);
-  }
-  if (object == btnPrevColor) {
-    colorIndex -= 1;
-    if (colorIndex < 0)
+    updateColors(colorIndex);
+  } else if (obj == btnPrevColor) {
+    int8_t colorIndex = settingsController->GetInfineatColorIndex();
+    if (--colorIndex < 0)
       colorIndex = nColors - 1;
-    settingsController->SetInfineatColorIndex(colorIndex);
-  }
-  if (object == btnNextColor || object == btnPrevColor) {
-    const std::array<lv_color_t, nLines>* colors = returnColor(static_cast<enum colors>(settingsController->GetInfineatColorIndex()));
-    for (uint8_t i = 0; i < nLines; i++) {
-      lv_color_t color = (*colors)[i];
-      lv_obj_set_style_local_line_color(lines[i], LV_LINE_PART_MAIN, LV_STATE_DEFAULT, color);
-    }
-    lv_obj_set_style_local_line_color(lineBattery, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, (*colors)[4]);
-    lv_obj_set_style_local_bg_color(notificationIcon, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, (*colors)[7]);
+    updateColors(colorIndex);
   }
 }
 
@@ -263,7 +229,6 @@ void WatchFaceInfineat::Refresh() {
     lv_obj_set_hidden(notificationIcon, !notificationState.Get());
     lv_obj_align(notificationIcon, lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, 0, 0);
   }
-
   auto& dateTimeController = System::SystemTask::displayApp->dateTimeController;
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(dateTimeController.CurrentDateTime());
   if (!running || currentDateTime.IsUpdated()) {
@@ -327,9 +292,9 @@ void WatchFaceInfineat::Refresh() {
     lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
   }
 
-  if (!lv_obj_get_hidden(btnSettings)) {
-    if ((savedTick > 0) && (lv_tick_get() - savedTick > 3000)) {
-      lv_obj_set_hidden(btnSettings, true);
+  if (btnClose) {
+    if (savedTick && (lv_tick_get() - savedTick) > 3000) {
+      closeMenu();
       savedTick = 0;
     }
   }

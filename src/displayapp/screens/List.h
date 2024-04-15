@@ -1,7 +1,6 @@
 #pragma once
 
 #include "displayapp/screens/ScreenTree.h"
-#include "displayapp/widgets/PageIndicator.h"
 #include <array>
 
 namespace Pinetime {
@@ -17,20 +16,18 @@ namespace Pinetime {
           Pinetime::Applications::Apps app;
         };
 
-        explicit List(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
+        List(Widgets::PageIndicator* pageIndicator = NULL);
         ~List() override;
         void Load() override;
         bool UnLoad() override;
         bool Add(Applications item);
 
       private:
-        const uint8_t screenID;
         bool loaded = false;
         uint8_t size = 0;
-        std::array<Applications, MaxElements> apps;      
+        std::array<Applications, MaxElements> apps;
         void onButtonEvent(lv_obj_t* obj);
-        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);       
-        Widgets::PageIndicator& pageIndicator;
+        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
       };
     }
   }

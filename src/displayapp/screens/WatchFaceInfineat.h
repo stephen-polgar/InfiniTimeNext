@@ -124,9 +124,11 @@ namespace Pinetime {
           }
           return &nordGreenColors;
         }
-
+        
+        void showMenu();
         void closeMenu();
-        void updateSelected(lv_obj_t* object);
+        void updateColors(int8_t colorIndex);
+        void updateSelected(lv_obj_t* obj);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
         uint32_t savedTick;
         uint8_t chargingBatteryPercent = 101;
@@ -158,11 +160,10 @@ namespace Pinetime {
         lv_obj_t* stepIcon;
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
-        lv_obj_t* btnClose;
+        lv_obj_t* btnClose = NULL;
         lv_obj_t* btnNextColor;
         lv_obj_t* btnToggleCover;
-        lv_obj_t* btnPrevColor;
-        lv_obj_t* btnSettings;
+        lv_obj_t* btnPrevColor;       
         lv_obj_t* labelBtnSettings;
         lv_obj_t* lblToggle;
 

@@ -2,7 +2,7 @@
 
 #include "displayapp/screens/ScreenTree.h"
 #include "displayapp/screens/CheckboxList.h"
-#include "displayapp/widgets/PageIndicator.h"
+#include "displayapp/widgets/LineIndicator.h"
 #include "components/settings/Settings.h"
 #include "displayapp/screens/Symbols.h"
 
@@ -28,11 +28,9 @@ namespace Pinetime {
         static constexpr uint8_t MaxCheckboxItems = 4;
         static constexpr const char* title = "Watch face";
         static constexpr const char* symbol = Symbols::home;
+        std::array<Item, UserWatchFaceTypes::Count> watchfaces;  
         uint8_t indexOf(const WatchFace watchface);
-        ScreenTree* createScreen(uint8_t screenNum);
-        std::array<Item, UserWatchFaceTypes::Count> watchfaces;
-        static constexpr uint8_t nScreens = UserWatchFaceTypes::Count > 0 ? (UserWatchFaceTypes ::Count - 1) / MaxCheckboxItems + 1                                                                          : 1;
-        Widgets::PageIndicator pageIndicator;     
+        Widgets::LineIndicator pageIndicator;       
         ScreenTree* screens;
       };
     }

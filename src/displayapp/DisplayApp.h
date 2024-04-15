@@ -74,7 +74,7 @@ namespace Pinetime {
       static constexpr uint8_t itemSize = 1;
 
       Screen *currentScreen = NULL, *nextScreen = NULL;
-      Utility::ScreenStack<4> screenStack;
+      Utility::ScreenStack<5> screenStack;
       Apps nextApp = Apps::None;
       Screen::FullRefreshDirections nextDirection;
 

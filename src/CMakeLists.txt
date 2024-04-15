@@ -372,8 +372,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/BatteryIcon.cpp
         displayapp/screens/BleIcon.cpp
         displayapp/screens/NotificationIcon.cpp
-        displayapp/screens/SystemInfo.cpp
-        displayapp/screens/Label.cpp
+        displayapp/screens/SystemInfo.cpp       
         displayapp/screens/FirmwareUpdate.cpp
         displayapp/screens/Music.cpp
         displayapp/screens/Navigation.cpp      
@@ -407,7 +406,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/InfiniPaint.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
-        displayapp/widgets/PageIndicator.cpp
+        displayapp/widgets/LineIndicator.cpp
         displayapp/widgets/DotIndicator.cpp
         displayapp/widgets/StatusIcons.cpp
         displayapp/widgets/ButtonListItem.cpp
@@ -607,7 +606,6 @@ set(INCLUDE_FILES
         displayapp/screens/NotificationIcon.h
         displayapp/screens/SystemInfo.h
         displayapp/screens/ScreenTree.h
-        displayapp/screens/Label.h
         displayapp/screens/FirmwareUpdate.h
         displayapp/screens/FirmwareValidation.h
         displayapp/screens/ApplicationList.h
@@ -633,6 +631,7 @@ set(INCLUDE_FILES
         displayapp/Colors.h
         displayapp/widgets/Counter.h
         displayapp/widgets/PageIndicator.h
+        displayapp/widgets/LineIndicator.h
         displayapp/widgets/DotIndicator.h
         displayapp/widgets/StatusIcons.h
         displayapp/widgets/ButtonListItem.h

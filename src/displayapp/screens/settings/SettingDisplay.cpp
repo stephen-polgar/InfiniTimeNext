@@ -8,20 +8,21 @@ using namespace Pinetime::Applications::Screens;
 SettingDisplay::SettingDisplay()
   : Screen(Apps::SettingDisplay),
     checkboxList(
+      options.size(),
       "Display timeout",
       Symbols::sun,
-      [this](uint8_t) {
+      [this]() {
         return getCurrentOption(System::SystemTask::displayApp->settingsController.GetScreenTimeOut());
       },
-      [](uint8_t, uint8_t index) {
+      [](uint8_t index) {
         System::SystemTask::displayApp->settingsController.SetScreenTimeOut(options[index]);
       },
-      LV_LAYOUT_PRETTY_TOP) {
-  checkboxList.Reserve(options.size());
+      LV_LAYOUT_PRETTY_TOP) { 
   static char buffer[4];
-  for (uint8_t i = 0; i < options.size(); i++) {
+  uint8_t i = 0;
+  while (i < options.size()) {
     snprintf(buffer, sizeof(buffer), "%2" PRIu16 "s", options[i] / 1000);
-    checkboxList.Add({buffer, true});
+    checkboxList.Add({buffer, true, i++});  
   }
 }
 

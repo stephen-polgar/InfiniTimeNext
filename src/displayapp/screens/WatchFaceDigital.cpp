@@ -61,7 +61,6 @@ void WatchFaceDigital::Load() {
   lv_label_set_text_static(stepIcon, Symbols::shoe);
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
   Refresh();
-  lv_obj_set_auto_realign(weatherIcon, true);
   lv_obj_align(heartbeatValue, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
 }
 
@@ -88,7 +87,6 @@ void WatchFaceDigital::Refresh() {
   }
 
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(dateTimeController->CurrentDateTime());
-
   if (!running || currentDateTime.IsUpdated()) {
     uint8_t hour = dateTimeController->Hours();
     uint8_t minute = dateTimeController->Minutes();

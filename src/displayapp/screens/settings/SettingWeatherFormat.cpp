@@ -7,17 +7,17 @@ using namespace Pinetime::Applications::Screens;
 SettingWeatherFormat::SettingWeatherFormat()
   : Screen(Apps::SettingWeatherFormat),
     checkboxList(
+      options.size(),
       "Weather format",
       Symbols::cloudSunRain,
-      [this](uint8_t) {
+      [this]() {
         return getCurrentOption(System::SystemTask::displayApp->settingsController.GetWeatherFormat());
       },
-      [](uint8_t, uint8_t index) {
+      [](uint8_t index) {
         System::SystemTask::displayApp->settingsController.SetWeatherFormat(options[index].weatherFormat);
-      }) {
-  checkboxList.Reserve(options.size());
+      }) { 
   for (uint8_t i = 0; i < options.size(); i++) {
-    checkboxList.Add({options[i].name, true});
+    checkboxList.Add({options[i].name, true, i});
   }
 }
 

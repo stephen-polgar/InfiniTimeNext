@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ScreenTree.h"
-#include "Label.h"
+#include "displayapp/widgets/LineIndicator.h"
 #include "systemtask/SystemTask.h"
 #include "components/ble/BleController.h"
 #include "components/datetime/DateTimeController.h"
@@ -20,31 +20,33 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-        static int mallocFailedCount, stackOverflowCount;        
-        Widgets::PageIndicator pageIndicator;
+        static int mallocFailedCount, stackOverflowCount;
+        Widgets::LineIndicator pageIndicator;
         ScreenTree* screens;
         static const char* toString(const Controllers::MotionController::DeviceTypes deviceType);
         static bool sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs);
 
-        class MemoryInfo : public Label {
+        class MemoryInfo : public ScreenTree {
         public:
-          MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
+          MemoryInfo(Widgets::PageIndicator* pageIndicator);
           void Load() override;
+          bool UnLoad() override;
         };
 
-        class TasksScreen : public Label {
+        class TasksScreen : public ScreenTree {
         public:
-          TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator);
+          TasksScreen(Widgets::PageIndicator* pageIndicator);
           void Load() override;
+          bool UnLoad() override;
 
         private:
           static constexpr uint8_t maxTaskCount = 9;
           TaskStatus_t tasksStatus[maxTaskCount];
         };
 
-        class HardverScreen : public Label {
+        class HardverScreen : public ScreenTree {
         public:
-          HardverScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
+          HardverScreen(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
             uptimeSeconds = uptimeSeconds % secondsInADay;
             uptimeHours = uptimeSeconds / secondsInAnHour;
             uptimeSeconds = uptimeSeconds % secondsInAnHour;
@@ -53,6 +55,7 @@ namespace Pinetime {
           }
 
           void Load() override;
+          bool UnLoad() override;
 
         private:
           // uptime
@@ -91,20 +94,22 @@ namespace Pinetime {
           }();
         };
 
-        class FirmwareScreen : public Label {
+        class FirmwareScreen : public ScreenTree {
         public:
-          FirmwareScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
+          FirmwareScreen(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
           }
 
           void Load() override;
+          bool UnLoad() override;
         };
 
-        class LicenseScreen : public Label {
+        class LicenseScreen : public ScreenTree {
         public:
-          LicenseScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
+          LicenseScreen(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
           }
 
           void Load() override;
+          bool UnLoad() override;
         };
       };
     }

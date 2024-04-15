@@ -1,10 +1,9 @@
 #include "displayapp/widgets/DotIndicator.h"
 
-
 using namespace Pinetime::Applications::Widgets;
 
-void DotIndicator::Create(uint8_t nCurrentScreen, uint8_t nScreens) {
-  lv_obj_t* dotIndicator[nScreens];
+void DotIndicator::Create(uint8_t screens, uint8_t currentScreen) {
+  lv_obj_t* dotIndicator[screens];
   static constexpr uint8_t dotSize = 12;
 
   lv_obj_t* container = lv_cont_create(lv_scr_act(), nullptr);
@@ -13,13 +12,13 @@ void DotIndicator::Create(uint8_t nCurrentScreen, uint8_t nScreens) {
   lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, dotSize);
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
 
-  for (uint8_t i = 0; i < nScreens; i++) {
+  for (uint8_t i = 0; i < screens; i++) {
     dotIndicator[i] = lv_obj_create(container, nullptr);
     lv_obj_set_size(dotIndicator[i], dotSize, dotSize);
     lv_obj_set_style_local_bg_color(dotIndicator[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_GRAY);
   }
 
-  lv_obj_set_style_local_bg_color(dotIndicator[nCurrentScreen], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+  lv_obj_set_style_local_bg_color(dotIndicator[currentScreen], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
 
   lv_obj_align(container, nullptr, LV_ALIGN_IN_RIGHT_MID, 0, 0);
 }

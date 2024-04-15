@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ScreenTree.h"
-#include "displayapp/widgets/PageIndicator.h"
 #include <string>
 #include <vector>
 #include <functional>
@@ -14,35 +13,28 @@ namespace Pinetime {
         struct Item {
           std::string name;
           bool enabled;
+          uint8_t index;
           lv_obj_t* cb;
         };
 
-        CheckboxList(const uint8_t screenID,
-                     Widgets::PageIndicator* pageIndicator,
+        CheckboxList(const uint8_t maxSize,
                      const char* optionsTitle,
                      const char* optionsSymbol,
-                     std::function<uint8_t(uint8_t screenId)> currentValue,
-                     std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged,
-                     lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
-
-        CheckboxList(const char* optionsTitle,
-                     const char* optionsSymbol,
-                     std::function<uint8_t(uint8_t screenId)> currentValue,
-                     std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged,
-                     lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
+                     std::function<uint8_t()> currentValue,
+                     std::function<void(uint8_t)> OnValueChanged,
+                     lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT,
+                     Widgets::PageIndicator* pageIndicator = NULL);
         ~CheckboxList() override;
         void Load() override;
         bool UnLoad() override;
 
-        void Reserve(uint8_t size);
-        void Add(Item);
+        bool Add(Item);
 
       private:
-        uint8_t screenID;
-        Widgets::PageIndicator* pageIndicator;
-        std::function<void(uint8_t screenId, uint8_t index)> OnValueChanged;
+        const uint8_t maxSize;
+        std::function<void(uint8_t)> OnValueChanged;
         std::vector<Item> options;
-        std::function<uint8_t(uint8_t screenId)> currentValue;
+        std::function<uint8_t()> currentValue;
         lv_layout_t layout;
 
         const char* optionsTitle;

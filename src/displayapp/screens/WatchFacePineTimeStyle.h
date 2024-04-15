@@ -50,7 +50,7 @@ namespace Pinetime {
         lv_obj_t* btnPrevBG;
         lv_obj_t* btnReset;
         lv_obj_t* btnRandom;
-        lv_obj_t* btnClose;
+        lv_obj_t* btnClose = NULL;
         lv_obj_t* btnSteps;
         lv_obj_t* btnWeather;
         lv_obj_t* timebar;
@@ -84,11 +84,15 @@ namespace Pinetime {
 
         Controllers::Settings* settingsController;
 
-        void updateSelected(lv_obj_t* object);
+        void updateSelected(lv_obj_t* obj);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
+        
+        void showWeather();
+        void updateWeather(bool force);
 
-        void SetBatteryIcon();
-        void CloseMenu();
+        void setBatteryIcon();
+         void showMenu();
+        void closeMenu();
       };
     }
 

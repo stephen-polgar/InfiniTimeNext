@@ -1,8 +1,9 @@
 #pragma once
 
 #include "displayapp/screens/ScreenTree.h"
-#include "displayapp/screens/Symbols.h"
 #include "displayapp/screens/List.h"
+#include "displayapp/widgets/LineIndicator.h"
+#include "displayapp/screens/Symbols.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -28,7 +29,7 @@ namespace Pinetime {
                                                                       {Symbols::cloudSunRain, "Weather", Apps::SettingWeatherFormat},
                                                                       {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
         ScreenTree* screens;
-        Widgets::PageIndicator pageIndicator;
+        Widgets::LineIndicator pageIndicator;
       };
     }
   }

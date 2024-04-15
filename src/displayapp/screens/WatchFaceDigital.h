@@ -28,7 +28,7 @@ namespace Pinetime {
         Utility::DirtyValue<uint8_t> heartbeat;
         Utility::DirtyValue<bool> heartbeatRunning;
         Utility::DirtyValue<bool> notificationState;
-        Utility::DirtyValue<std::optional<Pinetime::Controllers::SimpleWeatherService::CurrentWeather>> currentWeather;
+        Utility::DirtyValue<std::optional<Controllers::SimpleWeatherService::CurrentWeather>> currentWeather;
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;
 
         lv_obj_t* label_time;

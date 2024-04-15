@@ -7,11 +7,12 @@ using namespace Pinetime::Applications::Screens;
 
 int SystemInfo::mallocFailedCount, SystemInfo::stackOverflowCount;
 
-SystemInfo::TasksScreen::TasksScreen(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
+SystemInfo::TasksScreen::TasksScreen(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
 }
 
 void SystemInfo::TasksScreen::Load() {
-  Label::Load();
+  running = true;
+  ScreenTree::Load();
   lv_obj_t* infoTask = lv_table_create(lv_scr_act(), nullptr);
   lv_table_set_col_cnt(infoTask, 4);
   lv_table_set_row_cnt(infoTask, maxTaskCount + 1);
@@ -64,11 +65,20 @@ void SystemInfo::TasksScreen::Load() {
   }
 }
 
+bool SystemInfo::TasksScreen::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 void SystemInfo::HardverScreen::Load() {
 #ifndef TARGET_DEVICE_NAME
   #define TARGET_DEVICE_NAME "UNKNOWN"
 #endif
-  Label::Load();
+  running = true;
+  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -98,8 +108,17 @@ void SystemInfo::HardverScreen::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
+bool SystemInfo::HardverScreen::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 void SystemInfo::FirmwareScreen::Load() {
-  Label::Load();
+  running = true;
+  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -121,13 +140,20 @@ void SystemInfo::FirmwareScreen::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
+bool SystemInfo::FirmwareScreen::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 SystemInfo::SystemInfo() : Screen(Apps::SysInfo) {
-  pageIndicator.nScreens = 5;
-  screens = new MemoryInfo(0, pageIndicator);
-  screens->Add(new TasksScreen(1, pageIndicator));
-  screens->Add(new HardverScreen(2, pageIndicator));
-  screens->Add(new FirmwareScreen(3, pageIndicator));
-  screens->Add(new LicenseScreen(4, pageIndicator));
+  screens = new MemoryInfo(&pageIndicator);
+  screens->Add(new TasksScreen(&pageIndicator));
+  screens->Add(new HardverScreen(&pageIndicator));
+  screens->Add(new FirmwareScreen(&pageIndicator));
+  screens->Add(new LicenseScreen(&pageIndicator));
 }
 
 void SystemInfo::Load() {
@@ -163,11 +189,12 @@ const char* SystemInfo::toString(const Controllers::MotionController::DeviceType
   return "???";
 }
 
-SystemInfo::MemoryInfo::MemoryInfo(uint8_t screenID, Widgets::PageIndicator& pageIndicator) : Label(screenID, &pageIndicator) {
+SystemInfo::MemoryInfo::MemoryInfo(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
 }
 
 void SystemInfo::MemoryInfo::Load() {
-  Label::Load();
+  running = true;
+  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -183,12 +210,21 @@ void SystemInfo::MemoryInfo::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
+bool SystemInfo::MemoryInfo::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
+}
+
 bool SystemInfo::sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs) {
   return lhs.xTaskNumber < rhs.xTaskNumber;
 }
 
 void SystemInfo::LicenseScreen::Load() {
-  Label::Load();
+  running = true;
+  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_static(label,
@@ -199,4 +235,12 @@ void SystemInfo::LicenseScreen::Load() {
                            "#FFFF00 InfiniTimeNext");
   lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+}
+
+bool SystemInfo::LicenseScreen::UnLoad() {
+  if (running) {
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return true;
 }

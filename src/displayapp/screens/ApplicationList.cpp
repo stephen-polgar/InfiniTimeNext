@@ -6,7 +6,7 @@ ApplicationList::ApplicationList(std::array<Tile::Applications, UserAppTypes::Co
   : Screen(Apps::Launcher) {
   uint8_t i = 0;
   while (i < apps.size()) {
-    Screens::Tile* list = new Screens::Tile(pageIndicator.nScreens++, &pageIndicator);
+    Screens::Tile* list = new Screens::Tile(&pageIndicator);
     if (i)
       screens->Add(list);
     else
@@ -20,7 +20,7 @@ ApplicationList::ApplicationList(std::array<Tile::Applications, UserAppTypes::Co
 
 void ApplicationList::Load() {
   running = true;
-  screens->GetCurrent()->Load();
+  screens->GetCurrent()->Load(); 
 }
 
 bool ApplicationList::UnLoad() {

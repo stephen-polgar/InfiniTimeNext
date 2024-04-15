@@ -20,7 +20,10 @@
 
 // #include <nrf_log.h>
 
-ScreenTree::ScreenTree() {
+using namespace Pinetime::Applications;
+
+ScreenTree::ScreenTree(Widgets::PageIndicator* pageIndicator) {
+  this->pageIndicator = pageIndicator;
 #ifdef NRF_LOG_INFO
   NRF_LOG_INFO("ScreenTree new=%d", this);
 #endif
@@ -39,6 +42,25 @@ Screen* ScreenTree::GetCurrent() {
   if (!current)
     current = this;
   return current;
+}
+
+void ScreenTree::Load() {
+  if (pageIndicator) {
+    ScreenTree* tree = this;
+    uint8_t currentScreen = 0, screens = 1;
+    while (tree->parent) {
+      currentScreen++;
+      tree = tree->parent;
+    }
+    while (tree->next) {
+      screens++;
+      tree = tree->next;
+    }
+#ifdef NRF_LOG_INFO
+    NRF_LOG_INFO("ScreenTree:Load screens=%d, currentScreen=%d", screens, currentScreen);
+#endif
+    pageIndicator->Create(screens, currentScreen);
+  }
 }
 
 ScreenTree::~ScreenTree() {
@@ -82,7 +104,7 @@ bool ScreenTree::OnTouchEvent(TouchEvents event) {
       }
       break;
     default:
-    break;
+      break;
   }
   return event != TouchEvents::Tap;
 }

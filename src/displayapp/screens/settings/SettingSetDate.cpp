@@ -31,12 +31,12 @@ namespace {
 }
 
 SettingSetDate::SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
-  : settingSetDateTime {settingSetDateTime} {
+  : ScreenTree(&settingSetDateTime.dotIndicator), settingSetDateTime {settingSetDateTime} {
 }
 
 void SettingSetDate::Load() {
   running = true;
-  settingSetDateTime.dotIndicator.Create(0,2);
+  ScreenTree::Load();
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current date");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -103,13 +103,12 @@ void SettingSetDate::checkDay() {
   dayCounter.SetMax(maxDay);
 }
 
-
-  void SettingSetDate::event_handler(lv_obj_t* obj, lv_event_t event) {   
-    if (event == LV_EVENT_CLICKED) {
-      static_cast<SettingSetDate*>(obj->user_data)->handleButtonPress();
-    }
+void SettingSetDate::event_handler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<SettingSetDate*>(obj->user_data)->handleButtonPress();
   }
+}
 
-  void SettingSetDate::ValueChangedHandler(void* userData) {
-    static_cast<SettingSetDate*>(userData)->checkDay();
-  }
+void SettingSetDate::ValueChangedHandler(void* userData) {
+  static_cast<SettingSetDate*>(userData)->checkDay();
+}

@@ -5,7 +5,7 @@ using namespace Pinetime::Applications::Screens;
 Settings::Settings() : Screen(Apps::Settings) {
   uint8_t i = 0;
   while (i < apps.size()) {
-    Screens::List* list = new Screens::List(pageIndicator.nScreens++, pageIndicator);
+    Screens::List* list = new Screens::List(&pageIndicator);
     if (i)
       screens->Add(list);
     else
@@ -18,7 +18,7 @@ Settings::Settings() : Screen(Apps::Settings) {
 }
 
 void Settings::Load() {
-  screens->GetCurrent()->Load();
+  screens->GetCurrent()->Load(); 
   running = true;
 }
 

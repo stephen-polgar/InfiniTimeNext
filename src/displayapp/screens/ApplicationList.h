@@ -2,6 +2,7 @@
 
 #include "ScreenTree.h"
 #include "Tile.h"
+#include "displayapp/widgets/LineIndicator.h"
 #include <array>
 
 namespace Pinetime {
@@ -16,7 +17,7 @@ namespace Pinetime {
         bool OnTouchEvent(TouchEvents event) override;
 
       private:
-        Widgets::PageIndicator pageIndicator;        
+        Widgets::LineIndicator pageIndicator;        
         ScreenTree* screens;
       };
     }

@@ -6,16 +6,16 @@
 using namespace Pinetime::Applications::Screens;
 
 namespace {
-  constexpr int16_t POS_Y_TEXT = -7;  
+  constexpr int16_t POS_Y_TEXT = -7;
 }
 
 SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
-  : settingSetDateTime {settingSetDateTime} {
+  : ScreenTree(&settingSetDateTime.dotIndicator), settingSetDateTime {settingSetDateTime} {
 }
 
 void SettingSetTime::Load() {
   running = true;
-  settingSetDateTime.dotIndicator.Create(1,2);
+  ScreenTree::Load();
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current time");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -99,12 +99,12 @@ void SettingSetTime::setTime() {
   settingSetDateTime.UnLoad();
 }
 
-void SettingSetTime::setTimeEventHandler(lv_obj_t* obj, lv_event_t event) {  
-    if (event == LV_EVENT_CLICKED) {
-      static_cast<SettingSetTime*>(obj->user_data)->setTime();
-    }
+void SettingSetTime::setTimeEventHandler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<SettingSetTime*>(obj->user_data)->setTime();
   }
+}
 
-  void SettingSetTime::valueChangedHandler(void* userData) {
-    static_cast<SettingSetTime*>(userData)->updateScreen();
-  }
+void SettingSetTime::valueChangedHandler(void* userData) {
+  static_cast<SettingSetTime*>(userData)->updateScreen();
+}
