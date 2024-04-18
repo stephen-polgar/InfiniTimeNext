@@ -1,14 +1,12 @@
 #pragma once
 
 #include "displayapp/screens/Screen.h"
-#include "displayapp/screens/CheckboxList.h"
 #include <array>
 
 namespace Pinetime {
 
   namespace Applications {
     namespace Screens {
-
       class SettingDisplay : public Screen {
       public:
         SettingDisplay();
@@ -18,8 +16,8 @@ namespace Pinetime {
 
       private:
         static constexpr std::array<uint16_t, 6> options = {5000, 7000, 10000, 15000, 20000, 30000};
-        CheckboxList checkboxList;
-        uint8_t getCurrentOption(uint32_t currentOption);
+        void onButtonEvent(lv_obj_t* obj);
+        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
       };
     }
   }

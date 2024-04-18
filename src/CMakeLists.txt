@@ -365,9 +365,7 @@ list(APPEND SOURCE_FILES
         logging/NrfLogger.cpp
         displayapp/DisplayApp.cpp
         displayapp/screens/Screen.cpp
-        displayapp/screens/ScreenTree.cpp
-        displayapp/screens/WatchFaceScreen.cpp
-        displayapp/screens/Tile.cpp              
+        displayapp/screens/WatchFaceScreen.cpp                 
         displayapp/screens/StopWatch.cpp
         displayapp/screens/BatteryIcon.cpp
         displayapp/screens/BleIcon.cpp
@@ -381,9 +379,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/ApplicationList.cpp
         displayapp/screens/Notifications.cpp        
         displayapp/screens/HeartRate.cpp
-        displayapp/screens/FlashLight.cpp
-        displayapp/screens/List.cpp
-        displayapp/screens/CheckboxList.cpp
+        displayapp/screens/FlashLight.cpp       
         displayapp/screens/BatteryInfo.cpp
         displayapp/screens/Steps.cpp
         displayapp/screens/Timer.cpp
@@ -406,6 +402,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/InfiniPaint.cpp
         displayapp/Colors.cpp
         displayapp/widgets/Counter.cpp
+        displayapp/widgets/Container.cpp
         displayapp/widgets/LineIndicator.cpp
         displayapp/widgets/DotIndicator.cpp
         displayapp/widgets/StatusIcons.cpp
@@ -598,18 +595,15 @@ set(INCLUDE_FILES
         displayapp/Messages.h
         displayapp/TouchEvents.h
         displayapp/screens/Screen.h
-        displayapp/screens/WatchFaceScreen.h
-        displayapp/screens/Tile.h       
+        displayapp/screens/WatchFaceScreen.h       
         displayapp/screens/StopWatch.h       
         displayapp/screens/BatteryIcon.h
         displayapp/screens/BleIcon.h
         displayapp/screens/NotificationIcon.h
-        displayapp/screens/SystemInfo.h
-        displayapp/screens/ScreenTree.h
+        displayapp/screens/SystemInfo.h        
         displayapp/screens/FirmwareUpdate.h
         displayapp/screens/FirmwareValidation.h
-        displayapp/screens/ApplicationList.h
-        displayapp/screens/CheckboxList.h
+        displayapp/screens/ApplicationList.h       
         displayapp/apps/Apps.h
         displayapp/screens/Notifications.h
         displayapp/screens/HeartRate.h
@@ -630,6 +624,7 @@ set(INCLUDE_FILES
         displayapp/screens/Metronome.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h
+        isplayapp/widgets/Container.h
         displayapp/widgets/PageIndicator.h
         displayapp/widgets/LineIndicator.h
         displayapp/widgets/DotIndicator.h

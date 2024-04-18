@@ -8,7 +8,12 @@ namespace Pinetime {
     namespace Widgets {
       class DotIndicator : public PageIndicator {
       public:
-        void Create(uint8_t screens, uint8_t currentScreen) override;
+        DotIndicator(uint8_t screens);
+        void Load(uint8_t currentScreen) override;
+        void UnLoad() override;
+
+      private:
+        lv_obj_t* container;
       };
     }
   }

@@ -21,7 +21,6 @@
 #include "displayapp/screens/FirmwareValidation.h"
 #include "displayapp/screens/Notifications.h"
 #include "displayapp/screens/SystemInfo.h"
-#include "displayapp/screens/Tile.h"
 #include "displayapp/screens/FlashLight.h"
 #include "displayapp/screens/BatteryInfo.h"
 #include "displayapp/screens/PassKey.h"
@@ -364,10 +363,10 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
   if (!screen)
     switch (app) {
       case Apps::Launcher: {
-        std::array<Tile::Applications, UserAppTypes::Count> apps;
+        std::array<ApplicationList::AppList, UserAppTypes::Count> apps;
         uint8_t i = 0;
         for (const auto& userApp : userApps) {
-          apps[i++] = Tile::Applications {userApp.icon, userApp.app};
+          apps[i++] = {userApp.icon, userApp.app};
         }
         screen = new ApplicationList(apps);
       } break;

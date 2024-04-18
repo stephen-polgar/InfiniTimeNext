@@ -1,35 +1,55 @@
 #include "SettingSetDateTime.h"
 #include "SettingSetDate.h"
 #include "SettingSetTime.h"
+#include "systemtask/SystemTask.h"
 
 using namespace Pinetime::Applications::Screens;
 
-bool SettingSetDateTime::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  return screens->OnTouchEvent(event);
-}
-
-SettingSetDateTime::SettingSetDateTime() : Screen(Apps::SettingSetDateTime) {
-    screens = new Screens::SettingSetDate(*this);
-    screens->Add(new Screens::SettingSetTime(*this));           
+SettingSetDateTime::SettingSetDateTime()
+  : Screen(Apps::SettingSetDateTime),
+    arrayTouchHandler {items,
+                       1,
+                       [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
+                         load(indexBegin, indexEnd, direction);
+                       }},
+    dotIndicator {items} {
+  list[0] = new Screens::SettingSetDate(*this);
+  list[1] = new Screens::SettingSetTime(*this);
 }
 
 void SettingSetDateTime::Load() {
-  screens->GetCurrent()->Load();
+  arrayTouchHandler.LoadCurrentPos();
   running = true;
+}
+
+void SettingSetDateTime::load(uint8_t indexBegin, uint8_t, Screen::FullRefreshDirections direction) {
+  if (running) {
+    lv_obj_clean(lv_scr_act());
+    System::SystemTask::displayApp->SetFullRefresh(direction);
+  }
+  dotIndicator.Load(indexBegin);
+  list[indexBegin]->Load();
 }
 
 bool SettingSetDateTime::UnLoad() {
   if (running) {
     running = false;
-    screens->GetCurrent()->UnLoad();
+    lv_obj_clean(lv_scr_act());
   }
   return true;
 }
 
 SettingSetDateTime::~SettingSetDateTime() {
- screens->DeleteAll();
+  UnLoad();
+  for (uint8_t i = 0; i < items; i++) {
+    delete list[i];
+  }
 }
 
-void SettingSetDateTime::Advance() {
-  screens->OnTouchEvent(Applications::TouchEvents::SwipeUp);
+void SettingSetDateTime::SwipeUp() {
+   arrayTouchHandler.OnTouchEvent(TouchEvents::SwipeUp);
+}
+
+bool SettingSetDateTime::OnTouchEvent(TouchEvents event) {
+  return arrayTouchHandler.OnTouchEvent(event);
 }

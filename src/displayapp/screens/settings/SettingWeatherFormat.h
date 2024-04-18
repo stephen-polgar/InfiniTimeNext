@@ -1,17 +1,15 @@
 #pragma once
 
 #include "displayapp/screens/Screen.h"
-#include "displayapp/screens/CheckboxList.h"
 #include "components/settings/Settings.h"
+#include <array>
 
 namespace Pinetime {
-
   namespace Applications {
     namespace Screens {
-
       class SettingWeatherFormat : public Screen {
       public:
-        explicit SettingWeatherFormat();
+        SettingWeatherFormat();
         ~SettingWeatherFormat() override;
         void Load() override;
         bool UnLoad() override;
@@ -26,9 +24,11 @@ namespace Pinetime {
           {Controllers::Settings::WeatherFormat::Metric, "Metric"},
           {Controllers::Settings::WeatherFormat::Imperial, "Imperial"},
         }};
-       
-        uint8_t getCurrentOption(Controllers::Settings::WeatherFormat currentOption);       
-        CheckboxList checkboxList;
+
+        std::array<Option, 2> opts;
+                  
+        void onButtonEvent(lv_obj_t* obj);
+        static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
       };
     }
   }

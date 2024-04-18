@@ -22,11 +22,12 @@ Comment or uncomment definitions for change built in apps.
 InfiniSimNext simulator uses this settings too.
 */
 
-// #define UseCalendar
+#define UseCalendar
 
 #define UseCalculator
 // #define UseMotion
-// #define UsePaddle
+
+ #define UsePaddle
 // #define UseDice
 // #define UseTwos
 // #define UseMetronome
@@ -43,4 +44,4 @@ Set the maximum number of shown notifications
 Value between 5 - 8 depends on the size of selected apps,
 else 'region RAM overflowed with stack' error on building.
 */
-#define MaxNotifications 8
+#define MaxNotifications 5

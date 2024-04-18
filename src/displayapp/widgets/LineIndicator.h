@@ -7,8 +7,13 @@ namespace Pinetime {
   namespace Applications {
     namespace Widgets {
       class LineIndicator : public PageIndicator {
-      public:        
-        void Create(uint8_t screens, uint8_t currentScreen) override;        
+      public:
+        LineIndicator(uint8_t screens);
+        void Load(uint8_t currentScreen) override;
+        void UnLoad() override;
+
+      private:
+        lv_obj_t* lineIndicatorBase;
       };
     }
   }

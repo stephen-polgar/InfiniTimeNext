@@ -9,13 +9,10 @@ namespace {
   constexpr int16_t POS_Y_TEXT = -7;
 }
 
-SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
-  : ScreenTree(&settingSetDateTime.dotIndicator), settingSetDateTime {settingSetDateTime} {
+SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime) : settingSetDateTime {settingSetDateTime} {
 }
 
 void SettingSetTime::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current time");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -61,18 +58,6 @@ void SettingSetTime::Load() {
   lv_obj_set_event_cb(btnSetTime, setTimeEventHandler);
 
   updateScreen();
-}
-
-bool SettingSetTime::UnLoad() {
-  if (running) {
-    lv_obj_clean(lv_scr_act());
-    running = false;
-  }
-  return true;
-}
-
-SettingSetTime::~SettingSetTime() {
-  UnLoad();
 }
 
 void SettingSetTime::updateScreen() {

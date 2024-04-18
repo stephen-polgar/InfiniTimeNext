@@ -7,12 +7,7 @@ using namespace Pinetime::Applications::Screens;
 
 int SystemInfo::mallocFailedCount, SystemInfo::stackOverflowCount;
 
-SystemInfo::TasksScreen::TasksScreen(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
-}
-
 void SystemInfo::TasksScreen::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* infoTask = lv_table_create(lv_scr_act(), nullptr);
   lv_table_set_col_cnt(infoTask, 4);
   lv_table_set_row_cnt(infoTask, maxTaskCount + 1);
@@ -65,20 +60,10 @@ void SystemInfo::TasksScreen::Load() {
   }
 }
 
-bool SystemInfo::TasksScreen::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
 void SystemInfo::HardverScreen::Load() {
 #ifndef TARGET_DEVICE_NAME
   #define TARGET_DEVICE_NAME "UNKNOWN"
 #endif
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -108,17 +93,7 @@ void SystemInfo::HardverScreen::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
-bool SystemInfo::HardverScreen::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
 void SystemInfo::FirmwareScreen::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -140,7 +115,33 @@ void SystemInfo::FirmwareScreen::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
-bool SystemInfo::FirmwareScreen::UnLoad() {
+SystemInfo::SystemInfo()
+  : Screen(Apps::SysInfo),
+    arrayTouchHandler {items, 1, [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
+                         load(indexBegin, indexEnd, direction);
+                       }}, pageIndicator{items} {
+  list[0] = new MemoryInfo;
+  list[1] = new TasksScreen;
+  list[2] = new HardverScreen;
+  list[3] = new FirmwareScreen;
+  list[4] = new LicenseScreen;
+}
+
+void SystemInfo::load(uint8_t indexBegin, uint8_t, Screen::FullRefreshDirections direction) {
+  if (running) {
+    lv_obj_clean(lv_scr_act());
+    System::SystemTask::displayApp->SetFullRefresh(direction);
+  }
+  pageIndicator.Load(indexBegin);
+  list[indexBegin]->Load();
+}
+
+void SystemInfo::Load() {
+  arrayTouchHandler.LoadCurrentPos();
+  running = true;
+}
+
+bool SystemInfo::UnLoad() {
   if (running) {
     running = false;
     lv_obj_clean(lv_scr_act());
@@ -148,33 +149,15 @@ bool SystemInfo::FirmwareScreen::UnLoad() {
   return true;
 }
 
-SystemInfo::SystemInfo() : Screen(Apps::SysInfo) {
-  screens = new MemoryInfo(&pageIndicator);
-  screens->Add(new TasksScreen(&pageIndicator));
-  screens->Add(new HardverScreen(&pageIndicator));
-  screens->Add(new FirmwareScreen(&pageIndicator));
-  screens->Add(new LicenseScreen(&pageIndicator));
-}
-
-void SystemInfo::Load() {
-  screens->GetCurrent()->Load();
-  running = true;
-}
-
-bool SystemInfo::UnLoad() {
-  if (running) {
-    running = false;
-    screens->GetCurrent()->UnLoad();
-  }
-  return true;
-}
-
 SystemInfo::~SystemInfo() {
-  screens->DeleteAll();
+  UnLoad();
+  for (uint8_t i = 0; i < items; i++) {
+    delete list[i];
+  }
 }
 
 bool SystemInfo::OnTouchEvent(Applications::TouchEvents event) {
-  return screens->OnTouchEvent(event);
+  return arrayTouchHandler.OnTouchEvent(event);
 }
 
 const char* SystemInfo::toString(const Controllers::MotionController::DeviceTypes deviceType) {
@@ -189,12 +172,7 @@ const char* SystemInfo::toString(const Controllers::MotionController::DeviceType
   return "???";
 }
 
-SystemInfo::MemoryInfo::MemoryInfo(Widgets::PageIndicator* pageIndicator) : ScreenTree(pageIndicator) {
-}
-
 void SystemInfo::MemoryInfo::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_fmt(label,
@@ -210,21 +188,11 @@ void SystemInfo::MemoryInfo::Load() {
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
 }
 
-bool SystemInfo::MemoryInfo::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
 bool SystemInfo::sortById(const TaskStatus_t& lhs, const TaskStatus_t& rhs) {
   return lhs.xTaskNumber < rhs.xTaskNumber;
 }
 
 void SystemInfo::LicenseScreen::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* label = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label, true);
   lv_label_set_text_static(label,
@@ -235,12 +203,4 @@ void SystemInfo::LicenseScreen::Load() {
                            "#FFFF00 InfiniTimeNext");
   lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
-}
-
-bool SystemInfo::LicenseScreen::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
 }

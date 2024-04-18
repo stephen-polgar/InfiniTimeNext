@@ -6,14 +6,11 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class SettingSetDate : public ScreenTree {
+      class SettingSetDate : public Screen {
       public:
         SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime);
-        ~SettingSetDate()override;
-
         void Load() override;
-        bool UnLoad() override;        
-
+     
       private:
         Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime;
         void handleButtonPress();

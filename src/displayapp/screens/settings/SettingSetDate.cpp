@@ -30,13 +30,10 @@ namespace {
   }
 }
 
-SettingSetDate::SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
-  : ScreenTree(&settingSetDateTime.dotIndicator), settingSetDateTime {settingSetDateTime} {
+SettingSetDate::SettingSetDate(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime) : settingSetDateTime {settingSetDateTime} {
 }
 
 void SettingSetDate::Load() {
-  running = true;
-  ScreenTree::Load();
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Set current date");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -76,26 +73,11 @@ void SettingSetDate::Load() {
   lv_obj_set_event_cb(btnSetTime, event_handler);
 }
 
-bool SettingSetDate::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-SettingSetDate::~SettingSetDate() {
-  UnLoad();
-}
-
-void SettingSetDate::handleButtonPress() {
-  const uint16_t yearValue = yearCounter.GetValue();
-  const uint8_t monthValue = monthCounter.GetValue();
-  const uint8_t dayValue = dayCounter.GetValue();
+void SettingSetDate::handleButtonPress() {  
   // NRF_LOG_INFO("Setting date (manually) to %04d-%02d-%02d", yearValue, monthValue, dayValue);
   auto* dc = &System::SystemTask::displayApp->dateTimeController;
-  dc->SetTime(yearValue, monthValue, dayValue, dc->Hours(), dc->Minutes(), dc->Seconds());
-  settingSetDateTime.Advance();
+  dc->SetTime(yearCounter.GetValue(), monthCounter.GetValue(), dayCounter.GetValue(), dc->Hours(), dc->Minutes(), dc->Seconds());
+  settingSetDateTime.SwipeUp();
 }
 
 void SettingSetDate::checkDay() {

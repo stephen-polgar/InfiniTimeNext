@@ -1,7 +1,8 @@
 #pragma once
 
-#include "displayapp/screens/ScreenTree.h"
+#include "displayapp/screens/Screen.h"
 #include "displayapp/widgets/DotIndicator.h"
+#include "utility/ArrayTouchHandler.h"
 
 namespace Pinetime {
   namespace Applications {
@@ -15,11 +16,14 @@ namespace Pinetime {
         bool UnLoad() override;
 
         bool OnTouchEvent(TouchEvents event) override;
-        void Advance();       
+        void SwipeUp();
         Widgets::DotIndicator dotIndicator;
 
-      private:      
-        ScreenTree* screens;
+      private:
+        static constexpr uint8_t items = 2;
+        Screen* list[items];
+        void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
+        Utility::ArrayTouchHandler arrayTouchHandler;
       };
     }
   }

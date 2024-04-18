@@ -25,11 +25,7 @@ namespace Pinetime {
         void lapBtnClicked();
         static void lap_event_handler(lv_obj_t* obj, lv_event_t event);
         static void set_event_handler(lv_obj_t* obj, lv_event_t event);
-        uint32_t currentTripSteps;
         lv_obj_t *lSteps, *stepsArc, *resetBtn, *resetButtonLabel, *tripLabel;
-        uint32_t stepsCount;
-        void setTrip(uint32_t value);
-
         lv_task_t* taskRefresh;
       };
     }

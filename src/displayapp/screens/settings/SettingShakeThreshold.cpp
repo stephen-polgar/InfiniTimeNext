@@ -11,6 +11,7 @@ SettingShakeThreshold::SettingShakeThreshold() : Screen(Apps::SettingShakeThresh
 
 void SettingShakeThreshold::Load() {
   running = true;
+  calibrating = 0;
   lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(title, "Wake Sensitivity");
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -54,12 +55,12 @@ void SettingShakeThreshold::Load() {
   lv_arc_set_value(positionArc, System::SystemTask::displayApp->settingsController.GetShakeThreshold());
 
   vDecay = xTaskGetTickCount();
-  calibrating = false;
-  EnableForCal = false;
+
   if (!System::SystemTask::displayApp->settingsController.isWakeUpModeOn(Controllers::Settings::WakeUpMode::Shake)) {
     EnableForCal = true;
     System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, true);
-  }
+  } else
+    EnableForCal = false;
   refreshTask = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
   screenTimeout = System::SystemTask::displayApp->settingsController.GetScreenTimeOut();
   System::SystemTask::displayApp->settingsController.SetScreenTimeOut(20000);
@@ -67,15 +68,14 @@ void SettingShakeThreshold::Load() {
 
 bool SettingShakeThreshold::UnLoad() {
   if (running) {
-    running = false;
-    System::SystemTask::displayApp->settingsController.SetScreenTimeOut(screenTimeout);
     lv_task_del(refreshTask);
+    running = false;
+    lv_obj_clean(lv_scr_act());
+    System::SystemTask::displayApp->settingsController.SetScreenTimeOut(screenTimeout);
     System::SystemTask::displayApp->settingsController.SetShakeThreshold(lv_arc_get_value(positionArc));
     if (EnableForCal) {
       System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, false);
-      EnableForCal = false;
-    }   
-    lv_obj_clean(lv_scr_act());
+    }
   }
   return true;
 }

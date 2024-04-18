@@ -1,6 +1,6 @@
 #pragma once
 
-#include "displayapp/screens/ScreenTree.h"
+#include "displayapp/screens/Screen.h"
 #ifdef UseFileManager
   #include "Symbols.h"
   #include "displayapp/screens/FileView.h"
