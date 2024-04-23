@@ -39,8 +39,8 @@ namespace {
   }
 }
 
-DisplayApp::DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Drivers::SpiNorFlash& spiNorFlash)
-  : lcd {lcd}, touchPanel {touchPanel}, filesystem {spiNorFlash}, settingsController {filesystem}, lvgl {lcd, filesystem} {
+DisplayApp::DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Controllers::FS& filesystem)
+  : lcd {lcd}, touchPanel {touchPanel}, filesystem {filesystem}, settingsController {filesystem}, lvgl {lcd, filesystem} {
 }
 
 void DisplayApp::Start(System::BootErrors error) {

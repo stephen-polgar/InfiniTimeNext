@@ -10,18 +10,15 @@ constexpr ble_uuid128_t DfuService::revisionCharacteristicUuid;
 constexpr ble_uuid128_t DfuService::packetCharacteristicUuid;
 
 int DfuServiceCallback(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
-  auto dfuService = static_cast<DfuService*>(arg);
-  return dfuService->OnServiceData(conn_handle, attr_handle, ctxt);
+  return static_cast<DfuService*>(arg)->OnServiceData(conn_handle, attr_handle, ctxt);
 }
 
 void NotificationTimerCallback(TimerHandle_t xTimer) {
-  auto notificationManager = static_cast<DfuService::NotificationManager*>(pvTimerGetTimerID(xTimer));
-  notificationManager->OnNotificationTimer();
+  static_cast<DfuService::NotificationManager*>(pvTimerGetTimerID(xTimer))->OnNotificationTimer();
 }
 
 void TimeoutTimerCallback(TimerHandle_t xTimer) {
-  auto dfuService = static_cast<DfuService*>(pvTimerGetTimerID(xTimer));
-  dfuService->OnTimeout();
+  static_cast<DfuService*>(pvTimerGetTimerID(xTimer))->OnTimeout();
 }
 
 DfuService::DfuService()
@@ -47,7 +44,7 @@ DfuService::DfuService()
                                 .val_handle = &revision,
 
                               },
-                              {0}
+                              0
 
     },
     serviceDefinition {
@@ -61,10 +58,8 @@ DfuService::DfuService()
 }
 
 void DfuService::Init() {
-  int res;
-  res = ble_gatts_count_cfg(serviceDefinition);
+  int res = ble_gatts_count_cfg(serviceDefinition);
   ASSERT(res == 0);
-
   res = ble_gatts_add_svcs(serviceDefinition);
   ASSERT(res == 0);
 }
@@ -131,6 +126,8 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
     }
       return 0;
     case States::Init: {
+      uint16_t softdeviceArrayLength = om->om_data[8] + (om->om_data[9] << 8);
+      expectedCrc = om->om_data[10 + (softdeviceArrayLength * 2)] + (om->om_data[10 + (softdeviceArrayLength * 2) + 1] << 8);
       /*
       uint16_t deviceType = om->om_data[0] + (om->om_data[1] << 8);
       uint16_t deviceRevision = om->om_data[2] + (om->om_data[3] << 8);
@@ -140,18 +137,10 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
       for (int i = 0; i < softdeviceArrayLength; i++) {
         sd[i] = om->om_data[10 + (i * 2)] + (om->om_data[10 + (i * 2) + 1] << 8);
       }
-
-      expectedCrc = om->om_data[10 + (softdeviceArrayLength * 2)] + (om->om_data[10 + (softdeviceArrayLength * 2) + 1] << 8);
-
       NRF_LOG_INFO(
-        "[DFU] -> Init data received : deviceType = %d, deviceRevision = %d, applicationVersion = %d, nb SD = %d, First SD = %d, CRC = %u",
-        deviceType,
-        deviceRevision,
-        applicationVersion,
-        softdeviceArrayLength,
-        sd[0],
-        expectedCrc);
-        */
+              "[DFU] -> Init data received : deviceType = %d, deviceRevision = %d, applicationVersion = %d, nb SD = %d, First SD = %d, CRC =
+         %u", deviceType, deviceRevision, applicationVersion, softdeviceArrayLength, sd[0], expectedCrc);
+              */
       return 0;
     }
 
@@ -367,13 +356,13 @@ void DfuService::DfuImage::Append(uint8_t* data, size_t size) {
   bufferWriteIndex += size;
 
   if (bufferWriteIndex == bufferSize) {
-    System::SystemTask::displayApp->systemTask->spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
+    System::SystemTask::displayApp->filesystem.flashDriver.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
     totalWriteIndex += bufferWriteIndex;
     bufferWriteIndex = 0;
   }
 
   if (bufferWriteIndex > 0 && totalWriteIndex + bufferWriteIndex == totalSize) {
-    System::SystemTask::displayApp->systemTask->spiNorFlash.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
+    System::SystemTask::displayApp->filesystem.flashDriver.Write(writeOffset + totalWriteIndex, tempBuffer, bufferWriteIndex);
     totalWriteIndex += bufferWriteIndex;
     if (totalSize < maxSize)
       WriteMagicNumber();
@@ -390,12 +379,12 @@ void DfuService::DfuImage::WriteMagicNumber() {
   };
 
   uint32_t offset = writeOffset + (maxSize - (4 * sizeof(uint32_t)));
-  System::SystemTask::displayApp->systemTask->spiNorFlash.Write(offset, reinterpret_cast<const uint8_t*>(magic), 4 * sizeof(uint32_t));
+  System::SystemTask::displayApp->filesystem.flashDriver.Write(offset, reinterpret_cast<const uint8_t*>(magic), 4 * sizeof(uint32_t));
 }
 
 void DfuService::DfuImage::Erase() {
   for (size_t erased = 0; erased < maxSize; erased += 0x1000) {
-    System::SystemTask::displayApp->systemTask->spiNorFlash.SectorErase(writeOffset + erased);
+    System::SystemTask::displayApp->filesystem.flashDriver.SectorErase(writeOffset + erased);
   }
 }
 
@@ -408,7 +397,7 @@ bool DfuService::DfuImage::Validate() {
   while (currentOffset < totalSize) {
     uint32_t readSize = (totalSize - currentOffset) > chunkSize ? chunkSize : (totalSize - currentOffset);
 
-    System::SystemTask::displayApp->systemTask->spiNorFlash.Read(writeOffset + currentOffset, tempBuffer, readSize);
+    System::SystemTask::displayApp->filesystem.flashDriver.Read(writeOffset + currentOffset, tempBuffer, readSize);
     if (first) {
       crc = ComputeCrc(tempBuffer, readSize, NULL);
       first = false;

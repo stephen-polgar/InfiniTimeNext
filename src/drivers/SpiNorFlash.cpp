@@ -2,11 +2,10 @@
 #include <hal/nrf_gpio.h>
 #include <libraries/delay/nrf_delay.h>
 #include <libraries/log/nrf_log.h>
-#include "drivers/Spi.h"
 
 using namespace Pinetime::Drivers;
 
-SpiNorFlash::SpiNorFlash(Spi& spi) : spi {spi} {
+SpiNorFlash::SpiNorFlash(SpiMaster& spi, uint8_t PinMap) : spi {spi, PinMap} {
 }
 
 void SpiNorFlash::Init() {

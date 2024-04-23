@@ -1,14 +1,15 @@
 #pragma once
+
+#include "drivers/Spi.h"
 #include <cstddef>
-#include <cstdint>
+//#include <cstdint>
 
 namespace Pinetime {
   namespace Drivers {
-    class Spi;
-
+   
     class St7789 {
     public:
-      explicit St7789(Spi& spi, uint8_t pinDataCommand, uint8_t pinReset);
+      explicit St7789(SpiMaster& spi, uint8_t SpiLcdCsn,  uint8_t pinDataCommand, uint8_t pinReset);
       St7789(const St7789&) = delete;
       St7789& operator=(const St7789&) = delete;
       St7789(St7789&&) = delete;
@@ -25,7 +26,7 @@ namespace Pinetime {
       void Wakeup();
 
     private:
-      Spi& spi;
+      Spi spi;
       uint8_t pinDataCommand;
       uint8_t pinReset;
       uint8_t verticalScrollingStartAddress = 0;

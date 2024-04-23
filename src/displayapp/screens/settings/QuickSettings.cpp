@@ -1,10 +1,7 @@
 #include "QuickSettings.h"
 #include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
-#include "displayapp/screens/FlashLight.h"
-#include "displayapp/screens/settings/Settings.h"
 #include "displayapp/InfiniTimeTheme.h"
-
 
 using namespace Pinetime::Applications::Screens;
 
@@ -12,7 +9,6 @@ QuickSettings::QuickSettings() : Screen(Apps::QuickSettings) {
 }
 
 void QuickSettings::Load() {
-  running = true;
   statusIcons.Load();
 
   // This is the distance (padding) between all objects on this screen.
@@ -90,16 +86,16 @@ void QuickSettings::Load() {
   lv_obj_set_style_local_text_font(lbl_btn, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
   lv_label_set_text_static(lbl_btn, Symbols::settings);
 
-  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
-
   Refresh();
+  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
+  running = true;
 }
 
 bool QuickSettings::UnLoad() {
   if (running) {
+    lv_task_del(taskUpdate);
     running = false;
     lv_style_reset(&btn_style);
-    lv_task_del(taskUpdate);
     lv_obj_clean(lv_scr_act());
   }
   return true;
@@ -115,43 +111,42 @@ void QuickSettings::Refresh() {
   statusIcons.Refresh();
 }
 
-
-  void QuickSettings::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
-    if (event == LV_EVENT_CLICKED) {
-      static_cast<QuickSettings*>(obj->user_data)->onButtonEvent(obj);
-    }
+void QuickSettings::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+    static_cast<QuickSettings*>(obj->user_data)->onButtonEvent(obj);
   }
-
+}
 
 void QuickSettings::onButtonEvent(lv_obj_t* object) {
-  if (object == btn2) {
-    System::SystemTask::displayApp->StartApp(new FlashLight());
-  } else if (object == btn1) {
-
-    System::SystemTask::displayApp->brightnessController.Step();
-    lv_label_set_text_static(btn1_lvl, System::SystemTask::displayApp->brightnessController.GetIcon());
-
-    System::SystemTask::displayApp->settingsController.SetBrightness(
-      System::SystemTask::displayApp->brightnessController.Level());
-
-  } else if (object == btn3) {
-
-    if (System::SystemTask::displayApp->settingsController.GetNotificationStatus() == Controllers::Settings::Notification::On) {
-      System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::Off);
-      lv_label_set_text_static(btn3_lvl, Symbols::notificationsOff);
-      lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::NotificationsOff));
-    } else if (System::SystemTask::displayApp->settingsController.GetNotificationStatus() == Controllers::Settings::Notification::Off) {
-      System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::Sleep);
-      lv_label_set_text_static(btn3_lvl, Symbols::sleep);
-      lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::Sleep));
-    } else {
-      System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::On);
-      lv_label_set_text_static(btn3_lvl, Symbols::notificationsOn);
-      lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::NotificationsOn));
-      System::SystemTask::displayApp->motorController.RunForDuration(35);
+  if (enableEvent) {
+    if (object == btn2) {
+      System::SystemTask::displayApp->StartApp(Apps::FlashLight);
+    } else if (object == btn1) {
+      System::SystemTask::displayApp->brightnessController.Step();
+      lv_label_set_text_static(btn1_lvl, System::SystemTask::displayApp->brightnessController.GetIcon());
+      System::SystemTask::displayApp->settingsController.SetBrightness(System::SystemTask::displayApp->brightnessController.Level());
+    } else if (object == btn3) {
+      if (System::SystemTask::displayApp->settingsController.GetNotificationStatus() == Controllers::Settings::Notification::On) {
+        System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::Off);
+        lv_label_set_text_static(btn3_lvl, Symbols::notificationsOff);
+        lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::NotificationsOff));
+      } else if (System::SystemTask::displayApp->settingsController.GetNotificationStatus() == Controllers::Settings::Notification::Off) {
+        System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::Sleep);
+        lv_label_set_text_static(btn3_lvl, Symbols::sleep);
+        lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::Sleep));
+      } else {
+        System::SystemTask::displayApp->settingsController.SetNotificationStatus(Controllers::Settings::Notification::On);
+        lv_label_set_text_static(btn3_lvl, Symbols::notificationsOn);
+        lv_obj_set_state(btn3, static_cast<lv_state_t>(ButtonState::NotificationsOn));
+        System::SystemTask::displayApp->motorController.RunForDuration(35);
+      }
+    } else if (object == btn4) {
+      System::SystemTask::displayApp->StartApp(Apps::Settings);
     }
-
-  } else if (object == btn4) {   
-    System::SystemTask::displayApp->StartApp(new Settings());
   }
+}
+
+bool QuickSettings::OnTouchEvent(Applications::TouchEvents event) {
+  enableEvent = event == TouchEvents::Tap;
+  return enableEvent;
 }

@@ -10,7 +10,6 @@
 #include "drivers/Hrs3300.h"
 #include "drivers/TwiMaster.h"
 #include "drivers/SpiMaster.h"
-#include "drivers/SpiNorFlash.h"
 #include "systemtask/SystemMonitor.h"
 #include "components/ble/NimbleController.h"
 #include "buttonhandler/ButtonActions.h"
@@ -35,8 +34,7 @@ namespace Pinetime {
     class SystemTask {
     public:
       enum class SystemTaskState : uint8_t { Sleeping, Running, GoingToSleep, WakingUp };
-      SystemTask(Drivers::SpiMaster& spi,
-                 Drivers::SpiNorFlash& spiNorFlash,
+      SystemTask(Drivers::SpiMaster& spi,                 
                  Drivers::TwiMaster& twiMaster,
                  Drivers::Hrs3300& heartRateSensor,
                  Drivers::Bma421& motionSensor,
@@ -55,8 +53,7 @@ namespace Pinetime {
         return state == SystemTaskState::Sleeping || state == SystemTaskState::WakingUp;
       }
 
-      static Applications::DisplayApp* displayApp;
-      Drivers::SpiNorFlash& spiNorFlash;
+      static Applications::DisplayApp* displayApp;     
       Applications::HeartRateTask heartRateTask;
       Controllers::NimbleController nimbleController;
 

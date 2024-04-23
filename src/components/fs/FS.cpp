@@ -26,7 +26,8 @@ FS::FS(Pinetime::Drivers::SpiNorFlash& driver)
 }
 
 void FS::Init() {
-
+  flashDriver.Init();
+  flashDriver.Wakeup();
   // try mount
   int err = lfs_mount(&lfs, &lfsConfig);
 

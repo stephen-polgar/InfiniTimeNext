@@ -66,10 +66,10 @@ void ApplicationList::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRef
 }
 
 bool ApplicationList::UnLoad() {
-  if (taskUpdate) {
-    running = false;
+  if (taskUpdate) {    
     lv_task_del(taskUpdate);
     taskUpdate = NULL;
+    running = false;
     pageIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
   }

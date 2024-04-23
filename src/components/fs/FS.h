@@ -38,9 +38,9 @@ namespace Pinetime {
         return blockSize;
       }
 
-    private:
       Pinetime::Drivers::SpiNorFlash& flashDriver;
 
+    private:
       /*
        * External Flash MAP (4 MBytes)
        *

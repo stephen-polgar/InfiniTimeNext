@@ -2,11 +2,10 @@
 #include <hal/nrf_gpio.h>
 #include <libraries/delay/nrf_delay.h>
 #include <nrfx_log.h>
-#include "drivers/Spi.h"
 
 using namespace Pinetime::Drivers;
 
-St7789::St7789(Spi& spi, uint8_t pinDataCommand, uint8_t pinReset) : spi {spi}, pinDataCommand {pinDataCommand}, pinReset {pinReset} {
+St7789::St7789(SpiMaster& spi, uint8_t SpiLcdCsn, uint8_t pinDataCommand, uint8_t pinReset) : spi {spi, SpiLcdCsn}, pinDataCommand {pinDataCommand}, pinReset {pinReset} {
 }
 
 void St7789::Init() {

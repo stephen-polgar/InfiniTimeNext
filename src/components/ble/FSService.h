@@ -61,7 +61,7 @@ namespace Pinetime {
       enum class FSState : uint8_t {
         IDLE = 0x00,
         READ = 0x01,
-        WRITE = 0x02,
+        WRITE = 0x02
       };
       FSState state;
       char filepath[maxpathlen]; // TODO ..ugh fixed filepath len

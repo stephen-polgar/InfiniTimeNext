@@ -1,14 +1,12 @@
 #pragma once
-#include <cstddef>
-#include <cstdint>
+
+#include "drivers/Spi.h"
 
 namespace Pinetime {
-  namespace Drivers {
-    class Spi;
-
+  namespace Drivers {  
     class SpiNorFlash {
     public:
-      explicit SpiNorFlash(Spi& spi);
+      explicit SpiNorFlash(SpiMaster& spi, uint8_t PinMap);
       SpiNorFlash(const SpiNorFlash&) = delete;
       SpiNorFlash& operator=(const SpiNorFlash&) = delete;
       SpiNorFlash(SpiNorFlash&&) = delete;
@@ -54,7 +52,7 @@ namespace Pinetime {
       };
       static constexpr uint16_t pageSize = 256;
 
-      Spi& spi;
+      Spi spi;
       Identification device_id;
     };
   }

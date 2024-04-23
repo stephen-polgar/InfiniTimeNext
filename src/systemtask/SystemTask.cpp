@@ -30,17 +30,11 @@ namespace {
 }
 
 SystemTask::SystemTask(Drivers::SpiMaster& spi,
-                       Drivers::SpiNorFlash& spiNorFlash,
                        Drivers::TwiMaster& twiMaster,
                        Drivers::Hrs3300& heartRateSensor,
-                       Drivers::Bma421& motionSensor,                                 
+                       Drivers::Bma421& motionSensor,
                        Applications::DisplayApp* displayApp)
-  : spi {spi},
-    spiNorFlash {spiNorFlash},
-    twiMaster {twiMaster},
-    heartRateSensor {heartRateSensor},
-    motionSensor {motionSensor},
-    heartRateTask {heartRateSensor}  {
+  : spi {spi}, twiMaster {twiMaster}, heartRateSensor {heartRateSensor}, motionSensor {motionSensor}, heartRateTask {heartRateSensor} {
   displayApp->systemTask = this;
   this->displayApp = displayApp;
 }
@@ -65,11 +59,8 @@ void SystemTask::Work() {
   // NRF_LOG_INFO("Last reset reason : %s", Drivers::ResetReasonToString(watchdog.GetResetReason()));
   APP_GPIOTE_INIT(2);
 
-  spi.Init();
-  spiNorFlash.Init();
-  spiNorFlash.Wakeup();
-
-  displayApp->filesystem.Init(); // after spiNorFlash
+  spi.Init();  
+  displayApp->filesystem.Init(); // after spi.Init();
 
   Controllers::AlarmController::Init(); // after filesystem.Init()
   Controllers::TimerController::Init(); // after filesystem.Init()
@@ -161,7 +152,7 @@ void SystemTask::Work() {
             displayApp->touchPanel.Wakeup();
           }
 
-          spiNorFlash.Wakeup();
+         displayApp->filesystem.flashDriver.Wakeup();
 
           displayApp->PushMessage(Applications::Display::Messages::GoToRunning);
           heartRateTask.PushMessage(Applications::HeartRateTask::Messages::WakeUp);
@@ -278,7 +269,7 @@ void SystemTask::Work() {
           if (BootloaderVersion::IsValid()) {
             // First versions of the bootloader do not expose their version and cannot initialize the SPI NOR FLASH
             // if it's in sleep mode. Avoid bricked device by disabling sleep mode on these versions.
-            spiNorFlash.Sleep();
+            displayApp->filesystem.flashDriver.Sleep();
           }
           spi.Sleep();
 

@@ -36,7 +36,7 @@ namespace Pinetime {
     public:
       enum class States : uint8_t { Idle, Running };
 
-      DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Drivers::SpiNorFlash& spiNorFlash);
+      DisplayApp(Drivers::St7789& lcd, Drivers::Cst816S& touchPanel, Controllers::FS& filesystem);
 
       void Start(System::BootErrors error);
       void PushMessage(Display::Messages id);
@@ -54,7 +54,7 @@ namespace Pinetime {
       Controllers::MotionController motionController;
       Controllers::BrightnessController brightnessController;
       Controllers::TouchHandler touchHandler;
-      Controllers::FS filesystem;
+      Controllers::FS& filesystem;
       Drivers::Watchdog watchdog;
       Drivers::Cst816S& touchPanel;
       Controllers::Battery batteryController;

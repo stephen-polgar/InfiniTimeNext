@@ -14,13 +14,14 @@ namespace Pinetime {
         ~QuickSettings() override;
         void Load() override;
         bool UnLoad() override;
-      
+        bool OnTouchEvent(TouchEvents event) override;
+
       private:
         void onButtonEvent(lv_obj_t* object);
         enum class ButtonState : lv_state_t {
           NotificationsOn = LV_STATE_CHECKED,
           NotificationsOff = LV_STATE_DEFAULT,
-          Sleep = 0x40,
+          Sleep = 0x40
         };
 
         void Refresh() override;
@@ -38,6 +39,7 @@ namespace Pinetime {
         lv_obj_t* btn3;
         lv_obj_t* btn3_lvl;
         lv_obj_t* btn4;
+        bool enableEvent;
 
         Widgets::StatusIcons statusIcons;
       };
