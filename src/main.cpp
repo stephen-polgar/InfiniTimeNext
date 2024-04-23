@@ -64,6 +64,7 @@ Pinetime::Drivers::St7789 lcd {lcdSpi, Pinetime::PinMap::LcdDataCommand, Pinetim
 
 Pinetime::Drivers::Spi flashSpi {spi, Pinetime::PinMap::SpiFlashCsn};
 Pinetime::Drivers::SpiNorFlash spiNorFlash {flashSpi};
+// Pinetime::Controllers::FS filesystem{spiNorFlash};  not working ???
 
 // The TWI device should work @ up to 400Khz but there is a HW bug which prevent it from
 // respecting correct timings. According to erratas heet, this magic value makes it run

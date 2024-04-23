@@ -19,14 +19,14 @@ WatchFaceCasioStyleG7710::WatchFaceCasioStyleG7710() : batteryIcon(true), Screen
 
 void WatchFaceCasioStyleG7710::Load() {
   if (!font_dot40 || !font_segment40 || !font_segment115) {
-      return;
+    return;
   };
   label_battery_value = lv_label_create(lv_scr_act(), NULL);
   lv_obj_align(label_battery_value, lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, 0, 0);
   lv_obj_set_style_local_text_color(label_battery_value, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
- 
+
   batteryIcon.Create(lv_scr_act());
-  batteryIcon.SetColor(color_text);  
+  batteryIcon.SetColor(color_text);
 
   batteryPlug = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(batteryPlug, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
@@ -46,17 +46,17 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_align(label_day_of_week, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 10, 64);
   lv_obj_set_style_local_text_color(label_day_of_week, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_obj_set_style_local_text_font(label_day_of_week, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_dot40);
-  
+
   label_week_number = lv_label_create(lv_scr_act(), NULL);
   lv_obj_align(label_week_number, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 5, 22);
   lv_obj_set_style_local_text_color(label_week_number, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_obj_set_style_local_text_font(label_week_number, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_dot40);
- 
+
   label_day_of_year = lv_label_create(lv_scr_act(), NULL);
   lv_obj_align(label_day_of_year, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 100, 30);
   lv_obj_set_style_local_text_color(label_day_of_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_obj_set_style_local_text_font(label_day_of_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_segment40);
-  
+
   lv_style_init(&style_line);
   lv_style_set_line_width(&style_line, LV_STATE_DEFAULT, 2);
   lv_style_set_line_color(&style_line, LV_STATE_DEFAULT, color_line);
@@ -89,7 +89,7 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_align(label_date, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 100, 70);
   lv_obj_set_style_local_text_color(label_date, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
   lv_obj_set_style_local_text_font(label_date, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_segment40);
-  
+
   lv_obj_t* line_date = lv_line_create(lv_scr_act(), NULL);
   static const lv_point_t line_date_points[3] {{0, 5}, {135, 5}, {140, 0}};
   lv_line_set_points(line_date, line_date_points, 3);
@@ -106,12 +106,11 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_line_set_points(line_time, line_time_points, 3);
   lv_obj_add_style(line_time, LV_LINE_PART_MAIN, &style_line);
   lv_obj_align(line_time, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, -25);
-
+#ifndef TimeFormat_24H
   label_time_ampm = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(label_time_ampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
-  lv_label_set_text_static(label_time_ampm, "");
   lv_obj_align(label_time_ampm, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 5, -5);
-
+#endif
   lv_obj_t* backgroundLabel = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_click(backgroundLabel, true);
   lv_label_set_long_mode(backgroundLabel, LV_LABEL_LONG_CROP);
@@ -126,7 +125,6 @@ void WatchFaceCasioStyleG7710::Load() {
 
   heartbeatValue = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(heartbeatValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color_text);
-  lv_label_set_text_static(heartbeatValue, "");
   lv_obj_align(heartbeatValue, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
 
   stepValue = lv_label_create(lv_scr_act(), NULL);
@@ -139,10 +137,11 @@ void WatchFaceCasioStyleG7710::Load() {
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
   Refresh();
   lv_obj_align(batteryIcon.GetObject(), label_battery_value, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+  running = true;
 }
 
 bool WatchFaceCasioStyleG7710::UnLoad() {
-  if (running) {      
+  if (running) {
     running = false;
     lv_obj_clean(lv_scr_act());
     lv_style_reset(&style_line);
@@ -193,53 +192,50 @@ void WatchFaceCasioStyleG7710::Refresh() {
 
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(app->dateTimeController.CurrentDateTime());
   if (!running || currentDateTime.IsUpdated()) {
+#ifdef TimeFormat_24H
+    lv_label_set_text_fmt(label_time, "%02d:%02d", app->dateTimeController.Hours(), app->dateTimeController.Minutes());
+#else
     uint8_t hour = app->dateTimeController.Hours();
-    uint8_t minute = app->dateTimeController.Minutes();
-    if (app->settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-      char ampmChar[2] = "A";
-      if (hour == 0) {
-        hour = 12;
-      } else if (hour == 12) {
-        ampmChar[0] = 'P';
-      } else if (hour > 12) {
-        hour = hour - 12;
-        ampmChar[0] = 'P';
-      }
-      lv_label_set_text(label_time_ampm, ampmChar);
-      lv_label_set_text_fmt(label_time, "%2d:%02d", hour, minute);
-    } else {
-      lv_label_set_text_fmt(label_time, "%02d:%02d", hour, minute);
+    char ampmChar[2] = "A";
+    if (hour == 0) {
+      hour = 12;
+    } else if (hour == 12) {
+      ampmChar[0] = 'P';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      ampmChar[0] = 'P';
     }
+    lv_label_set_text(label_time_ampm, ampmChar);
+    lv_label_set_text_fmt(label_time, "%2d:%02d", hour, app->dateTimeController.Minutes());
+#endif
     lv_obj_realign(label_time);
 
     currentDate = std::chrono::time_point_cast<std::chrono::days>(currentDateTime.Get());
     if (!running || currentDate.IsUpdated()) {
-      const char* weekNumberFormat = "%V";
-
       uint16_t year = app->dateTimeController.Year();
       Controllers::DateTime::Months month = app->dateTimeController.Month();
       uint8_t day = app->dateTimeController.Day();
       int dayOfYear = app->dateTimeController.DayOfYear();
-      if (app->settingsController.GetClockType() == Controllers::Settings::ClockType::H24) {
-        // 24h mode: ddmmyyyy, first DOW=Monday;
-        lv_label_set_text_fmt(label_date, " %02d-%02d", month, day);
-        weekNumberFormat = "%V"; // Replaced by the week number of the year (Monday as the first day of the week) as a decimal number
-                                 // [01,53]. If the week containing 1 January has four or more days in the new year, then it is considered
-                                 // week 1. Otherwise, it is the last week of the previous year, and the next week is week 1. Both January
-                                 // 4th and the first Thursday of January are always in week 1. [ tm_year, tm_wday, tm_yday]
-      } else {
-        // 12h mode: mmddyyyy, first DOW=Sunday;
-        lv_label_set_text_fmt(label_date, " %02d-%02d", month, day);
-        weekNumberFormat = "%U"; // Replaced by the week number of the year as a decimal number [00,53]. The first Sunday of January is the
-                                 // first day of week 1; days in the new year before this are in week 0. [ tm_year, tm_wday, tm_yday]
-      }
-
+      const char* weekNumberFormat;
+#ifdef TimeFormat_24H
+      // 24h mode: ddmmyyyy, first DOW=Monday;
+      lv_label_set_text_fmt(label_date, " %02d-%02d", month, day);
+      weekNumberFormat = "%V"; // Replaced by the week number of the year (Monday as the first day of the week) as a decimal number
+                               // [01,53]. If the week containing 1 January has four or more days in the new year, then it is considered
+                               // week 1. Otherwise, it is the last week of the previous year, and the next week is week 1. Both January
+                               // 4th and the first Thursday of January are always in week 1. [ tm_year, tm_wday, tm_yday]
+#else
+      // 12h mode: mmddyyyy, first DOW=Sunday;
+      lv_label_set_text_fmt(label_date, " %02d-%02d", month, day);
+      weekNumberFormat = "%U"; // Replaced by the week number of the year as a decimal number [00,53]. The first Sunday of January is the
+                               // first day of week 1; days in the new year before this are in week 0. [ tm_year, tm_wday, tm_yday]
+#endif
       time_t ttTime =
         std::chrono::system_clock::to_time_t(std::chrono::time_point_cast<std::chrono::system_clock::duration>(currentDateTime.Get()));
       tm* tmTime = std::localtime(&ttTime);
 
       // TODO: When we start using C++20, use std::chrono::year::is_leap
-      int daysInCurrentYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 366 : 365;
+      uint16_t daysInCurrentYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 366 : 365;
       uint16_t daysTillEndOfYearNumber = daysInCurrentYear - dayOfYear;
 
       char buffer[8];
@@ -278,7 +274,6 @@ void WatchFaceCasioStyleG7710::Refresh() {
     lv_obj_realign(stepValue);
     lv_obj_realign(stepIcon);
   }
-  running = true;
 }
 
 bool WatchFaceCasioStyleG7710::IsAvailable(Controllers::FS& filesystem) {

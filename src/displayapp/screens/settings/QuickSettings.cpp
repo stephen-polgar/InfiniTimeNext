@@ -13,7 +13,7 @@ QuickSettings::QuickSettings() : Screen(Apps::QuickSettings) {
 
 void QuickSettings::Load() {
   running = true;
-  statusIcons.Create();
+  statusIcons.Load();
 
   // This is the distance (padding) between all objects on this screen.
   static constexpr uint8_t innerDistance = 10;
@@ -112,7 +112,7 @@ QuickSettings::~QuickSettings() {
 
 void QuickSettings::Refresh() {
   lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
-  statusIcons.Update();
+  statusIcons.Refresh();
 }
 
 

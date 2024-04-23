@@ -11,7 +11,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-AlarmSet::AlarmSet(bool showAlarm) : Screen(Apps::AlarmSet), clockType {System::SystemTask::displayApp->settingsController.GetClockType()} {
+AlarmSet::AlarmSet(bool showAlarm) : Screen(Apps::AlarmSet) {
 #ifdef Log
   NRF_LOG_INFO("new AlarmSet=%d", this);
 #endif
@@ -26,10 +26,7 @@ AlarmSet::AlarmSet(bool showAlarm) : Screen(Apps::AlarmSet), clockType {System::
   alarmController = new AlarmController();
 }
 
-AlarmSet::AlarmSet(AlarmController* alarmController)
-  : alarmController {alarmController},
-    clockType {System::SystemTask::displayApp->settingsController.GetClockType()},
-    Screen(Apps::AlarmSet) {
+AlarmSet::AlarmSet(AlarmController* alarmController) : Screen(Apps::AlarmSet), alarmController {alarmController} {
 #ifdef Log
   NRF_LOG_INFO("new AlarmSet=%d", this);
 #endif
@@ -44,15 +41,13 @@ void AlarmSet::Load() {
   running = true;
   hourCounter.Create();
   lv_obj_align(hourCounter.GetObject(), NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-  if (clockType == Controllers::Settings::ClockType::H12) {
-    hourCounter.EnableTwelveHourMode();
-
-    lblampm = lv_label_create(lv_scr_act(), NULL);
-    lv_obj_set_style_local_text_font(lblampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
-    lv_label_set_text_static(lblampm, "AM");
-    lv_label_set_align(lblampm, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(lblampm, lv_scr_act(), LV_ALIGN_CENTER, 0, 30);
-  }
+#ifndef TimeFormat_24H
+  lblampm = lv_label_create(lv_scr_act(), NULL);
+  lv_obj_set_style_local_text_font(lblampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
+  lv_label_set_text_static(lblampm, "AM");
+  lv_label_set_align(lblampm, LV_LABEL_ALIGN_CENTER);
+  lv_obj_align(lblampm, lv_scr_act(), LV_ALIGN_CENTER, 0, 30);
+#endif
   hourCounter.SetValue(alarmController->Hours());
   hourCounter.SetValueChangedEventCallback(this, valueChangedHandler);
 
@@ -147,13 +142,9 @@ void AlarmSet::onValueChanged() {
 }
 
 void AlarmSet::UpdateAlarmTime() {
-  if (lblampm != NULL) {
-    if (hourCounter.GetValue() >= 12) {
-      lv_label_set_text_static(lblampm, "PM");
-    } else {
-      lv_label_set_text_static(lblampm, "AM");
-    }
-  }
+#ifndef TimeFormat_24H
+  lv_label_set_text_static(lblampm, hourCounter.GetValue() >= 12 ? "PM" : "AM");
+#endif
   alarmController->SetAlarmTime(hourCounter.GetValue(), minuteCounter.GetValue());
 }
 
@@ -195,37 +186,61 @@ void AlarmSet::showRecurences() {
   // lv_cont_set_layout(cont, LV_LAYOUT_GRID);
   uint16_t i;
   auto rec = alarmController->Recurrence();
-
   for (i = 0; i < 7; i++) {
-    cbOption[i] = lv_checkbox_create(cont1, NULL);
+    lv_obj_t* cb = lv_checkbox_create(cont1, NULL);
     switch (i) {
+#ifdef WeekStartsMonday
       case 0:
-        lv_obj_set_style_local_text_color(cbOption[i], LV_CHECKBOX_PART_BG, LV_STATE_DEFAULT, LV_COLOR_RED);
-        lv_checkbox_set_checked(cbOption[i], rec.Sun);
+        lv_checkbox_set_checked(cb, rec.Mon);
         break;
       case 1:
-        lv_checkbox_set_checked(cbOption[i], rec.Mon);
+        lv_checkbox_set_checked(cb, rec.Tue);
         break;
       case 2:
-        lv_checkbox_set_checked(cbOption[i], rec.Tue);
+        lv_checkbox_set_checked(cb, rec.Wed);
         break;
       case 3:
-        lv_checkbox_set_checked(cbOption[i], rec.Wed);
+        lv_checkbox_set_checked(cb, rec.Thu);
         break;
       case 4:
-        lv_checkbox_set_checked(cbOption[i], rec.Thu);
+        lv_checkbox_set_checked(cb, rec.Fri);
         break;
       case 5:
-        lv_checkbox_set_checked(cbOption[i], rec.Fri);
+        lv_obj_set_style_local_text_color(cb, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
+        lv_checkbox_set_checked(cb, rec.Sat);
         break;
       case 6:
-        lv_obj_set_style_local_text_color(cbOption[i], LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
-        lv_checkbox_set_checked(cbOption[i], rec.Sat);
+        lv_obj_set_style_local_text_color(cb, LV_CHECKBOX_PART_BG, LV_STATE_DEFAULT, LV_COLOR_RED);
+        lv_checkbox_set_checked(cb, rec.Sun);
+#else
+      case 0:
+        lv_obj_set_style_local_text_color(cb, LV_CHECKBOX_PART_BG, LV_STATE_DEFAULT, LV_COLOR_RED);
+        lv_checkbox_set_checked(cb, rec.Sun);
+        break;
+      case 1:
+        lv_checkbox_set_checked(cb, rec.Mon);
+        break;
+      case 2:
+        lv_checkbox_set_checked(cb, rec.Tue);
+        break;
+      case 3:
+        lv_checkbox_set_checked(cb, rec.Wed);
+        break;
+      case 4:
+        lv_checkbox_set_checked(cb, rec.Thu);
+        break;
+      case 5:
+        lv_checkbox_set_checked(cb, rec.Fri);
+        break;
+      case 6:
+        lv_obj_set_style_local_text_color(cb, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
+        lv_checkbox_set_checked(cb, rec.Sat);
+#endif
         break;
       default:
         break;
     }
-    lv_checkbox_set_text_static(cbOption[i], options[i]);
+    lv_checkbox_set_text_static(cb, options[i]);
   }
   cont2 = lv_cont_create(lv_scr_act(), NULL);
   lv_obj_set_pos(cont2, LV_HOR_RES / 2 - 20, 0);
@@ -237,9 +252,9 @@ void AlarmSet::showRecurences() {
   lv_cont_set_layout(cont2, LV_LAYOUT_COLUMN_MID);
   cont2->user_data = this;
 
-  cbOption[i] = lv_checkbox_create(cont2, NULL);
-  lv_checkbox_set_text_static(cbOption[i], options[i]);
-  lv_checkbox_set_checked(cbOption[i], rec.Once);
+  cbOnce = lv_checkbox_create(cont2, NULL);
+  lv_checkbox_set_text_static(cbOnce, options[i]);
+  lv_checkbox_set_checked(cbOnce, rec.Once);
 
   lv_obj_t* btn = lv_btn_create(cont2, NULL);
   lv_obj_t* o = lv_label_create(btn, NULL);
@@ -263,44 +278,68 @@ void AlarmSet::showRecurences() {
 }
 
 void AlarmSet::invertSeledtedDays() {
-  for (uint8_t i = 0; i < 7; i++) {
-    lv_checkbox_set_checked(cbOption[i], !lv_checkbox_is_checked(cbOption[i]));
+  lv_obj_t* cb = NULL;
+  while ((cb = lv_obj_get_child(cont1, cb))) {
+    lv_checkbox_set_checked(cb, !lv_checkbox_is_checked(cb));
   }
 }
 
 void AlarmSet::saveRecurences() {
   AlarmController::RecurType rec;
-  for (uint8_t i = 0; i < optionsSize; i++) {
-    bool checked = lv_checkbox_is_checked(cbOption[i]);
-    switch (i) {
-      case 0:
-        rec.Sun = checked;
-        break;
-      case 1:
+  uint8_t i = 0;
+  lv_obj_t* cb = NULL;
+  while ((cb = lv_obj_get_child(cont1, cb))) {
+    bool checked = lv_checkbox_is_checked(cb);
+    switch (i++) {
+#ifdef WeekStartsMonday
+      case 6:
         rec.Mon = checked;
         break;
+      case 5:
+        rec.Tue = checked;
+        break;
+      case 4:
+        rec.Wed = checked;
+        break;
+      case 3:
+        rec.Thu = checked;
+        break;
       case 2:
+        rec.Fri = checked;
+        break;
+      case 1:
+        rec.Sat = checked;
+        break;
+      case 0:
+        rec.Sun = checked;
+#else
+      case 6:
+        rec.Sun = checked;
+        break;
+      case 5:
+        rec.Mon = checked;
+        break;
+      case 4:
         rec.Tue = checked;
         break;
       case 3:
         rec.Wed = checked;
         break;
-      case 4:
+      case 2:
         rec.Thu = checked;
         break;
-      case 5:
+      case 1:
         rec.Fri = checked;
         break;
-      case 6:
+      case 0:
         rec.Sat = checked;
-        break;
-      case 7:
-        rec.Once = checked;
+#endif
         break;
       default:
         break;
     }
   }
+  rec.Once = lv_checkbox_is_checked(cbOnce);
   lv_obj_del(cont1);
   lv_obj_del(cont2);
   alarmController->SetRecurrence(rec);

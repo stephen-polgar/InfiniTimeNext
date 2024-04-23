@@ -18,30 +18,48 @@
 #pragma once
 
 /*
-Comment or uncomment definitions for change built in apps.
+Comment or uncomment for disable or enable definitions.
 InfiniSimNext simulator uses this settings too.
 */
 
+////// Select built in apps ///////
+
 #define UseCalendar
-
 #define UseCalculator
-// #define UseMotion
+#define UseMotion
+#define UsePaddle
 
- #define UsePaddle
+#define UseTwos
 // #define UseDice
-// #define UseTwos
 // #define UseMetronome
 // #define UseInfiniPaint
-// #define UseWatchFaceTerminal
 
+#define UseWatchFaceTerminal
 #define UseWatchFaceInfineat
 #define UseWatchFacePineTimeStyle
 // #define UseFileManager  // not ready
+//// End built in apps ////
 
 /*
-Set the maximum number of shown notifications
-
+Set the maximum number of shown notifications.
 Value between 5 - 8 depends on the size of selected apps,
 else 'region RAM overflowed with stack' error on building.
 */
-#define MaxNotifications 5
+#define MaxNotifications 6
+
+// disable for 12H
+#define TimeFormat_24H
+
+/*
+YMD (Year, Month, Day)
+DMY (Day, month, year)
+MDY (Month, day, year)  if disabled 
+*/
+#define DateFormat_YMD
+//#define DateFormat_DMY
+
+// disable for Imperial (inch foot)
+#define UnitFormat_Metric
+
+// disable for week starts sunday
+#define WeekStartsMonday

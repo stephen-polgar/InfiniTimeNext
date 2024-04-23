@@ -27,7 +27,7 @@ namespace Pinetime {
         uint8_t displayedHour, displayedMinute, displayedSecond, currentDay;
         uint16_t currentYear;
         Controllers::DateTime::Months currentMonth = Controllers::DateTime::Months::Unknown;
-        Controllers::DateTime::Days currentDayOfWeek = Controllers::DateTime::Days::Unknown;      
+        Controllers::DateTime::Days currentDayOfWeek = Controllers::DateTime::Days::Unknown;
         uint32_t savedTick;
 
         Utility::DirtyValue<uint8_t> batteryPercentRemaining;
@@ -58,7 +58,9 @@ namespace Pinetime {
         lv_obj_t* timeDD1;
         lv_obj_t* timeDD2;
         lv_obj_t* timeDD3;
+  #ifndef TimeFormat_24H
         lv_obj_t* timeAMPM;
+  #endif
         lv_obj_t* dateDayOfWeek;
         lv_obj_t* dateDay;
         lv_obj_t* dateMonth;
@@ -86,12 +88,12 @@ namespace Pinetime {
 
         void updateSelected(lv_obj_t* obj);
         static void event_handler(lv_obj_t* obj, lv_event_t event);
-        
+
         void showWeather();
         void updateWeather(bool force);
 
         void setBatteryIcon();
-         void showMenu();
+        void showMenu();
         void closeMenu();
       };
     }

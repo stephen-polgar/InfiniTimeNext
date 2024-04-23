@@ -43,7 +43,9 @@ namespace {
   }
 } // namespace
 
-Pinetime::Controllers::NavigationService::NavigationService() {
+using namespace Pinetime::Controllers;
+
+NavigationService::NavigationService() {
   characteristicDefinition[0] = {.uuid = &navFlagCharUuid.u,
                                  .access_cb = NAVCallback,
                                  .arg = this,
@@ -70,7 +72,7 @@ Pinetime::Controllers::NavigationService::NavigationService() {
   m_progress = 0;
 }
 
-void Pinetime::Controllers::NavigationService::Init() {
+void NavigationService::Init() {
   int res = 0;
   res = ble_gatts_count_cfg(serviceDefinition);
   ASSERT(res == 0);
@@ -79,7 +81,7 @@ void Pinetime::Controllers::NavigationService::Init() {
   ASSERT(res == 0);
 }
 
-int Pinetime::Controllers::NavigationService::OnCommand(struct ble_gatt_access_ctxt* ctxt) {
+int NavigationService::OnCommand(struct ble_gatt_access_ctxt* ctxt) {
 
   if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
     size_t notifSize = OS_MBUF_PKTLEN(ctxt->om);
@@ -100,18 +102,18 @@ int Pinetime::Controllers::NavigationService::OnCommand(struct ble_gatt_access_c
   return 0;
 }
 
-std::string Pinetime::Controllers::NavigationService::getFlag() {
+std::string NavigationService::getFlag() {
   return m_flag;
 }
 
-std::string Pinetime::Controllers::NavigationService::getNarrative() {
+std::string NavigationService::getNarrative() {
   return m_narrative;
 }
 
-std::string Pinetime::Controllers::NavigationService::getManDist() {
+std::string NavigationService::getManDist() {
   return m_manDist;
 }
 
-int Pinetime::Controllers::NavigationService::getProgress() {
+int NavigationService::getProgress() {
   return m_progress;
 }

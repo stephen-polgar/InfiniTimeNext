@@ -15,7 +15,7 @@ WatchFaceDigital::WatchFaceDigital() : Screen(WatchFace::Digital) {
 }
 
 void WatchFaceDigital::Load() {
-  statusIcons.Create();
+  statusIcons.Load();
 
   notificationIcon = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
@@ -32,17 +32,14 @@ void WatchFaceDigital::Load() {
   label_date = lv_label_create(lv_scr_act(), NULL);
   lv_obj_align(label_date, lv_scr_act(), LV_ALIGN_CENTER, 0, 60);
   lv_obj_set_style_local_text_color(label_date, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
-
   label_time = lv_label_create(lv_scr_act(), NULL);
   // lv_obj_set_style_local_text_color(label_time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::orange);
   lv_obj_set_style_local_text_font(label_time, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_extrabold_compressed);
-
   lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, 0, 0);
-
+#ifndef TimeFormat_24H
   label_time_ampm = lv_label_create(lv_scr_act(), NULL);
-  lv_label_set_text_static(label_time_ampm, "");
-  lv_obj_align(label_time_ampm, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, -30, -55);
-
+ lv_obj_align(label_time_ampm, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, -30, -55);
+#endif
   heartbeatIcon = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_text_static(heartbeatIcon, Symbols::heartBeat);
   lv_obj_set_style_local_text_color(heartbeatIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0xCE1B1B));
@@ -62,6 +59,7 @@ void WatchFaceDigital::Load() {
   lv_obj_align(stepIcon, stepValue, LV_ALIGN_OUT_LEFT_MID, -5, 0);
   Refresh();
   lv_obj_align(heartbeatValue, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+  running = true;
 }
 
 bool WatchFaceDigital::UnLoad() {
@@ -77,7 +75,7 @@ WatchFaceDigital::~WatchFaceDigital() {
 }
 
 void WatchFaceDigital::Refresh() {
-  statusIcons.Update();
+  statusIcons.Refresh();
 
   auto* dateTimeController = &System::SystemTask::displayApp->dateTimeController;
 
@@ -88,46 +86,50 @@ void WatchFaceDigital::Refresh() {
 
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(dateTimeController->CurrentDateTime());
   if (!running || currentDateTime.IsUpdated()) {
-    uint8_t hour = dateTimeController->Hours();
-    uint8_t minute = dateTimeController->Minutes();
-
-    if (System::SystemTask::displayApp->settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-      char ampmChar[3] = "AM";
-      if (hour == 0) {
-        hour = 12;
-      } else if (hour == 12) {
-        ampmChar[0] = 'P';
-      } else if (hour > 12) {
-        hour = hour - 12;
-        ampmChar[0] = 'P';
-      }
-      lv_label_set_text(label_time_ampm, ampmChar);
-      lv_label_set_text_fmt(label_time, "%2d:%02d", hour, minute);
-      lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, 0, 0);
-    } else {
-      lv_label_set_text_fmt(label_time, "%02d:%02d", hour, minute);
-      lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+#ifdef TimeFormat_24H
+    lv_label_set_text_fmt(label_time, "%02d:%02d", dateTimeController->Hours(), dateTimeController->Minutes());
+    lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+#else
+    uint8_t hour = dateTimeController->Hours();    
+    char ampmChar[3] = "AM";
+    if (hour == 0) {
+      hour = 12;
+    } else if (hour == 12) {
+      ampmChar[0] = 'P';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      ampmChar[0] = 'P';
     }
+    lv_label_set_text(label_time_ampm, ampmChar);
+    lv_label_set_text_fmt(label_time, "%2d:%02d", hour, dateTimeController->Minutes());
+    lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_RIGHT_MID, 0, 0);
+#endif
 
     currentDate = std::chrono::time_point_cast<std::chrono::days>(currentDateTime.Get());
     if (!running || currentDate.IsUpdated()) {
-      uint16_t year = dateTimeController->Year();
-      uint8_t day = dateTimeController->Day();
-      if (System::SystemTask::displayApp->settingsController.GetClockType() == Controllers::Settings::ClockType::H24) {
-        lv_label_set_text_fmt(label_date,
-                              "%d %s %d %s",
-                              year,
-                              dateTimeController->MonthShortToString(),
-                              day,
-                              dateTimeController->DayOfWeekShortToString());
-      } else {
-        lv_label_set_text_fmt(label_date,
-                              "%s %s %d %d",
-                              dateTimeController->DayOfWeekShortToString(),
-                              dateTimeController->MonthShortToString(),
-                              day,
-                              year);
-      }
+#ifdef DateFormat_YMD
+      lv_label_set_text_fmt(label_date,
+                            "%d %s %d %s",
+                            dateTimeController->Year(),
+                            dateTimeController->MonthShortToString(),
+                            dateTimeController->Day(),
+                            dateTimeController->DayOfWeekShortToString());
+
+#elif defined(DateFormat_DMY)
+      lv_label_set_text_fmt(label_date,
+                            "%s %s %d %d",
+                            dateTimeController->DayOfWeekShortToString(),
+                            dateTimeController->MonthShortToString(),
+                            dateTimeController->Day(),
+                            dateTimeController->Year());
+#else // MDY (Month, day, year)
+      lv_label_set_text_fmt(label_date,
+                            "%s %s %d %d",
+                            dateTimeController->MonthShortToString(),
+                            dateTimeController->DayOfWeekShortToString(),
+                            dateTimeController->Day(),
+                            dateTimeController->Year());
+#endif
       lv_obj_realign(label_date);
     }
   }
@@ -158,23 +160,25 @@ void WatchFaceDigital::Refresh() {
   if (!running || currentWeather.IsUpdated()) {
     auto optCurrentWeather = currentWeather.Get();
     if (optCurrentWeather) {
-      int16_t temp = optCurrentWeather->temperature;
-      char tempUnit = 'C';
-      if (System::SystemTask::displayApp->settingsController.GetWeatherFormat() == Controllers::Settings::WeatherFormat::Imperial) {
-        temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(temp);
-        tempUnit = 'F';
-      }
+      int16_t temp;
+      char tempUnit;
+#ifdef UnitFormat_Metric
+      temp = optCurrentWeather->temperature;
+      tempUnit = 'C';
+#else
+      temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(optCurrentWeather->temperature);
+      tempUnit = 'F';
+#endif
       temp = temp / 100 + (temp % 100 >= 50 ? 1 : 0);
       lv_label_set_text_fmt(temperature, "%d°%c", temp, tempUnit);
-      lv_label_set_text(weatherIcon, Symbols::GetSymbol(optCurrentWeather->iconId));
+      lv_label_set_text_static(weatherIcon, Symbols::GetSymbol(optCurrentWeather->iconId));
     } else {
       lv_label_set_text_static(temperature, "");
-      lv_label_set_text(weatherIcon, "");
+      lv_label_set_text_static(weatherIcon, "");
     }
     lv_obj_realign(temperature);
     lv_obj_realign(weatherIcon);
   }
-  running = true;
 }
 
 bool WatchFaceDigital::OnTouchEvent(uint16_t x, uint16_t y) {
@@ -189,7 +193,7 @@ bool WatchFaceDigital::OnTouchEvent(uint16_t x, uint16_t y) {
       if (x > o && x < o + 3 * w) {
         o = lv_obj_get_y(weatherIcon);
         if (y > o && y < o + w) {
-          System::SystemTask::displayApp->StartApp(Apps::Weather);
+          System::SystemTask::displayApp->StartApp(Apps::Weather, Screen::FullRefreshDirections::Down);
           return true;
         }
       }

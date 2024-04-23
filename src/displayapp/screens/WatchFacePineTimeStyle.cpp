@@ -60,12 +60,11 @@ void WatchFacePineTimeStyle::Load() {
   timeDD2 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &open_sans_light);
   lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
-
+  #ifndef TimeFormat_24H
   timeAMPM = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorTime()));
   lv_obj_set_style_local_text_line_space(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, -3);
-  lv_label_set_text_static(timeAMPM, "");
-
+  #endif
   // Create a 40px wide bar down the right side of the screen
   sidebar = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_bg_color(sidebar, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Convert(settingsController->GetPTSColorBar()));
@@ -197,13 +196,16 @@ void WatchFacePineTimeStyle::Load() {
 
   lv_obj_align(timeDD1, timebar, LV_ALIGN_IN_TOP_MID, 5, 5);
   lv_obj_align(timeDD2, timebar, LV_ALIGN_IN_BOTTOM_MID, 5, -5);
+  #ifndef TimeFormat_24H
   lv_obj_align(timeAMPM, timebar, LV_ALIGN_IN_BOTTOM_LEFT, 2, -20);
+  #endif
   lv_obj_align(notificationIcon, timebar, LV_ALIGN_IN_TOP_LEFT, 5, 5);
   lv_obj_align(dateDayOfWeek, calendarOuter, LV_ALIGN_CENTER, 0, -32);
   lv_obj_align(dateDay, calendarOuter, LV_ALIGN_CENTER, 0, 3);
   lv_obj_align(dateMonth, calendarOuter, LV_ALIGN_CENTER, 0, 32);
   lv_obj_align(stepValue, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
   lv_obj_align(timeDD3, sidebar, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  running = true;
 }
 
 void WatchFacePineTimeStyle::showMenu() {
@@ -276,7 +278,7 @@ void WatchFacePineTimeStyle::showMenu() {
   lv_obj_align(btnSteps, lv_scr_act(), LV_ALIGN_CENTER, 0, -10);
   lv_obj_t* lblSteps = lv_label_create(btnSteps, nullptr);
   lv_label_set_text_static(lblSteps, "Steps style");
-    
+
   btnWeather = lv_btn_create(lv_scr_act(), btnSteps);
   lv_obj_align(btnWeather, lv_scr_act(), LV_ALIGN_CENTER, 0, 60);
   lv_obj_t* lblWeather = lv_label_create(btnWeather, nullptr);
@@ -358,16 +360,18 @@ void WatchFacePineTimeStyle::updateWeather(bool force) {
   if (force || currentWeather.IsUpdated()) {
     auto optCurrentWeather = currentWeather.Get();
     if (optCurrentWeather) {
-      int16_t temp = optCurrentWeather->temperature;
-      if (settingsController->GetWeatherFormat() == Controllers::Settings::WeatherFormat::Imperial) {
-        temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(temp);
-      }
+      int16_t temp;
+  #ifdef UnitFormat_Metric
+      temp = optCurrentWeather->temperature;
+  #else
+      temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(optCurrentWeather->temperature);
+  #endif
       temp = temp / 100 + (temp % 100 >= 50 ? 1 : 0);
       lv_label_set_text_fmt(temperature, "%d°", temp);
-      lv_label_set_text(weatherIcon, Symbols::GetSymbol(optCurrentWeather->iconId));
+      lv_label_set_text_static(weatherIcon, Symbols::GetSymbol(optCurrentWeather->iconId));
     } else {
-      lv_label_set_text(temperature, "--");
-      lv_label_set_text(weatherIcon, Symbols::ban);
+      lv_label_set_text_static(temperature, "--");
+      lv_label_set_text_static(weatherIcon, Symbols::ban);
     }
     lv_obj_align(temperature, sidebar, LV_ALIGN_IN_TOP_MID, 0, 65);
     lv_obj_realign(temperature);
@@ -420,25 +424,20 @@ void WatchFacePineTimeStyle::Refresh() {
     if (displayedHour != hour || displayedMinute != minute) {
       displayedHour = hour;
       displayedMinute = minute;
-
-      if (settingsController->GetClockType() == Controllers::Settings::ClockType::H12) {
-        char ampmChar[4] = "A\nM";
-        if (hour == 0) {
-          hour = 12;
-        } else if (hour == 12) {
-          ampmChar[0] = 'P';
-        } else if (hour > 12) {
-          hour = hour - 12;
-          ampmChar[0] = 'P';
-        }
-        lv_label_set_text(timeAMPM, ampmChar);
-        // Should be padded with blank spaces, but the space character doesn't exist in the font
-        lv_label_set_text_fmt(timeDD1, "%02d", hour);
-        lv_label_set_text_fmt(timeDD2, "%02d", minute);
-      } else {
-        lv_label_set_text_fmt(timeDD1, "%02d", hour);
-        lv_label_set_text_fmt(timeDD2, "%02d", minute);
+  #ifndef TimeFormat_24H
+      char ampmChar[4] = "A\nM";
+      if (hour == 0) {
+        hour = 12;
+      } else if (hour == 12) {
+        ampmChar[0] = 'P';
+      } else if (hour > 12) {
+        hour = hour - 12;
+        ampmChar[0] = 'P';
       }
+      lv_label_set_text(timeAMPM, ampmChar);
+  #endif
+      lv_label_set_text_fmt(timeDD1, "%02d", hour);
+      lv_label_set_text_fmt(timeDD2, "%02d", minute);
     }
 
     if (displayedSecond != second) {
@@ -479,7 +478,6 @@ void WatchFacePineTimeStyle::Refresh() {
       closeMenu();
     }
   }
-  running = true;
 }
 
 void WatchFacePineTimeStyle::updateSelected(lv_obj_t* obj) {
@@ -496,7 +494,9 @@ void WatchFacePineTimeStyle::updateSelected(lv_obj_t* obj) {
     settingsController->SetPTSColorTime(valueTime);
     lv_obj_set_style_local_text_color(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
     lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #ifndef TimeFormat_24H
     lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #endif
   } else if (obj == btnPrevTime) {
     valueTime = GetPrevious(valueTime);
     if (valueTime == valueBG) {
@@ -505,7 +505,9 @@ void WatchFacePineTimeStyle::updateSelected(lv_obj_t* obj) {
     settingsController->SetPTSColorTime(valueTime);
     lv_obj_set_style_local_text_color(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
     lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #ifndef TimeFormat_24H
     lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #endif
   } else if (obj == btnNextBar) {
     valueBar = GetNext(valueBar);
     if (valueBar == Controllers::Settings::Colors::Black) {
@@ -541,7 +543,9 @@ void WatchFacePineTimeStyle::updateSelected(lv_obj_t* obj) {
     settingsController->SetPTSColorTime(Controllers::Settings::Colors::Teal);
     lv_obj_set_style_local_text_color(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(Controllers::Settings::Colors::Teal));
     lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(Controllers::Settings::Colors::Teal));
+  #ifndef TimeFormat_24H
     lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(Controllers::Settings::Colors::Teal));
+  #endif
     settingsController->SetPTSColorBar(Controllers::Settings::Colors::Teal);
     lv_obj_set_style_local_bg_color(sidebar, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Convert(Controllers::Settings::Colors::Teal));
     settingsController->SetPTSColorBG(Controllers::Settings::Colors::Black);
@@ -560,7 +564,9 @@ void WatchFacePineTimeStyle::updateSelected(lv_obj_t* obj) {
     settingsController->SetPTSColorTime(static_cast<Controllers::Settings::Colors>(valueTime));
     lv_obj_set_style_local_text_color(timeDD1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
     lv_obj_set_style_local_text_color(timeDD2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #ifndef TimeFormat_24H
     lv_obj_set_style_local_text_color(timeAMPM, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Convert(valueTime));
+  #endif
     settingsController->SetPTSColorBar(static_cast<Controllers::Settings::Colors>(valueBar));
     lv_obj_set_style_local_bg_color(sidebar, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Convert(valueBar));
     settingsController->SetPTSColorBG(static_cast<Controllers::Settings::Colors>(valueBG));

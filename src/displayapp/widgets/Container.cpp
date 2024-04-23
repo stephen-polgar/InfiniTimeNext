@@ -3,7 +3,7 @@
 
 using namespace Pinetime::Applications::Widgets;
 
-void Container::Create(const char* title, const char* symbol, lv_layout_t layout) {
+void Container::Load(const char* title, const char* symbol, lv_layout_t layout) {
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
   lv_obj_t* label = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_text_static(label, title);
@@ -15,17 +15,17 @@ void Container::Create(const char* title, const char* symbol, lv_layout_t layout
   lv_label_set_align(icon, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(icon, label, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
-  container = lv_cont_create(lv_scr_act(), NULL);
-  lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-  lv_obj_set_style_local_pad_all(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 20);
-  lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 15);
-  lv_obj_set_style_local_border_width(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);
-  lv_obj_set_pos(container, 0, 40);
-  lv_obj_set_width(container, LV_HOR_RES);
-  lv_obj_set_height(container, LV_VER_RES - 40);
-  lv_cont_set_layout(container, layout);  
+  Container = lv_cont_create(lv_scr_act(), NULL);
+  lv_obj_set_style_local_bg_opa(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
+  lv_obj_set_style_local_pad_all(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 20);
+  lv_obj_set_style_local_pad_inner(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 15);
+  lv_obj_set_style_local_border_width(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);
+  lv_obj_set_pos(Container, 0, 40);
+  lv_obj_set_width(Container, LV_HOR_RES);
+  lv_obj_set_height(Container, LV_VER_RES - 40);
+  lv_cont_set_layout(Container, layout);  
 }
 
 void Container::UpdateHeight(uint8_t pad_top) {
-  lv_obj_set_style_local_pad_top(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, pad_top);
+  lv_obj_set_style_local_pad_top(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, pad_top);
 }

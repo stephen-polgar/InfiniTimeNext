@@ -1,5 +1,4 @@
 #include "components/firmwarevalidator/FirmwareValidator.h"
-
 #include <hal/nrf_rtc.h>
 #include "drivers/InternalFlash.h"
 

@@ -1,6 +1,6 @@
 #include "displayapp/widgets/ButtonListItem.h"
 #include "displayapp/InfiniTimeTheme.h"
-#include "displayapp/screens/Styles.h"
+
 
 using namespace Pinetime::Applications::Widgets;
 
@@ -24,8 +24,7 @@ void ButtonListItem::CreateNewItem(lv_obj_t* label, bool checked, void* data) {
   lv_cont_set_layout(cont, LV_LAYOUT_ROW_MID);
   const lv_coord_t size = 40;
 
-  lv_obj_t* cb = lv_checkbox_create(cont, NULL);
-  // SetRadioButtonStyle(cb);
+  lv_obj_t* cb = lv_checkbox_create(cont, NULL);  
   lv_checkbox_set_text_static(cb, "");
   lv_obj_set_size(cb, size, size);
   lv_checkbox_set_checked(cb, checked);

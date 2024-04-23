@@ -24,22 +24,18 @@ namespace Pinetime {
           Pinetime::Applications::Apps app;
         };
 
-        static constexpr std::array<AppList, 11> apps {{{Symbols::sun, "Display", Apps::SettingDisplay},
-                                                        {Symbols::bluetooth, "Bluetooth", Apps::SettingBluetooth},
-                                                        {Symbols::batteryHalf, "Battery", Apps::BatteryInfo},
-                                                        {Symbols::eye, "Wake Up", Apps::SettingWakeUp},
-                                                        {Symbols::home, "Watch face", Apps::SettingWatchFace},
-                                                        {Symbols::tachometer, "Shake Calib.", Apps::SettingShakeThreshold},
-                                                        {Symbols::list, "System Info", Apps::SysInfo},
-                                                        {Symbols::check, "Firmware", Apps::FirmwareValidation},
-                                                        {Symbols::clock, "Time format", Apps::SettingTimeFormat},
-                                                        {Symbols::cloudSunRain, "Weather", Apps::SettingWeatherFormat},
-                                                        {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
+        static constexpr std::array<AppList, 9> apps {{{Symbols::sun, "Display", Apps::SettingDisplay},
+                                                       {Symbols::bluetooth, "Bluetooth", Apps::SettingBluetooth},
+                                                       {Symbols::batteryHalf, "Battery", Apps::BatteryInfo},
+                                                       {Symbols::eye, "Wake Up", Apps::SettingWakeUp},
+                                                       {Symbols::home, "Watch face", Apps::SettingWatchFace},
+                                                       {Symbols::tachometer, "Shake Calib.", Apps::SettingShakeThreshold},
+                                                       {Symbols::list, "System Info", Apps::SysInfo},
+                                                       {Symbols::check, "Firmware", Apps::FirmwareValidation},
+                                                       {Symbols::clock, "Date&Time", Apps::SettingSetDateTime}}};
 
-                                                        
         static constexpr uint8_t maxItems = 4;
         void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
-        void unload();
         Utility::ArrayTouchHandler arrayTouchHandler;
         lv_obj_t* container;
         bool loaded = false;

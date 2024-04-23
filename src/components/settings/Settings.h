@@ -9,8 +9,6 @@ namespace Pinetime {
   namespace Controllers {
     class Settings {
     public:
-      enum class ClockType : uint8_t { H24, H12 };
-      enum class WeatherFormat : uint8_t { Metric, Imperial };
       enum class Notification : uint8_t { On, Off, Sleep };
       enum class WakeUpMode : uint8_t { SingleTap = 0, DoubleTap = 1, RaiseWrist = 2, Shake = 3, LowerWrist = 4 };
       enum class Colors : uint8_t {
@@ -145,29 +143,7 @@ namespace Pinetime {
       Applications::WatchFace GetWatchFace() const {
         return settings.watchFace;
       };
-
-      void SetClockType(ClockType clocktype) {
-        if (clocktype != settings.clockType) {
-          settingsChanged = true;
-        }
-        settings.clockType = clocktype;
-      };
-
-      ClockType GetClockType() const {
-        return settings.clockType;
-      };
-
-      void SetWeatherFormat(WeatherFormat weatherFormat) {
-        if (weatherFormat != settings.weatherFormat) {
-          settingsChanged = true;
-        }
-        settings.weatherFormat = weatherFormat;
-      };
-
-      WeatherFormat GetWeatherFormat() const {
-        return settings.weatherFormat;
-      };
-
+    
       void SetNotificationStatus(Notification status) {
         if (status != settings.notificationStatus) {
           settingsChanged = true;
@@ -247,11 +223,11 @@ namespace Pinetime {
         settings.stepsGoal = goal;
       };
 
-      uint32_t GetStepLength() const {
+      uint8_t GetStepLength() const {
         return settings.stepLength;
       };
 
-      void SetStepLength(uint32_t stepLength) {
+      void SetStepLength(uint8_t stepLength) {
         if (stepLength != settings.stepLength) {
           settingsChanged = true;
         }
@@ -272,15 +248,14 @@ namespace Pinetime {
 
     private:
       Controllers::FS& fs;
-      static constexpr uint32_t settingsVersion = 0x0001;
+      static constexpr uint8_t settingsVersion = 2;
 
       struct SettingsData {
-        uint32_t version = settingsVersion;
-        uint32_t stepsGoal = 10000, stepLength = 40;
+        uint8_t version = settingsVersion;
+        uint32_t stepsGoal = 10000;
+        uint8_t stepLength = 40;
         uint32_t screenTimeOut = 15000;
-
-        ClockType clockType = ClockType::H24;
-        WeatherFormat weatherFormat = WeatherFormat::Metric;
+      
         Notification notificationStatus = Notification::On;
 
         Applications::WatchFace watchFace = Applications::WatchFace::Digital;

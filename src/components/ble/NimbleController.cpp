@@ -1,16 +1,13 @@
-#include "components/ble/NimbleController.h"
+
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
-#include <host/ble_gap.h>
-#include <host/ble_hs.h>
-#include <host/ble_hs_id.h>
 #include <host/util/util.h>
 #include <controller/ble_ll.h>
-#include <controller/ble_hw.h>
 #include <services/gap/ble_svc_gap.h>
 #include <services/gatt/ble_svc_gatt.h>
 #undef max
 #undef min
+#include "components/ble/NimbleController.h"
 #include "components/ble/BleController.h"
 #include "systemtask/SystemTask.h"
 

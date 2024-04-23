@@ -5,15 +5,15 @@
 using namespace Pinetime::Applications::Widgets;
 
 namespace {
-  void upBtnEventHandler(lv_obj_t* obj, lv_event_t event) {    
+  void upBtnEventHandler(lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_SHORT_CLICKED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
       static_cast<Counter*>(obj->user_data)->UpBtnPressed();
     }
   }
 
-  void downBtnEventHandler(lv_obj_t* obj, lv_event_t event) {    
+  void downBtnEventHandler(lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_SHORT_CLICKED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
-       static_cast<Counter*>(obj->user_data)->DownBtnPressed();
+      static_cast<Counter*>(obj->user_data)->DownBtnPressed();
     }
   }
 
@@ -76,25 +76,21 @@ void Counter::ShowControls() {
 }
 
 void Counter::UpdateLabel() {
-  if (twelveHourMode) {
-    if (value == 0) {
-      lv_label_set_text_static(number, "12");
-    } else if (value <= 12) {
-      lv_label_set_text_fmt(number, "%.*i", leadingZeroCount, value);
-    } else {
-      lv_label_set_text_fmt(number, "%.*i", leadingZeroCount, value - 12);
-    }
-  } else if (monthMode) {
+#ifdef TimeFormat_24H
+  if (monthMode) {
     lv_label_set_text(number, Controllers::DateTime::MonthShortToStringLow(static_cast<Controllers::DateTime::Months>(value)));
   } else {
     lv_label_set_text_fmt(number, "%.*i", leadingZeroCount, value);
   }
-}
-
-// Value is kept between 0 and 23, but the displayed value is converted to 12-hour.
-// Make sure to set the max and min values to 0 and 23. Otherwise behaviour is undefined
-void Counter::EnableTwelveHourMode() {
-  twelveHourMode = true;
+#else
+  if (value == 0) {
+    lv_label_set_text_static(number, "12");
+  } else if (value <= 12) {
+    lv_label_set_text_fmt(number, "%.*i", leadingZeroCount, value);
+  } else {
+    lv_label_set_text_fmt(number, "%.*i", leadingZeroCount, value - 12);
+  }
+#endif
 }
 
 // Value is kept between 1 and 12, but the displayed value is the corresponding month

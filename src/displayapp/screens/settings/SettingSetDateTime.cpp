@@ -24,6 +24,7 @@ void SettingSetDateTime::Load() {
 
 void SettingSetDateTime::load(uint8_t indexBegin, uint8_t, Screen::FullRefreshDirections direction) {
   if (running) {
+    dotIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
     System::SystemTask::displayApp->SetFullRefresh(direction);
   }
@@ -34,6 +35,7 @@ void SettingSetDateTime::load(uint8_t indexBegin, uint8_t, Screen::FullRefreshDi
 bool SettingSetDateTime::UnLoad() {
   if (running) {
     running = false;
+    dotIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
   }
   return true;
@@ -47,7 +49,7 @@ SettingSetDateTime::~SettingSetDateTime() {
 }
 
 void SettingSetDateTime::SwipeUp() {
-   arrayTouchHandler.OnTouchEvent(TouchEvents::SwipeUp);
+  arrayTouchHandler.OnTouchEvent(TouchEvents::SwipeUp);
 }
 
 bool SettingSetDateTime::OnTouchEvent(TouchEvents event) {

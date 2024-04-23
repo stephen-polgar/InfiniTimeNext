@@ -53,7 +53,9 @@ namespace {
   }
 }
 
-Pinetime::Controllers::MusicService::MusicService() {
+using namespace Pinetime::Controllers;
+
+MusicService::MusicService() {
   characteristicDefinition[0] = {.uuid = &msEventCharUuid.u,
                                  .access_cb = MusicCallback,
                                  .arg = this,
@@ -113,7 +115,7 @@ Pinetime::Controllers::MusicService::MusicService() {
   serviceDefinition[1] = {0};
 }
 
-void Pinetime::Controllers::MusicService::Init() {
+void MusicService::Init() {
   uint8_t res = 0;
   res = ble_gatts_count_cfg(serviceDefinition);
   ASSERT(res == 0);
@@ -122,7 +124,7 @@ void Pinetime::Controllers::MusicService::Init() {
   ASSERT(res == 0);
 }
 
-int Pinetime::Controllers::MusicService::OnCommand(struct ble_gatt_access_ctxt* ctxt) {
+int MusicService::OnCommand(struct ble_gatt_access_ctxt* ctxt) {
   if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
     size_t notifSize = OS_MBUF_PKTLEN(ctxt->om);
     size_t bufferSize = notifSize;
@@ -177,27 +179,27 @@ int Pinetime::Controllers::MusicService::OnCommand(struct ble_gatt_access_ctxt* 
   return 0;
 }
 
-std::string Pinetime::Controllers::MusicService::getAlbum() const {
+std::string MusicService::getAlbum() const {
   return albumName;
 }
 
-std::string Pinetime::Controllers::MusicService::getArtist() const {
+std::string MusicService::getArtist() const {
   return artistName;
 }
 
-std::string Pinetime::Controllers::MusicService::getTrack() const {
+std::string MusicService::getTrack() const {
   return trackName;
 }
 
-bool Pinetime::Controllers::MusicService::isPlaying() const {
+bool MusicService::isPlaying() const {
   return playing;
 }
 
-float Pinetime::Controllers::MusicService::getPlaybackSpeed() const {
+float MusicService::getPlaybackSpeed() const {
   return playbackSpeed;
 }
 
-int Pinetime::Controllers::MusicService::getProgress() const {
+int MusicService::getProgress() const {
   if (isPlaying()) {
     return trackProgress +
            static_cast<int>((static_cast<float>(xTaskGetTickCount() - trackProgressUpdateTime) / 1024.0f) * getPlaybackSpeed());
@@ -205,11 +207,11 @@ int Pinetime::Controllers::MusicService::getProgress() const {
   return trackProgress;
 }
 
-int Pinetime::Controllers::MusicService::getTrackLength() const {
+int MusicService::getTrackLength() const {
   return trackLength;
 }
 
-void Pinetime::Controllers::MusicService::event(char event) {
+void MusicService::event(char event) {
   auto* om = ble_hs_mbuf_from_flat(&event, 1);
   uint16_t connectionHandle = System::SystemTask::displayApp->systemTask->nimbleController.connHandle();
   if (connectionHandle == 0 || connectionHandle == BLE_HS_CONN_HANDLE_NONE) {

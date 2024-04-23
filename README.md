@@ -1,19 +1,21 @@
 # [InfiniTimeNext](https://github.com/stephen-polgar/InfiniTimeNext)
 
 This repository is a fork of the [InfiniTime firmware](https://github.com/InfiniTimeOrg/InfiniTime) for the PineTime smartwatch.
-It was optimized for my daily use. Since it seems stable and useful, I decided to publish it for further development. 
+
+Code optimized to access all the capabilities of the watch.
+
 ## New main functions
 - The stopwatch can run in the background
 - Multiple saved alarm times with advanced settings
 - Several saved timers can run at the same time
-- Steps are shown in meters also
+- Steps are shown in distance also
 * [Calculator](https://github.com/InfiniTimeOrg/InfiniTime/pull/1483)
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
 
 ### [Changes](doc/code/Apps.md)
 Most of system and user application constructors are empty, and are used to create new `Screen` based objects with different arguments.
 Constructors do not load the screen. The watch screen are filled and cleaned by the `Screen::Load()` and `Screen::UnLoad()` methods.
-The `utility/StaticStack.h` has been replaced with `utility/ScreenStack.h` which can store `Screen objects` with different arguments, so it can continue interrupted apps (for example, game results are not lost due to new notifications and timers). Watch faces are handled by `WatchFaceScreen class` instead of `DisplayApp`. `ScreenList class` has been replaced with `utility/ArrayTouchHandler`, so many class and constant size `std::array` has been redundant (`Label`, `Tile`, `List`, `CheckboxList`). Code optimised to use less hardware resources. I have no debug device and bug reports are welcome.
+The `utility/StaticStack.h` has been replaced with `utility/ScreenStack.h` which can store `Screen objects` with different arguments, so it can continue interrupted apps (for example, game results are not lost due to new notifications and timers). Watch faces are handled by `WatchFaceScreen class` instead of `DisplayApp`. `ScreenList class` has been replaced with `utility/ArrayTouchHandler` which allows scrolling large arrays without creating and deleting objects (the items are only renamed), so some class and constant size `std::array` has been removed (`Label`, `Tile`, `List`, `CheckboxList`). I have no debug device and bug reports are welcome.
 
 ### Installations
 Use [InfiniSimNext](https://github.com/stephen-polgar/InfiniSimNext) to run in the simulator or install [firmware](https://github.com/stephen-polgar/InfiniTimeNext/releases) on [PineTime smartwatch](https://pine64.org/devices/pinetime/).

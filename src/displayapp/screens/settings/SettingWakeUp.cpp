@@ -1,7 +1,6 @@
 #include "SettingWakeUp.h"
 #include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
-#include "displayapp/screens/Styles.h"
 
 using namespace Pinetime::Applications::Screens;
 
@@ -36,7 +35,7 @@ void SettingWakeUp::Load() {
 
   for (uint8_t i = 0; i < options.size(); i++) {
     cbOption[i] = lv_checkbox_create(container, nullptr);
-    lv_checkbox_set_text(cbOption[i], options[i].name);
+    lv_checkbox_set_text_static(cbOption[i], options[i].name);
     if (System::SystemTask::displayApp->settingsController.isWakeUpModeOn(Controllers::Settings::WakeUpMode(i))) {
       lv_checkbox_set_checked(cbOption[i], true);
     }

@@ -57,7 +57,11 @@ void SettingSteps::Load() {
   lv_label_set_text_static(lblPlus, ">");
 
   title = lv_label_create(lv_scr_act(), nullptr);
+#ifdef UnitFormat_Metric
   lv_label_set_text_static(title, "Step length [cm]");
+#else
+  lv_label_set_text_static(title, "Step length [inch]");
+#endif
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(title, stepGoal, LV_ALIGN_OUT_BOTTOM_MID, 0, 40);
 
@@ -98,14 +102,14 @@ void SettingSteps::updateGoal(lv_obj_t* object, lv_event_t event) {
   }
 
   uint32_t value = System::SystemTask::displayApp->settingsController.GetStepsGoal();
-  if (value < 1000 || value > 500000)
-    value = 10000;
-
-  if (object == btnPlus) {
+ if (object == btnPlus) {
     value += valueChange;
   } else if (object == btnMinus) {
     value -= valueChange;
   }
+
+  if (value < 1000 || value > 500000)
+    value = 10000;
 
   System::SystemTask::displayApp->settingsController.SetStepsGoal(value);
   lv_label_set_text_fmt(stepGoal, "%lu", value);
@@ -113,8 +117,7 @@ void SettingSteps::updateGoal(lv_obj_t* object, lv_event_t event) {
 }
 
 void SettingSteps::updateLength(lv_obj_t* object, lv_event_t event) {
-
-  int valueChange = 0;
+  uint8_t valueChange = 0;
   if (event == LV_EVENT_SHORT_CLICKED) {
     valueChange = 1;
   } else if (event == LV_EVENT_LONG_PRESSED || event == LV_EVENT_LONG_PRESSED_REPEAT) {
@@ -123,25 +126,30 @@ void SettingSteps::updateLength(lv_obj_t* object, lv_event_t event) {
     return;
   }
 
-  uint32_t value = System::SystemTask::displayApp->settingsController.GetStepLength();
-  if (value > 100 || value < 10)
-    value = 40;
-
+  uint8_t value = System::SystemTask::displayApp->settingsController.GetStepLength();
   if (object == btnP) {
     value += valueChange;
   } else if (object == btnM) {
     value -= valueChange;
   }
+#ifdef UnitFormat_Metric
+  if (value > 100 || value < 10)
+    value = 40;
+#else
+  if (value > 40 || value < 4)
+    value = 16;
+#endif
 
   System::SystemTask::displayApp->settingsController.SetStepLength(value);
+
   lv_label_set_text_fmt(stepLengt, "%lu", value);
   lv_obj_realign(stepLengt);
 }
 
 void SettingSteps::event_handlerGoal(lv_obj_t* obj, lv_event_t event) {
-  (static_cast<SettingSteps*>(obj->user_data))->updateGoal(obj, event);
+  static_cast<SettingSteps*>(obj->user_data)->updateGoal(obj, event);
 }
 
 void SettingSteps::event_handlerLength(lv_obj_t* obj, lv_event_t event) {
-  (static_cast<SettingSteps*>(obj->user_data))->updateLength(obj, event);
+  static_cast<SettingSteps*>(obj->user_data)->updateLength(obj, event);
 }

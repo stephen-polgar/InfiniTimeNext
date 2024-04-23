@@ -1,5 +1,4 @@
 #include "Steps.h"
-#include "displayapp/screens/settings/SettingSteps.h"
 #include "components/motion/MotionController.h"
 #include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
@@ -10,10 +9,7 @@ Steps::Steps() : Screen(Apps::Steps) {
 }
 
 void Steps::Load() {
-  running = true;
   stepsArc = lv_arc_create(lv_scr_act(), NULL);
-  stepsArc->user_data = this;
-  lv_obj_set_event_cb(stepsArc, set_event_handler);
   lv_obj_set_style_local_bg_opa(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, LV_OPA_0);
   lv_obj_set_style_local_line_color(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, Colors::bgAlt);
   lv_obj_set_style_local_border_width(stepsArc, LV_ARC_PART_BG, LV_STATE_DEFAULT, 2);
@@ -31,7 +27,7 @@ void Steps::Load() {
   lv_obj_t* lstepsL = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lstepsL, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::lightGray);
   lv_label_set_text_static(lstepsL, "Steps");
-  
+
   lv_obj_t* lstepsGoal = lv_label_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_text_color(lstepsGoal, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_CYAN);
   lv_label_set_text_fmt(lstepsGoal, "Goal: %5lu", System::SystemTask::displayApp->settingsController.GetStepsGoal());
@@ -55,9 +51,13 @@ void Steps::Load() {
   lv_obj_align(lSteps, NULL, LV_ALIGN_CENTER, 0, -40);
   lv_obj_align(lstepsL, lSteps, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
   lv_obj_align(lstepsGoal, lSteps, LV_ALIGN_OUT_BOTTOM_MID, 0, 40);
-  lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, -12, 20);
-
-  taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_MID, this);
+#ifdef UnitFormat_Metric
+  lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, -14, 20);
+#else
+  lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, -20, 20);
+#endif
+  taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_LOW, this);
+  running = true;
 }
 
 bool Steps::UnLoad() {
@@ -78,14 +78,21 @@ void Steps::Refresh() {
   lv_label_set_text_fmt(lSteps, "%li", stepsCount);
   lv_obj_align(lSteps, NULL, LV_ALIGN_CENTER, 0, -40);
   lv_label_set_text_fmt(tripLabel,
+#ifdef UnitFormat_Metric
                         "Trip: %5li m",
-                        System::SystemTask::displayApp->motionController.GetTripSteps() * System::SystemTask::displayApp->settingsController.GetStepLength() / 100);
+                        System::SystemTask::displayApp->motionController.GetTripSteps() *
+                          System::SystemTask::displayApp->settingsController.GetStepLength() / 100);
+#else
+                        "Trip: %5li ft",
+                        System::SystemTask::displayApp->motionController.GetTripSteps() *
+                          System::SystemTask::displayApp->settingsController.GetStepLength() / 12);
+#endif
   lv_arc_set_value(stepsArc, int16_t(500 * stepsCount / System::SystemTask::displayApp->settingsController.GetStepsGoal()));
 }
 
-void Steps::lapBtnClicked() {  
+void Steps::lapBtnClicked() {
   System::SystemTask::displayApp->motionController.ResetTrip();
-  Refresh();  
+  Refresh();
 }
 
 void Steps::lap_event_handler(lv_obj_t* obj, lv_event_t event) {
@@ -94,8 +101,10 @@ void Steps::lap_event_handler(lv_obj_t* obj, lv_event_t event) {
   }
 }
 
-void Steps::set_event_handler(lv_obj_t*, lv_event_t event) {
-  if (event == LV_EVENT_CLICKED) {
-    System::SystemTask::displayApp->StartApp(new Screens::SettingSteps());
+bool Steps::OnTouchEvent(TouchEvents event) {
+  if (event == TouchEvents::LongTap || event == TouchEvents::SwipeUp) {
+    System::SystemTask::displayApp->StartApp(Apps::SettingSteps);
+    return true;
   }
+  return false;
 }

@@ -28,12 +28,12 @@ namespace Pinetime {
       private:
         static constexpr uint8_t maxItems = 4;
         void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
-        Utility::ArrayTouchHandler arrayTouchHandler;
-        void unload();
+        Utility::ArrayTouchHandler arrayTouchHandler;      
         std::array<Item, UserWatchFaceTypes::Count> watchfaces;
         Widgets::LineIndicator pageIndicator;
         Widgets::Container container;
-        WatchFace watchface;
+        WatchFace currentWatchface;
+        bool enableEvent;
         void onButtonEvent(lv_obj_t* obj);
         static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);
       };

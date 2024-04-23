@@ -124,7 +124,7 @@ namespace Pinetime {
           }
           return &nordGreenColors;
         }
-        
+
         void showMenu();
         void closeMenu();
         void updateColors(int8_t colorIndex);
@@ -153,7 +153,9 @@ namespace Pinetime {
         lv_obj_t* timeContainer;
         lv_obj_t* labelHour;
         lv_obj_t* labelMinutes;
+  #ifndef TimeFormat_24H
         lv_obj_t* labelTimeAmPm;
+  #endif
         lv_obj_t* dateContainer;
         lv_obj_t* labelDate;
         lv_obj_t* bleIcon;
@@ -163,7 +165,7 @@ namespace Pinetime {
         lv_obj_t* btnClose = NULL;
         lv_obj_t* btnNextColor;
         lv_obj_t* btnToggleCover;
-        lv_obj_t* btnPrevColor;       
+        lv_obj_t* btnPrevColor;
         lv_obj_t* labelBtnSettings;
         lv_obj_t* lblToggle;
 

@@ -3,6 +3,8 @@
  * Configuration file for v7.7.0-dev
  */
 
+#include "../displayapp/apps/UsedAppsConfig.h"
+
 #ifndef LV_CONF_H
 #define LV_CONF_H
 /* clang-format off */
@@ -587,10 +589,15 @@ typedef void* lv_obj_user_data_t;
 #define LV_USE_BTNMATRIX     1
 
 /*Calendar (dependencies: -)*/
+#ifdef UseCalendar
 #define LV_USE_CALENDAR 1
-#if LV_USE_CALENDAR
+#ifdef  WeekStartsMonday
+#define LV_CALENDAR_WEEK_STARTS_MONDAY    1
+#else
 #define LV_CALENDAR_WEEK_STARTS_MONDAY    0
 #endif
+#endif
+
 
 /*Canvas (dependencies: lv_img)*/
 #define LV_USE_CANVAS   0

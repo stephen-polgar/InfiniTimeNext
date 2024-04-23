@@ -387,8 +387,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/PassKey.cpp
         displayapp/screens/Error.cpp
         displayapp/screens/Alarm.cpp
-        displayapp/screens/AlarmSet.cpp
-        displayapp/screens/Styles.cpp
+        displayapp/screens/AlarmSet.cpp      
         displayapp/screens/Weather.cpp 
         displayapp/screens/WeatherSymbols.cpp   
         displayapp/screens/Calendar.cpp
@@ -412,8 +411,6 @@ list(APPEND SOURCE_FILES
         displayapp/screens/settings/QuickSettings.cpp
         displayapp/screens/settings/Settings.cpp
         displayapp/screens/settings/SettingWatchFace.cpp
-        displayapp/screens/settings/SettingTimeFormat.cpp
-        displayapp/screens/settings/SettingWeatherFormat.cpp
         displayapp/screens/settings/SettingWakeUp.cpp
         displayapp/screens/settings/SettingDisplay.cpp
         displayapp/screens/settings/SettingSteps.cpp

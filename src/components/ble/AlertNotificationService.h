@@ -1,11 +1,11 @@
 #pragma once
 
-#include "components/ble/NotificationManager.h"
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #undef max
 #undef min
+#include "components/ble/NotificationManager.h"
 
 // 00020001-78fc-48fe-8e23-433b3a1942d0
 #define NOTIFICATION_EVENT_SERVICE_UUID_BASE                                                                                               \

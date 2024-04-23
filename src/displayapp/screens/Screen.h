@@ -10,7 +10,8 @@ namespace Pinetime {
       class Screen {
       public:
         enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
-
+        
+        // Avoid using `lv_obj_clean(lv_scr_act())`, as this will delete all lvgl objects used by other objects.
         virtual ~Screen() = default;
 
         bool IsRunning() const {
@@ -29,8 +30,7 @@ namespace Pinetime {
           return false;
         }
 
-        /** @return false if the event hasn't been handled by the app, true if it has been handled */
-        // Returning true will cancel lvgl tap
+        /** @return false if the event hasn't been handled by the app, true if it has been handled and will cancel lvgl tap*/
         virtual bool OnTouchEvent(TouchEvents /*event*/) {
           return false;
         }

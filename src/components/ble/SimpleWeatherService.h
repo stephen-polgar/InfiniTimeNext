@@ -17,19 +17,18 @@
 */
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include <vector>
-#include <memory>
-
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #include <host/ble_uuid.h>
-#include <optional>
-#include <cstring>
 #undef max
 #undef min
+
+#include <string>
+//#include <vector>
+#include <array>
+#include <optional>
+#include "displayapp/apps/UsedAppsConfig.h"
 
 namespace Pinetime {
   namespace Controllers {
@@ -54,21 +53,19 @@ namespace Pinetime {
         Unknown = 255
       };
 
-      using Location = std::array<char, 33>; // 32 char + \0 (end of string)
-
       struct CurrentWeather {
         CurrentWeather(uint64_t timestamp,
                        int16_t temperature,
                        int16_t minTemperature,
                        int16_t maxTemperature,
                        Icons iconId,
-                       Location&& location)
+                       char* location)
           : timestamp {timestamp},
             temperature {temperature},
             minTemperature {minTemperature},
             maxTemperature {maxTemperature},
             iconId {iconId},
-            location {std::move(location)} {
+            location {location} {
         }
 
         uint64_t timestamp;
@@ -76,7 +73,7 @@ namespace Pinetime {
         int16_t minTemperature;
         int16_t maxTemperature;
         Icons iconId;
-        Location location;
+        std::string location;
 
         bool operator==(const CurrentWeather& other) const;
       };
@@ -101,16 +98,17 @@ namespace Pinetime {
       std::optional<CurrentWeather> Current() const;
       std::optional<Forecast> GetForecast() const;
 
+#ifndef UnitFormat_Metric
       static int16_t CelsiusToFahrenheit(int16_t celsius) {
         return celsius * 9 / 5 + 3200;
       }
-
+#endif
     private:
       enum class MessageType : uint8_t { CurrentWeather, Forecast, Unknown };
       MessageType getMessageType(const uint8_t* data);
-      uint64_t ToUInt64(const uint8_t* data);
-      int16_t ToInt16(const uint8_t* data);
-   
+      static uint64_t ToUInt64(const uint8_t* data);
+      static int16_t ToInt16(const uint8_t* data);
+
       SimpleWeatherService::CurrentWeather CreateCurrentWeather(const uint8_t* dataBuffer);
       SimpleWeatherService::Forecast CreateForecast(const uint8_t* dataBuffer);
 
@@ -140,7 +138,7 @@ namespace Pinetime {
       const struct ble_gatt_svc_def serviceDefinition[2] = {
         {.type = BLE_GATT_SVC_TYPE_PRIMARY, .uuid = &weatherUuid.u, .characteristics = characteristicDefinition},
         {0}};
-    
+
       std::optional<CurrentWeather> currentWeather;
       std::optional<Forecast> forecast;
     };

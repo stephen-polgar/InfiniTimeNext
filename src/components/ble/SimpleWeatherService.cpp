@@ -19,8 +19,6 @@
 #include "SimpleWeatherService.h"
 #include "components/datetime/DateTimeController.h"
 #include "systemtask/SystemTask.h"
-#include <algorithm>
-#include <array>
 
 // #define Log
 
@@ -40,23 +38,22 @@ int16_t SimpleWeatherService::ToInt16(const uint8_t* data) {
 }
 
 SimpleWeatherService::CurrentWeather SimpleWeatherService::CreateCurrentWeather(const uint8_t* dataBuffer) {
-  SimpleWeatherService::Location cityName;
-  std::memcpy(cityName.data(), &dataBuffer[16], 32);
+  char cityName[33]; // 32 char + \0 (end of string)
+  memcpy(cityName, &dataBuffer[16], 32);
   cityName[32] = '\0';
   return SimpleWeatherService::CurrentWeather(ToUInt64(&dataBuffer[2]),
                                               ToInt16(&dataBuffer[10]),
                                               ToInt16(&dataBuffer[12]),
                                               ToInt16(&dataBuffer[14]),
                                               SimpleWeatherService::Icons {dataBuffer[16 + 32]},
-                                              std::move(cityName));
+                                              cityName);
 }
 
 SimpleWeatherService::Forecast SimpleWeatherService::CreateForecast(const uint8_t* dataBuffer) {
   auto timestamp = static_cast<uint64_t>(ToUInt64(&dataBuffer[2]));
-
-  std::array<SimpleWeatherService::Forecast::Day, SimpleWeatherService::MaxNbForecastDays> days;
   const uint8_t nbDaysInBuffer = dataBuffer[10];
   const uint8_t nbDays = std::min(SimpleWeatherService::MaxNbForecastDays, nbDaysInBuffer);
+  std::array<SimpleWeatherService::Forecast::Day, SimpleWeatherService::MaxNbForecastDays> days;
   for (int i = 0; i < nbDays; i++) {
     days[i] = SimpleWeatherService::Forecast::Day {ToInt16(&dataBuffer[11 + (i * 5)]),
                                                    ToInt16(&dataBuffer[13 + (i * 5)]),
@@ -125,7 +122,7 @@ int SimpleWeatherService::onCommand(struct ble_gatt_access_ctxt* ctxt) {
   return 0;
 }
 
-std::optional<SimpleWeatherService::CurrentWeather> SimpleWeatherService::Current() const { 
+std::optional<SimpleWeatherService::CurrentWeather> SimpleWeatherService::Current() const {
   if (currentWeather) {
     auto currentTime = System::SystemTask::displayApp->dateTimeController.CurrentDateTime().time_since_epoch();
     auto weatherTpSecond = std::chrono::seconds {currentWeather->timestamp};
@@ -136,11 +133,11 @@ std::optional<SimpleWeatherService::CurrentWeather> SimpleWeatherService::Curren
       return currentWeather;
     }
   }
-  return {};  
+  return {};
 }
 
 std::optional<SimpleWeatherService::Forecast> SimpleWeatherService::GetForecast() const {
-   if (forecast) {
+  if (forecast) {
     auto currentTime = System::SystemTask::displayApp->dateTimeController.CurrentDateTime().time_since_epoch();
     auto weatherTpSecond = std::chrono::seconds {forecast->timestamp};
     auto weatherTp = std::chrono::duration_cast<std::chrono::seconds>(weatherTpSecond);
@@ -150,13 +147,12 @@ std::optional<SimpleWeatherService::Forecast> SimpleWeatherService::GetForecast(
       return forecast;
     }
   }
-  return {}; 
+  return {};
 }
 
 bool SimpleWeatherService::CurrentWeather::operator==(const SimpleWeatherService::CurrentWeather& other) const {
   return iconId == other.iconId && temperature == other.temperature && timestamp == other.timestamp &&
-         maxTemperature == other.maxTemperature && minTemperature == other.minTemperature &&
-         std::strcmp(location.data(), other.location.data()) == 0;
+         maxTemperature == other.maxTemperature && minTemperature == other.minTemperature && location == other.location;
 }
 
 bool SimpleWeatherService::Forecast::Day::operator==(const SimpleWeatherService::Forecast::Day& other) const {

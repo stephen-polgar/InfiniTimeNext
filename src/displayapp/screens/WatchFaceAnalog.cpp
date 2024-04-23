@@ -44,7 +44,7 @@ WatchFaceAnalog::WatchFaceAnalog() : Screen(WatchFace::Analog) {
 
 void WatchFaceAnalog::Load() {
   sHour = sMinute = sSecond = 99;
-  statusIcons.Create();
+  statusIcons.Load();
   lv_obj_t* minor_scales = lv_linemeter_create(lv_scr_act(), NULL);
   lv_linemeter_set_scale(minor_scales, 300, 51);
   lv_linemeter_set_angle_offset(minor_scales, 180);
@@ -129,6 +129,7 @@ void WatchFaceAnalog::Load() {
  
   lv_obj_move_foreground(label_date_day);
   Refresh();
+  running = true;
 }
 
 bool WatchFaceAnalog::UnLoad() {
@@ -191,7 +192,7 @@ void WatchFaceAnalog::updateClock() {
 }
 
 void WatchFaceAnalog::Refresh() {
-  statusIcons.Update();
+  statusIcons.Refresh();
   auto* app = System::SystemTask::displayApp;
   notificationState = app->notificationManager.AreNewNotificationsAvailable();
   if (!running || notificationState.IsUpdated()) {
@@ -204,6 +205,5 @@ void WatchFaceAnalog::Refresh() {
     if (!running || currentDate.IsUpdated()) {
        lv_label_set_text_fmt(label_date_day, "%s\n%02i", app->dateTimeController.DayOfWeekShortToString(), app->dateTimeController.Day());      
     }
-  }
-  running = true;
+  } 
 }

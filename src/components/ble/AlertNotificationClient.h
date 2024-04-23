@@ -1,11 +1,11 @@
 #pragma once
 
-#include "components/ble/BleClient.h"
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
 #include <host/ble_gap.h>
 #undef max
 #undef min
+#include "components/ble/BleClient.h"
 
 namespace Pinetime {
   namespace Controllers {

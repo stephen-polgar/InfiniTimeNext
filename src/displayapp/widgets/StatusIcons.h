@@ -9,13 +9,9 @@ namespace Pinetime {
       class StatusIcons {
       public:
         StatusIcons();
-        void Create();
-
-        lv_obj_t* GetObject() {
-          return container;
-        }
-
-        void Update();
+        void Load();
+        void Refresh();
+        lv_obj_t* Container;
 
       private:
         bool update = false;
@@ -24,10 +20,8 @@ namespace Pinetime {
         Utility::DirtyValue<bool> powerPresent;
         Utility::DirtyValue<bool> bleState;
         Utility::DirtyValue<bool> bleRadioEnabled;
-
         lv_obj_t* bleIcon;
         lv_obj_t* batteryPlug;
-        lv_obj_t* container;
       };
     }
   }

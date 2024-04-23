@@ -13,7 +13,7 @@ namespace Pinetime {
         void UnLoad() override;
 
       private:
-        lv_obj_t* lineIndicatorBase;
+        lv_obj_t *lineIndicator = NULL, *lineIndicatorBase = NULL;
       };
     }
   }

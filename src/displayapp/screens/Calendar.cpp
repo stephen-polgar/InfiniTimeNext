@@ -10,7 +10,7 @@ Calendar::Calendar() : Screen(Apps::Calendar) {
 
 void Calendar::Load() {
   running = true;
-  statusIcons.Create();
+  statusIcons.Load();
   label_time = lv_label_create(lv_scr_act(), NULL);
   lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 0, 0);
@@ -69,7 +69,7 @@ Calendar::~Calendar() {
 
 void Calendar::Refresh() {
   lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
-  statusIcons.Update();
+  statusIcons.Refresh();
 }
 
 

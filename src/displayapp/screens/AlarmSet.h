@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Screen.h"
-#include "components/settings/Settings.h"
 #include "displayapp/widgets/Counter.h"
 #include "components/alarm/AlarmController.h"
 
@@ -19,7 +18,7 @@ namespace Pinetime {
         bool UnLoad() override;
         bool OnButtonPushed() override;
         bool OnTouchEvent(TouchEvents event) override;
-       
+
         void SetAlerting();
         void StopAlerting();
         bool OnAlertingState();
@@ -29,16 +28,19 @@ namespace Pinetime {
         static void valueChangedHandler(void* userData);
         bool changed = false;
         static constexpr uint8_t optionsSize = 8;
+#ifdef WeekStartsMonday
+        const char* options[optionsSize] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Once"};
+#else
         const char* options[optionsSize] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Once"};
-
-        lv_obj_t* cbOption[optionsSize];
-        lv_obj_t *cont1, *cont2;
+#endif
+        lv_obj_t *cont1, *cont2, *cbOnce;
 
         AlarmController* alarmController;
 
         lv_obj_t *btnStop, *btnRecur, *txtRecur;
-
-        lv_obj_t* lblampm = NULL;
+#ifndef TimeFormat_24H
+        lv_obj_t* lblampm;
+#endif
         lv_task_t* taskStopAlarm = NULL;
 
         void showRecurences();
@@ -46,7 +48,6 @@ namespace Pinetime {
         void saveRecurences();
         void updateRecurencesButton();
         void UpdateAlarmTime();
-        Controllers::Settings::ClockType clockType;
         Widgets::Counter hourCounter = Widgets::Counter(0, 23, jetbrains_mono_76);
         Widgets::Counter minuteCounter = Widgets::Counter(0, 59, jetbrains_mono_76);
       };

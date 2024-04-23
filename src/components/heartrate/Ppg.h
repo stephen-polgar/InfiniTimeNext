@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <cstddef>
 #include <cstdint>
 // Note: Change internal define 'sqrt_internal sqrt' to
 // 'sqrt_internal sqrtf' to save ~3KB of flash.

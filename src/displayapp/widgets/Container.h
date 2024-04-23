@@ -7,9 +7,9 @@ namespace Pinetime {
     namespace Widgets {
       class Container {
       public:
-       void Create(const char* title,  const char* symbol, lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
+       void Load(const char* title,  const char* symbol, lv_layout_t layout = LV_LAYOUT_COLUMN_LEFT);
        void UpdateHeight(uint8_t pad_top);  
-       lv_obj_t* container;       
+       lv_obj_t* Container;       
       };
     }
   }

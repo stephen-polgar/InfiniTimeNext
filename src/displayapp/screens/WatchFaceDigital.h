@@ -21,8 +21,8 @@ namespace Pinetime {
         void Refresh() override;
         bool OnTouchEvent(uint16_t /*x*/, uint16_t /*y*/) override;
 
-      private:        
-        uint8_t displayedHour = -1, displayedMinute = -1;       
+      private:
+        uint8_t displayedHour = -1, displayedMinute = -1;
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>> currentDateTime;
         Utility::DirtyValue<uint32_t> stepCount;
         Utility::DirtyValue<uint8_t> heartbeat;
@@ -32,7 +32,9 @@ namespace Pinetime {
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, std::chrono::days>> currentDate;
 
         lv_obj_t* label_time;
+#ifndef TimeFormat_24H
         lv_obj_t* label_time_ampm;
+#endif
         lv_obj_t* label_date;
         lv_obj_t* heartbeatIcon;
         lv_obj_t* heartbeatValue;

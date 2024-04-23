@@ -9,7 +9,8 @@ namespace {
   constexpr int16_t POS_Y_TEXT = -7;
 }
 
-SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime) : settingSetDateTime {settingSetDateTime} {
+SettingSetTime::SettingSetTime(Pinetime::Applications::Screens::SettingSetDateTime& settingSetDateTime)
+  : settingSetDateTime {settingSetDateTime} {
 }
 
 void SettingSetTime::Load() {
@@ -30,22 +31,12 @@ void SettingSetTime::Load() {
   lv_obj_align(staticLabel, lv_scr_act(), LV_ALIGN_CENTER, 0, POS_Y_TEXT);
 
   hourCounter.Create();
-  if (System::SystemTask::displayApp->settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-    hourCounter.EnableTwelveHourMode();
-  }
   hourCounter.SetValue(System::SystemTask::displayApp->dateTimeController.Hours());
   lv_obj_align(hourCounter.GetObject(), nullptr, LV_ALIGN_CENTER, -75, POS_Y_TEXT);
-  hourCounter.SetValueChangedEventCallback(this, valueChangedHandler);
 
   minuteCounter.Create();
   minuteCounter.SetValue(System::SystemTask::displayApp->dateTimeController.Minutes());
   lv_obj_align(minuteCounter.GetObject(), nullptr, LV_ALIGN_CENTER, 0, POS_Y_TEXT);
-  minuteCounter.SetValueChangedEventCallback(this, valueChangedHandler);
-
-  lblampm = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
-  lv_label_set_text_static(lblampm, "  ");
-  lv_obj_align(lblampm, lv_scr_act(), LV_ALIGN_CENTER, 75, -50);
 
   btnSetTime = lv_btn_create(lv_scr_act(), nullptr);
   btnSetTime->user_data = this;
@@ -56,19 +47,29 @@ void SettingSetTime::Load() {
   lv_obj_set_style_local_bg_color(btnSetTime, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
   lv_obj_set_style_local_text_color(lblSetTime, LV_LABEL_PART_MAIN, LV_STATE_DISABLED, LV_COLOR_GRAY);
   lv_obj_set_event_cb(btnSetTime, setTimeEventHandler);
-
+#ifndef TimeFormat_24H
+  lblampm = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_set_style_local_text_font(lblampm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_bold_20);
+  hourCounter.SetValueChangedEventCallback(this, valueChangedHandler);
+  minuteCounter.SetValueChangedEventCallback(this, valueChangedHandler);
   updateScreen();
+  lv_obj_align(lblampm, lv_scr_act(), LV_ALIGN_CENTER, 75, -50);
+#endif
 }
 
+#ifndef TimeFormat_24H
 void SettingSetTime::updateScreen() {
-  if (System::SystemTask::displayApp->settingsController.GetClockType() == Controllers::Settings::ClockType::H12) {
-    if (hourCounter.GetValue() >= 12) {
-      lv_label_set_text_static(lblampm, "PM");
-    } else {
-      lv_label_set_text_static(lblampm, "AM");
-    }
+  if (hourCounter.GetValue() >= 12) {
+    lv_label_set_text_static(lblampm, "PM");
+  } else {
+    lv_label_set_text_static(lblampm, "AM");
   }
 }
+
+void SettingSetTime::valueChangedHandler(void* userData) {
+  static_cast<SettingSetTime*>(userData)->updateScreen();
+}
+#endif
 
 void SettingSetTime::setTime() {
   const int hoursValue = hourCounter.GetValue();
@@ -88,8 +89,4 @@ void SettingSetTime::setTimeEventHandler(lv_obj_t* obj, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
     static_cast<SettingSetTime*>(obj->user_data)->setTime();
   }
-}
-
-void SettingSetTime::valueChangedHandler(void* userData) {
-  static_cast<SettingSetTime*>(userData)->updateScreen();
 }

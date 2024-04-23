@@ -59,30 +59,30 @@ namespace Pinetime {
       static const char EVENT_MUSIC_VOLUP = 0x05;
       static const char EVENT_MUSIC_VOLDOWN = 0x06;
 
-      enum MusicStatus  : uint8_t { NotPlaying = 0x00, Playing = 0x01 };
+      enum MusicStatus : uint8_t { NotPlaying, Playing };
 
     private:
       struct ble_gatt_chr_def characteristicDefinition[14];
       struct ble_gatt_svc_def serviceDefinition[2];
 
-      uint16_t eventHandle {};
+      uint16_t eventHandle;
 
-      std::string artistName {"Waiting for"};
-      std::string albumName {};
-      std::string trackName {"track information.."};
+      std::string artistName = "Waiting for";
+      std::string albumName;
+      std::string trackName = "track information..";
 
-      bool playing {false};
+      bool playing = false;
 
-      int trackProgress {0};
-      int trackLength {0};
-      int trackNumber {};
-      int tracksTotal {};
-      TickType_t trackProgressUpdateTime {0};
+      int trackProgress = 0;
+      int trackLength = 0;
+      int trackNumber;
+      int tracksTotal;
+      TickType_t trackProgressUpdateTime = 0;
 
-      float playbackSpeed {1.0f};
+      float playbackSpeed = 1.0f;
 
-      bool repeat {false};
-      bool shuffle {false};
+      bool repeat = false;
+      bool shuffle = false;
     };
   }
 }

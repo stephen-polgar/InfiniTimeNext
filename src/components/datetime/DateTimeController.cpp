@@ -94,26 +94,22 @@ const char* DateTime::DayOfWeekShortToStringLow(Days day) {
   return DaysStringShortLow[static_cast<uint8_t>(day)];
 }
 
-using ClockType = Pinetime::Controllers::Settings::ClockType;
-
 std::string DateTime::FormattedTime() {
-  auto hour = Hours();
-  auto minute = Minutes();
-  // Return time as a string in 12- or 24-hour format
   char buff[9];
-  if (System::SystemTask::displayApp->settingsController.GetClockType() == ClockType::H12) {
-    uint8_t hour12;
-    const char* amPmStr;
-    if (hour < 12) {
-      hour12 = (hour == 0) ? 12 : hour;
-      amPmStr = "AM";
-    } else {
-      hour12 = (hour == 12) ? 12 : hour - 12;
-      amPmStr = "PM";
-    }
-    snprintf(buff, sizeof(buff), "%i:%02i %s", hour12, minute, amPmStr);
+#ifdef TimeFormat_24H
+  snprintf(buff, sizeof(buff), "%02i:%02i", Hours(), Minutes());
+#else
+  uint8_t hour = Hours();
+  // Return time as a string in 12- or 24-hour format
+  const char* amPmStr;
+  if (hour < 12) {
+    hour = (hour == 0) ? 12 : hour;
+    amPmStr = "AM";
   } else {
-    snprintf(buff, sizeof(buff), "%02i:%02i", hour, minute);
+    hour = (hour == 12) ? 12 : hour - 12;
+    amPmStr = "PM";
   }
+  snprintf(buff, sizeof(buff), "%i:%02i %s", hour, Minutes(), amPmStr);
+#endif
   return std::string(buff);
 }

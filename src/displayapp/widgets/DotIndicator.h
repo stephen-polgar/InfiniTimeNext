@@ -13,7 +13,7 @@ namespace Pinetime {
         void UnLoad() override;
 
       private:
-        lv_obj_t* container;
+        lv_obj_t* container = NULL;        
       };
     }
   }

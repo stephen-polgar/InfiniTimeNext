@@ -4,7 +4,6 @@
 #include <host/ble_gap.h>
 #undef max
 #undef min
-#include <cstdint>
 #include "components/ble/BleClient.h"
 
 namespace Pinetime {

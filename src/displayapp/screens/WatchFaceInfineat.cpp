@@ -20,7 +20,7 @@ WatchFaceInfineat::WatchFaceInfineat() : Screen(WatchFace::Infineat) {
 void WatchFaceInfineat::Load() {
   if (!font_teko || !font_bebas) {
     return;
-  } 
+  }
   // Side Cover
   const std::array<lv_color_t, nLines>* colors = returnColor(static_cast<enum colors>(settingsController->GetInfineatColorIndex()));
   for (uint8_t i = 0; i < nLines; i++) {
@@ -66,11 +66,10 @@ void WatchFaceInfineat::Load() {
 
   labelMinutes = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(labelMinutes, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_bebas);
-
+  #ifndef TimeFormat_24H
   labelTimeAmPm = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_font(labelTimeAmPm, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_teko);
-  lv_label_set_text_static(labelTimeAmPm, "");
-
+  #endif
   dateContainer = lv_obj_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_bg_opa(dateContainer, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_size(dateContainer, 60, 30);
@@ -99,9 +98,12 @@ void WatchFaceInfineat::Load() {
 
   lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
   lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  #ifndef TimeFormat_24H
   lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 15);
+  #endif
   lv_obj_align(labelDate, dateContainer, LV_ALIGN_IN_TOP_MID, 0, 0);
   lv_obj_align(bleIcon, dateContainer, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+  running = true;
 }
 
 void WatchFaceInfineat::showMenu() {
@@ -232,38 +234,36 @@ void WatchFaceInfineat::Refresh() {
   auto& dateTimeController = System::SystemTask::displayApp->dateTimeController;
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(dateTimeController.CurrentDateTime());
   if (!running || currentDateTime.IsUpdated()) {
+  #ifdef TimeFormat_24H
+    lv_label_set_text_fmt(labelHour, "%02d", dateTimeController.Hours());
+    lv_label_set_text_fmt(labelMinutes, "%02d", dateTimeController.Minutes());
+  #else
     uint8_t hour = dateTimeController.Hours();
     uint8_t minute = dateTimeController.Minutes();
-    auto* settingsController = &System::SystemTask::displayApp->settingsController;
-    if (settingsController->GetClockType() == Controllers::Settings::ClockType::H12) {
-      char ampmChar[3] = "AM";
-      if (hour == 0) {
-        hour = 12;
-      } else if (hour == 12) {
-        ampmChar[0] = 'P';
-      } else if (hour > 12) {
-        hour = hour - 12;
-        ampmChar[0] = 'P';
-      }
-      lv_label_set_text(labelTimeAmPm, ampmChar);
+    char ampmChar[3] = "AM";
+    if (hour == 0) {
+      hour = 12;
+    } else if (hour == 12) {
+      ampmChar[0] = 'P';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      ampmChar[0] = 'P';
     }
+    lv_label_set_text(labelTimeAmPm, ampmChar);
     lv_label_set_text_fmt(labelHour, "%02d", hour);
     lv_label_set_text_fmt(labelMinutes, "%02d", minute);
-
-    if (settingsController->GetClockType() == Controllers::Settings::ClockType::H12) {
-      lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 10);
-      lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 5);
-      lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
-    }
-
+    lv_obj_align(labelTimeAmPm, timeContainer, LV_ALIGN_OUT_RIGHT_TOP, 0, 10);
+    lv_obj_align(labelHour, timeContainer, LV_ALIGN_IN_TOP_MID, 0, 5);
+    lv_obj_align(labelMinutes, timeContainer, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  #endif
     currentDate = std::chrono::time_point_cast<std::chrono::days>(currentDateTime.Get());
-    if (!running || currentDate.IsUpdated()) {
-      uint8_t day = dateTimeController.Day();
+    if (!running || currentDate.IsUpdated()) {    
       Controllers::DateTime::Days dayOfWeek = dateTimeController.DayOfWeek();
-      lv_label_set_text_fmt(labelDate, "%s %02d", dateTimeController.DayOfWeekShortToStringLow(dayOfWeek), day);
+      lv_label_set_text_fmt(labelDate, "%s %02d", dateTimeController.DayOfWeekShortToStringLow(dayOfWeek), dateTimeController.Day());
       lv_obj_realign(labelDate);
     }
   }
+
   auto& batteryController = System::SystemTask::displayApp->batteryController;
   batteryPercentRemaining = batteryController.PercentRemaining();
   isCharging = batteryController.IsCharging();
@@ -298,7 +298,6 @@ void WatchFaceInfineat::Refresh() {
       savedTick = 0;
     }
   }
-  running = true;
 }
 
 void WatchFaceInfineat::setBatteryLevel(uint8_t batteryPercent) {

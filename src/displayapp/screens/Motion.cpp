@@ -10,7 +10,6 @@ Motion::Motion() : Screen(Apps::Motion) {
 }
 
 void Motion::Load() {
-  running = true;
   chart = lv_chart_create(lv_scr_act(), NULL);
   lv_obj_set_size(chart, 240, 240);
   lv_obj_align(chart, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
@@ -36,19 +35,21 @@ void Motion::Load() {
   lv_label_set_recolor(label, true);
 
   labelStep = lv_label_create(lv_scr_act(), NULL);
-  
+
   Refresh();
+  
   lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
   lv_obj_align(labelStep, chart, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  running = true;
 }
 
 bool Motion::UnLoad() {
   if (running) {
-    running = false;
     lv_task_del(taskRefresh);
+    running = false;
     lv_obj_clean(lv_scr_act());
   }
   return true;

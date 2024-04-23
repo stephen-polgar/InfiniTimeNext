@@ -1,17 +1,13 @@
 #pragma once
+
 #include <FreeRTOS.h>
 #include <nrf_font.h>
 #include <task.h>
-#include <cstddef>
-#include <cstdint>
 #include "drivers/BufferProvider.h"
+#include "drivers/St7789.h"
 
 namespace Pinetime {
-  namespace Drivers {
-    class St7789;
-  }
-
-  namespace Components {
+   namespace Components {
     class Gfx : public Pinetime::Drivers::BufferProvider {
     public:
       explicit Gfx(Drivers::St7789& lcd);

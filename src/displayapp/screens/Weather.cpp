@@ -12,32 +12,27 @@ void Weather::Load() {
   temperature = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
-  lv_label_set_text(temperature, "---");
   lv_obj_align(temperature, nullptr, LV_ALIGN_CENTER, 0, -30);
   lv_obj_set_auto_realign(temperature, true);
 
   minTemperature = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(minTemperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::bg);
-  lv_label_set_text(minTemperature, "");
   lv_obj_align(minTemperature, temperature, LV_ALIGN_OUT_LEFT_MID, -10, 0);
   lv_obj_set_auto_realign(minTemperature, true);
 
   maxTemperature = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(maxTemperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::bg);
-  lv_label_set_text(maxTemperature, "");
   lv_obj_align(maxTemperature, temperature, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
   lv_obj_set_auto_realign(maxTemperature, true);
 
   condition = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(condition, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::lightGray);
-  lv_label_set_text(condition, "");
   lv_obj_align(condition, temperature, LV_ALIGN_OUT_TOP_MID, 0, -10);
   lv_obj_set_auto_realign(condition, true);
 
   icon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(icon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
   lv_obj_set_style_local_text_font(icon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &fontawesome_weathericons);
-  lv_label_set_text(icon, "");
   lv_obj_align(icon, condition, LV_ALIGN_OUT_TOP_MID, 0, 0);
   lv_obj_set_auto_realign(icon, true);
 
@@ -66,7 +61,7 @@ void Weather::Load() {
 
   lv_obj_align(forecast, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 
-  for (int i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
+  for (uint8_t i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
     lv_table_set_col_width(forecast, i, 48);
     lv_table_set_cell_type(forecast, 1, i, LV_TABLE_PART_CELL2);
     lv_table_set_cell_align(forecast, 0, i, LV_LABEL_ALIGN_CENTER);
@@ -74,9 +69,9 @@ void Weather::Load() {
     lv_table_set_cell_align(forecast, 2, i, LV_LABEL_ALIGN_CENTER);
     lv_table_set_cell_align(forecast, 3, i, LV_LABEL_ALIGN_CENTER);
   }
-
-  taskRefresh = lv_task_create(RefreshTaskCallback, 1000, LV_TASK_PRIO_MID, this);
   Refresh();
+  taskRefresh = lv_task_create(RefreshTaskCallback, 1000, LV_TASK_PRIO_MID, this);
+  running = true;
 }
 
 bool Weather::UnLoad() {
@@ -127,25 +122,27 @@ void Weather::Refresh() {
       int16_t minTemp = optCurrentWeather->minTemperature;
       int16_t maxTemp = optCurrentWeather->maxTemperature;
       lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, temperatureColor(temp));
-      char tempUnit = 'C';
-      if (System::SystemTask::displayApp->settingsController.GetWeatherFormat() == Controllers::Settings::WeatherFormat::Imperial) {
-        temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(temp);
-        minTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(minTemp);
-        maxTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(maxTemp);
-        tempUnit = 'F';
-      }
+      char tempUnit;
+#ifdef UnitFormat_Metric
+      tempUnit = 'C';
+#else
+      tempUnit = 'F';
+      temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(temp);
+      minTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(minTemp);
+      maxTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(maxTemp);
+#endif
       lv_label_set_text(icon, Symbols::GetSymbol(optCurrentWeather->iconId));
       lv_label_set_text(condition, Symbols::GetCondition(optCurrentWeather->iconId));
       lv_label_set_text_fmt(temperature, "%d°%c", roundTemperature(temp), tempUnit);
       lv_label_set_text_fmt(minTemperature, "%d°", roundTemperature(minTemp));
       lv_label_set_text_fmt(maxTemperature, "%d°", roundTemperature(maxTemp));
     } else {
-      lv_label_set_text(icon, "");
-      lv_label_set_text(condition, "");
-      lv_label_set_text(temperature, "---");
+      lv_label_set_text_static(icon, "");
+      lv_label_set_text_static(condition, "");
+      lv_label_set_text_static(temperature, "---");
       lv_obj_set_style_local_text_color(temperature, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-      lv_label_set_text(minTemperature, "");
-      lv_label_set_text(maxTemperature, "");
+      lv_label_set_text_static(minTemperature, "");
+      lv_label_set_text_static(maxTemperature, "");
     }
   }
 
@@ -155,15 +152,15 @@ void Weather::Refresh() {
     if (optCurrentForecast) {
       std::tm localTime = *std::localtime(reinterpret_cast<const time_t*>(&optCurrentForecast->timestamp));
 
-      for (int i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
+      for (uint8_t i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
         int16_t maxTemp = optCurrentForecast->days[i].maxTemperature;
         int16_t minTemp = optCurrentForecast->days[i].minTemperature;
         lv_table_set_cell_type(forecast, 2, i, temperatureStyle(maxTemp));
         lv_table_set_cell_type(forecast, 3, i, temperatureStyle(minTemp));
-        if (System::SystemTask::displayApp->settingsController.GetWeatherFormat() == Controllers::Settings::WeatherFormat::Imperial) {
-          maxTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(maxTemp);
-          minTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(minTemp);
-        }
+#ifndef UnitFormat_Metric
+        maxTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(maxTemp);
+        minTemp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(minTemp);
+#endif
         uint8_t wday = localTime.tm_wday + i + 1;
         if (wday > 7) {
           wday -= 7;
@@ -188,7 +185,7 @@ void Weather::Refresh() {
         lv_table_set_cell_value_fmt(forecast, 3, i, "%s%d", minPadding, minTemp);
       }
     } else {
-      for (int i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
+      for (uint8_t i = 0; i < Controllers::SimpleWeatherService::MaxNbForecastDays; i++) {
         lv_table_set_cell_value(forecast, 0, i, "");
         lv_table_set_cell_value(forecast, 1, i, "");
         lv_table_set_cell_value(forecast, 2, i, "");
@@ -198,5 +195,4 @@ void Weather::Refresh() {
       }
     }
   }
-  running = true;
 }

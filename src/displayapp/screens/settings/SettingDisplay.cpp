@@ -1,7 +1,6 @@
 #include "SettingDisplay.h"
 #include "displayapp/widgets/Container.h"
 #include "systemtask/SystemTask.h"
-#include "displayapp/screens/Styles.h"
 #include "displayapp/screens/Symbols.h"
 
 using namespace Pinetime::Applications::Screens;
@@ -12,19 +11,18 @@ SettingDisplay::SettingDisplay() : Screen(Apps::SettingDisplay) {
 void SettingDisplay::Load() {
   running = true;
   Widgets::Container container;
-  container.Create("Display timeout", Symbols::sun, LV_LAYOUT_PRETTY_TOP);
+  container.Load("Display timeout", Symbols::sun, LV_LAYOUT_PRETTY_TOP);
   container.UpdateHeight(160 / options.size());
-  container.container->user_data = this;
+  container.Container->user_data = this;
 
   uint16_t timeout = System::SystemTask::displayApp->settingsController.GetScreenTimeOut();
   static char buffer[4];
   for (uint8_t i = 0; i < options.size(); i++) {
-    lv_obj_t* cb = lv_checkbox_create(container.container, NULL);
+    lv_obj_t* cb = lv_checkbox_create(container.Container, NULL);
     cb->user_data = (void*) &options[i];
     snprintf(buffer, sizeof(buffer), "%2" PRIu16 "s", options[i] / 1000);
     lv_checkbox_set_text(cb, buffer);
-    lv_obj_set_event_cb(cb, buttonEventHandler);
-    SetRadioButtonStyle(cb);
+    lv_obj_set_event_cb(cb, buttonEventHandler);   
     if (timeout == options[i]) {
       lv_checkbox_set_checked(cb, true);
     }
@@ -54,6 +52,6 @@ void SettingDisplay::onButtonEvent(lv_obj_t* obj) {
 }
 
 void SettingDisplay::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {
-  if (event == LV_EVENT_CLICKED)
+  if (event == LV_EVENT_VALUE_CHANGED)
     static_cast<SettingDisplay*>(obj->parent->user_data)->onButtonEvent(obj);
 }

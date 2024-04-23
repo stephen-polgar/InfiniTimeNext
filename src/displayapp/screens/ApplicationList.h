@@ -26,7 +26,7 @@ namespace Pinetime {
         static constexpr uint8_t maxItems = 6;
         void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
         uint8_t indexBegin;
-        void unLoad();
+        bool enableEvent;
         lv_obj_t* btnm;
         void Refresh() override;
         Utility::ArrayTouchHandler arrayTouchHandler;

@@ -1,5 +1,6 @@
 #include "components/gfx/Gfx.h"
-#include "drivers/St7789.h"
+
+
 using namespace Pinetime::Components;
 
 Gfx::Gfx(Pinetime::Drivers::St7789& lcd) : lcd {lcd} {

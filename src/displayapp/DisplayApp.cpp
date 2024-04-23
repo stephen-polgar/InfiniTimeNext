@@ -5,8 +5,6 @@
 #include "displayapp/screens/settings/QuickSettings.h"
 #include "displayapp/screens/settings/Settings.h"
 #include "displayapp/screens/settings/SettingWatchFace.h"
-#include "displayapp/screens/settings/SettingTimeFormat.h"
-#include "displayapp/screens/settings/SettingWeatherFormat.h"
 #include "displayapp/screens/settings/SettingWakeUp.h"
 #include "displayapp/screens/settings/SettingDisplay.h"
 #include "displayapp/screens/settings/SettingSteps.h"
@@ -404,12 +402,6 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
         }
         screen = new SettingWatchFace(std::move(items));
       } break;
-      case Apps::SettingTimeFormat:
-        screen = new SettingTimeFormat();
-        break;
-      case Apps::SettingWeatherFormat:
-        screen = new SettingWeatherFormat();
-        break;
       case Apps::SettingWakeUp:
         screen = new SettingWakeUp();
         break;

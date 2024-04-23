@@ -117,9 +117,12 @@ void SystemInfo::FirmwareScreen::Load() {
 
 SystemInfo::SystemInfo()
   : Screen(Apps::SysInfo),
-    arrayTouchHandler {items, 1, [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
+    arrayTouchHandler {items,
+                       1,
+                       [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }}, pageIndicator{items} {
+                       }},
+    pageIndicator {items} {
   list[0] = new MemoryInfo;
   list[1] = new TasksScreen;
   list[2] = new HardverScreen;
@@ -129,6 +132,7 @@ SystemInfo::SystemInfo()
 
 void SystemInfo::load(uint8_t indexBegin, uint8_t, Screen::FullRefreshDirections direction) {
   if (running) {
+    pageIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
     System::SystemTask::displayApp->SetFullRefresh(direction);
   }
@@ -144,6 +148,7 @@ void SystemInfo::Load() {
 bool SystemInfo::UnLoad() {
   if (running) {
     running = false;
+    pageIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
   }
   return true;
