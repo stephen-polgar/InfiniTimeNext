@@ -114,10 +114,7 @@ bool FileManager::UnLoad() {
     image = NULL;
   }
   pageIndicator.UnLoad();
-  if (container) {
-    lv_obj_del(container);
-    container = NULL;
-  }
+  lv_obj_del(container);
   #ifdef Log
   NRF_LOG_INFO("FileManager UnLoad end");
   #endif
@@ -128,7 +125,6 @@ FileManager::~FileManager() {
   #ifdef Log
   NRF_LOG_INFO("FileManager delete");
   #endif
-
   UnLoad();
 }
 
@@ -156,23 +152,10 @@ void FileManager::updateSize() {
   pageIndicator.SetScreens(i / maxItems + 1);
 }
 
-void FileManager::deleteFile(lv_obj_t* obj) {
-  obj = static_cast<lv_obj_t*>(obj->user_data);
-  File* file = static_cast<File*>(obj->user_data);
-  std::string path = (dirPath.starts_with(rootDir) ? "" : "/" + dirPath) + "/" + file->path;
-  #ifdef Log
-  NRF_LOG_INFO("FileManager delete=%s", path.c_str());
-  #endif
-  if (LFS_ERR_OK == fs->FileDelete(path.c_str()) && obj != image) {
-    lv_obj_del(obj);
-  }
-  closeMenu();
-}
-
-void FileManager::openFile(lv_obj_t* obj) {
+void FileManager::openFile(lv_obj_t* item) {
   if (menuContainer)
     return;
-  File* file = static_cast<File*>(obj->user_data);
+  File* file = static_cast<File*>(item->user_data);
   if (file->dir) {
     dirPath = file->path;
   #ifdef Log
@@ -183,19 +166,17 @@ void FileManager::openFile(lv_obj_t* obj) {
   } else if (file->path.ends_with(".bin")) {
     std::string path = "F:" + (dirPath.starts_with(rootDir) ? "" : "/" + dirPath) + "/" + file->path;
     pageIndicator.UnLoad();
-    lv_obj_del(container);
-    container = NULL;
+    lv_obj_set_hidden(container, true);
     image = lv_img_create(lv_scr_act(), NULL);
     lv_img_set_src(image, path.c_str());
-    image->parent->user_data = this;
-    image->user_data = obj->user_data;
   #ifdef Log
     NRF_LOG_INFO("FileManager open image=%s", path.c_str());
   #endif
     if (lv_obj_get_height(image)) {
+      image->user_data = item; // item
       lv_obj_align(image, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
     } else {
-      showMenu("Unsupported image", image);
+      showMenu("Unsupported image", item);
     }
   } else if (file->path.ends_with(".txt")) {
     lv_obj_t* label = lv_label_create(lv_scr_act(), NULL);
@@ -215,10 +196,22 @@ void FileManager::openFile(lv_obj_t* obj) {
       lv_mem_free(buf);
     } else
       lv_label_set_text_static(label, "Not Enough RAM");
-  }
+  } // else showMenu(NULL, item);
 }
 
-void FileManager::showMenu(const char* title, lv_obj_t* obj, bool image) {
+void FileManager::deleteFile(lv_obj_t* item) {
+  File* file = static_cast<File*>(item->user_data);
+  std::string path = (dirPath.starts_with(rootDir) ? "" : "/" + dirPath) + "/" + file->path;
+  #ifdef Log
+  NRF_LOG_INFO("FileManager delete=%s", path.c_str());
+  #endif
+  if (LFS_ERR_OK == fs->FileDelete(path.c_str())) {
+    lv_obj_set_hidden(item, true);
+  }
+  closeMenu();
+}
+
+void FileManager::showMenu(const char* title, lv_obj_t* item, bool image) {
   menuContainer = lv_cont_create(lv_scr_act(), NULL);
   menuContainer->user_data = this;
   // lv_obj_set_pos(menuContainer, 0, 40);
@@ -237,28 +230,28 @@ void FileManager::showMenu(const char* title, lv_obj_t* obj, bool image) {
 
   lv_obj_t* label = lv_label_create(menuContainer, NULL);
   lv_label_set_long_mode(label, LV_LABEL_LONG_EXPAND);
-  lv_label_set_text_static(label, static_cast<File*>(obj->user_data)->path.c_str());
+  lv_label_set_text_static(label, static_cast<File*>(item->user_data)->path.c_str());
 
   lv_obj_t* btn = lv_btn_create(menuContainer, NULL);
-  btn->user_data = obj;
+  btn->user_data = item;
   label = lv_label_create(btn, label);
   lv_label_set_text_static(label, "Delete");
   lv_obj_set_size(btn, lv_obj_get_width(label) + 8, 50);
   lv_obj_set_event_cb(btn, [](lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_LONG_PRESSED) {
-      static_cast<FileManager*>(obj->parent->user_data)->deleteFile(obj);
+      static_cast<FileManager*>(obj->parent->user_data)->deleteFile(static_cast<lv_obj_t*>(obj->user_data));
     }
   });
 
   if (image) {
     btn = lv_btn_create(menuContainer, NULL);
-    btn->user_data = obj;
+    btn->user_data = item;
     label = lv_label_create(btn, label);
     lv_label_set_text_static(label, "Set as background");
     lv_obj_set_size(btn, lv_obj_get_width(label) + 8, 50);
     lv_obj_set_event_cb(btn, [](lv_obj_t* obj, lv_event_t event) {
       if (event == LV_EVENT_CLICKED) {
-        WatchFaceScreen::bgImage = (char*) lv_img_get_src(static_cast<lv_obj_t*>(obj->user_data));
+        WatchFaceScreen::bgImage = (char*) lv_img_get_src(static_cast<FileManager*>(obj->parent->user_data)->image);
         System::SystemTask::displayApp->StartApp(Apps::Clock, Screen::FullRefreshDirections::None);
         //  static_cast<FileManager*>(obj->parent->user_data)->running = false;
       }
@@ -277,20 +270,22 @@ void FileManager::showMenu(const char* title, lv_obj_t* obj, bool image) {
 }
 
 void FileManager::closeMenu() {
-  lv_obj_del(menuContainer);
-  menuContainer = NULL;
+  if (menuContainer) {
+    lv_obj_del(menuContainer);
+    menuContainer = NULL;
+  }
   if (image) {
     lv_obj_del(image);
     image = NULL;
-    Load();
+    lv_obj_set_hidden(container, false);
   }
 }
 
-void FileManager::fileEventHandler(lv_obj_t* obj, lv_event_t event) {
+void FileManager::fileEventHandler(lv_obj_t* item, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
-    static_cast<FileManager*>(obj->parent->user_data)->openFile(obj);
-  } else if (event == LV_EVENT_LONG_PRESSED && !static_cast<File*>(obj->user_data)->dir) {
-    static_cast<FileManager*>(obj->parent->user_data)->showMenu(NULL, obj);
+    static_cast<FileManager*>(item->parent->user_data)->openFile(item);
+  } else if (event == LV_EVENT_LONG_PRESSED && !static_cast<File*>(item->user_data)->dir) {
+    static_cast<FileManager*>(item->parent->user_data)->showMenu(NULL, item);
   }
 }
 
@@ -300,9 +295,7 @@ bool FileManager::OnTouchEvent(Applications::TouchEvents event) {
 
 bool FileManager::OnButtonPushed() {
   if (image) {
-    lv_obj_del(image);
-    image = NULL;
-    Load();
+    closeMenu();
     return true;
   }
   return false;
@@ -310,7 +303,7 @@ bool FileManager::OnButtonPushed() {
 
 bool FileManager::OnTouchEvent(uint16_t, uint16_t) {
   if (image && !menuContainer) {
-    showMenu(NULL, image, true);
+    showMenu(NULL, static_cast<lv_obj_t*>(image->user_data), true);
     return true;
   }
   return false;
