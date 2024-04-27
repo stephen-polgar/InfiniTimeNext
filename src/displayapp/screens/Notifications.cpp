@@ -67,13 +67,14 @@ bool Notifications::UnLoad() {
   if (taskRefresh) {
     lv_task_del(taskRefresh);
     taskRefresh = NULL;
+    running = false;
     currentItem.reset(); 
     // make sure we stop any vibrations before exiting
     System::SystemTask::displayApp->motorController.StopRinging();
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
     lv_obj_clean(lv_scr_act());
   }
-  return running;
+  return true;
 }
 
 Notifications::~Notifications() {

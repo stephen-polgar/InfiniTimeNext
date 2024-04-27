@@ -24,11 +24,7 @@
 #include "displayapp/screens/PassKey.h"
 #include "displayapp/screens/Error.h"
 
-// #define Log
-
-#ifdef Log
-  #include <nrf_log.h>
-#endif
+//#include <nrf_log.h>
 
 using namespace Pinetime::Applications;
 using namespace Pinetime::Applications::Display;
@@ -152,9 +148,6 @@ void DisplayApp::refresh() {
 
   Messages msg;
   if (xQueueReceive(msgQueue, &msg, queueTimeout) == pdTRUE) {
-#ifdef Log
-    //  NRF_LOG_INFO("DisplayApp msg=%d", msg);
-#endif
     switch (msg) {
       case Messages::DimScreen:
         DimScreen();
@@ -327,20 +320,17 @@ void DisplayApp::StartApp(Screen* screen, Screen::FullRefreshDirections directio
 }
 
 void DisplayApp::loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store) {
-#ifdef Log
-  NRF_LOG_INFO("DisplayApp:loadScreen screen=%d", uint8_t(screen->Id));
+#ifdef NRF_LOG_INFO
+  NRF_LOG_INFO("DisplayApp:loadScreen %d Id=%d", screen, uint8_t(screen->Id));
 #endif
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
   if (currentScreen) {
-    if (currentScreen != screen) {
-      if (currentScreen->UnLoad() && store) {
-        screenStack.Push(currentScreen);
-        currentScreen->direction = direction;
-      } else
-        delete currentScreen;
+    if (currentScreen->UnLoad() && store) {
+      screenStack.Push(currentScreen);
+      currentScreen->direction = direction;
     } else
-      currentScreen->UnLoad();
+      delete currentScreen;
   }
   currentScreen = screen;
   SetFullRefresh(direction);
@@ -348,15 +338,19 @@ void DisplayApp::loadScreen(Screen* screen, Screen::FullRefreshDirections direct
 }
 
 void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
-#ifdef Log
+#ifdef NRF_LOG_INFO
   NRF_LOG_INFO("DisplayApp:loadScreen app=%d", uint8_t(app));
 #endif
-  lvgl.CancelTap();
-  lv_disp_trig_activity(NULL);
   if (currentScreen && currentScreen->Id == app) {
-    loadScreen(currentScreen, direction, false);
+#ifdef NRF_LOG_INFO
+    NRF_LOG_ERROR("DisplayApp:loadScreen load agaen %d %d", currentScreen, uint8_t(app));
+#endif
+    //  currentScreen->UnLoad();
+    //  currentScreen->Load();
     return;
   }
+  lvgl.CancelTap();
+  lv_disp_trig_activity(NULL);
   Screen* screen = (app != Apps::None) ? screenStack.Get(app) : NULL;
   if (!screen)
     switch (app) {
@@ -368,8 +362,7 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
         }
         screen = new ApplicationList(apps);
       } break;
-      case Apps::Clock:
-        screenStack.Reset();
+      case Apps::Clock:        
         screen = new WatchFaceScreen();
         break;
       case Apps::Error:
@@ -445,9 +438,6 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
 }
 
 void DisplayApp::PushMessage(Messages msg) {
-#ifdef Log
-  //  NRF_LOG_INFO("DisplayApp::PushMessage Id=%d, data=%d", id, data);
-#endif
   if (in_isr()) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xQueueSendFromISR(msgQueue, &msg, &xHigherPriorityTaskWoken);

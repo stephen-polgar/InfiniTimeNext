@@ -2,18 +2,18 @@
 #include "systemtask/SystemTask.h"
 #include "displayapp/screens/Symbols.h"
 
-//#include <nrf_log.h>
+// #include <nrf_log.h>
 
 using namespace Pinetime::Applications::Screens;
 
 SettingWatchFace::SettingWatchFace(std::array<Screens::SettingWatchFace::Item, UserWatchFaceTypes::Count>&& watchfaceItems)
   : Screen(Apps::SettingWatchFace),
     watchfaces {std::move(watchfaceItems)},
-    arrayTouchHandler {UserWatchFaceTypes::Count,
-                       maxItems,
+    arrayTouchHandler {maxItems,
                        [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }},
+                       },
+                       UserWatchFaceTypes::Count},
     pageIndicator {UserWatchFaceTypes::Count / maxItems + 1} {
 }
 
@@ -79,11 +79,11 @@ bool SettingWatchFace::OnTouchEvent(TouchEvents event) {
 
 void SettingWatchFace::onButtonEvent(lv_obj_t* obj) {
 #ifdef NRF_LOG_INFO
-  NRF_LOG_INFO("SettingWatchFace::onButtonEvent %d", obj);
+ // NRF_LOG_INFO("SettingWatchFace::onButtonEvent %d", obj);
 #endif
   if (enableEvent) {
 #ifdef NRF_LOG_INFO
-    NRF_LOG_INFO("SettingWatchFace::onButtonEvent enabled %d", obj);
+   // NRF_LOG_INFO("SettingWatchFace::onButtonEvent enabled %d", obj);
 #endif
     WatchFace watchface = *static_cast<WatchFace*>(obj->user_data);
     System::SystemTask::displayApp->settingsController.SetWatchFace(watchface);

@@ -7,11 +7,11 @@ using namespace Pinetime::Applications::Screens;
 ApplicationList::ApplicationList(std::array<AppList, UserAppTypes::Count>& apps)
   : Screen(Apps::Launcher),
     apps {apps},
-    arrayTouchHandler {UserAppTypes::Count,
-                       maxItems,
+    arrayTouchHandler {maxItems,
                        [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }},
+                       },
+                       UserAppTypes::Count},
     pageIndicator {UserAppTypes::Count / maxItems + 1} {
 }
 
@@ -66,7 +66,7 @@ void ApplicationList::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRef
 }
 
 bool ApplicationList::UnLoad() {
-  if (taskUpdate) {    
+  if (taskUpdate) {
     lv_task_del(taskUpdate);
     taskUpdate = NULL;
     running = false;

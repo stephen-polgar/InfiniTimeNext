@@ -22,31 +22,22 @@ void TimeoutTimerCallback(TimerHandle_t xTimer) {
 }
 
 DfuService::DfuService()
-  : characteristicDefinition {{
-                                .uuid = &packetCharacteristicUuid.u,
-                                .access_cb = DfuServiceCallback,
-                                .arg = this,
-                                .flags = BLE_GATT_CHR_F_WRITE_NO_RSP,
-                                .val_handle = nullptr,
-                              },
-                              {
-                                .uuid = &controlPointCharacteristicUuid.u,
-                                .access_cb = DfuServiceCallback,
-                                .arg = this,
-                                .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
-                                .val_handle = nullptr,
-                              },
-                              {
-                                .uuid = &revisionCharacteristicUuid.u,
-                                .access_cb = DfuServiceCallback,
-                                .arg = this,
-                                .flags = BLE_GATT_CHR_F_READ,
-                                .val_handle = &revision,
-
-                              },
-                              0
-
-    },
+  : characteristicDefinition {{.uuid = &packetCharacteristicUuid.u,
+                               .access_cb = DfuServiceCallback,
+                               .arg = this,
+                               .flags = BLE_GATT_CHR_F_WRITE_NO_RSP,
+                               .val_handle = nullptr},
+                              {.uuid = &controlPointCharacteristicUuid.u,
+                               .access_cb = DfuServiceCallback,
+                               .arg = this,
+                               .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
+                               .val_handle = nullptr},
+                              {.uuid = &revisionCharacteristicUuid.u,
+                               .access_cb = DfuServiceCallback,
+                               .arg = this,
+                               .flags = BLE_GATT_CHR_F_READ,
+                               .val_handle = &revision},
+                              0},
     serviceDefinition {
       {/* Device Information Service */
        .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -143,7 +134,6 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
               */
       return 0;
     }
-
     case States::Data: {
       nbPacketReceived++;
       dfuImage.Append(om->om_data, om->om_len);
@@ -337,14 +327,14 @@ void DfuService::NotificationManager::Reset() {
 }
 
 void DfuService::DfuImage::Init(size_t chunkSize, size_t totalSize, uint16_t expectedCrc) {
-  if (chunkSize != 20)
-    return;
-  this->chunkSize = chunkSize;
-  this->totalSize = totalSize;
-  this->expectedCrc = expectedCrc;
-  this->ready = true;
-  totalWriteIndex = 0;
-  bufferWriteIndex = 0;
+  if (chunkSize == 20) {
+    this->chunkSize = chunkSize;
+    this->totalSize = totalSize;
+    this->expectedCrc = expectedCrc;
+    this->ready = true;
+    totalWriteIndex = 0;
+    bufferWriteIndex = 0;
+  }
 }
 
 void DfuService::DfuImage::Append(uint8_t* data, size_t size) {
@@ -405,7 +395,6 @@ bool DfuService::DfuImage::Validate() {
       crc = ComputeCrc(tempBuffer, readSize, &crc);
     currentOffset += readSize;
   }
-
   return (crc == expectedCrc);
 }
 
@@ -419,12 +408,9 @@ uint16_t DfuService::DfuImage::ComputeCrc(uint8_t const* p_data, uint32_t size, 
     crc ^= (crc << 8) << 4;
     crc ^= ((crc & 0xFF) << 4) << 1;
   }
-
   return crc;
 }
 
 bool DfuService::DfuImage::IsComplete() {
-  if (!ready)
-    return false;
-  return totalWriteIndex == totalSize;
+  return ready ? totalWriteIndex == totalSize : false;
 }

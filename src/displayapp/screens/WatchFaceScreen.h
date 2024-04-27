@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Screen.h"
+#include <string>
 
 namespace Pinetime {
   namespace Applications {
@@ -16,6 +17,8 @@ namespace Pinetime {
         bool OnButtonPushed() override;
         bool OnTouchEvent(uint16_t, uint16_t) override;
         bool OnTouchEvent(TouchEvents) override;
+        static std::string bgImage;
+        static lv_obj_t* image;
 
       private:
         void Refresh() override;

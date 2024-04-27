@@ -7,11 +7,11 @@ using namespace Pinetime::Applications::Screens;
 
 SettingSetDateTime::SettingSetDateTime()
   : Screen(Apps::SettingSetDateTime),
-    arrayTouchHandler {items,
-                       1,
+    arrayTouchHandler {1,
                        [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }},
+                       },
+                       items},
     dotIndicator {items} {
   list[0] = new Screens::SettingSetDate(*this);
   list[1] = new Screens::SettingSetTime(*this);

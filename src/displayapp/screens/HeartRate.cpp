@@ -9,7 +9,6 @@ HeartRate::HeartRate() : Screen(Apps::HeartRate) {
 }
 
 void HeartRate::Load() {
-  running = true;
   bool isHrRunning = System::SystemTask::displayApp->heartRateController.State() != HeartRateController::States::Stopped;
 
   label_hr = lv_label_create(lv_scr_act(), NULL);
@@ -39,6 +38,7 @@ void HeartRate::Load() {
   lv_obj_align(label_hr, NULL, LV_ALIGN_CENTER, 0, -40);
 
   taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_MID, this);
+  running = true;
 }
 
 bool HeartRate::UnLoad() {

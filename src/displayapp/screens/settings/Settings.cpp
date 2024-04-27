@@ -6,11 +6,11 @@ using namespace Pinetime::Applications::Screens;
 
 Settings::Settings()
   : Screen(Apps::Settings),
-    arrayTouchHandler {apps.size(),
-                       maxItems,
+    arrayTouchHandler {maxItems,
                        [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }},
+                       },
+                       apps.size()},
     pageIndicator {apps.size() / maxItems + 1} {
 }
 
@@ -19,6 +19,7 @@ void Settings::Load() {
   lv_obj_set_style_local_bg_color(lv_scr_act(), LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0, 0, 0));
   container = lv_cont_create(lv_scr_act(), NULL);
   container->user_data = this;
+  static constexpr uint8_t innerPad = 4;
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_style_local_pad_inner(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, innerPad);
   lv_obj_set_style_local_border_width(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);

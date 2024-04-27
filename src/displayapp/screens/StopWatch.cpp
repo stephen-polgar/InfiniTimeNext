@@ -19,8 +19,7 @@ constexpr TickType_t blinkInterval = pdMS_TO_TICKS(1000);
 StopWatch::StopWatch() : Screen(Apps::StopWatch) {
 }
 
-void StopWatch::Load() {
-  running = true;
+void StopWatch::Load() {  
   if (currentState == States::Init) {
     oldTimeElapsed = 0;
     blinkTime = 0;
@@ -56,7 +55,6 @@ void StopWatch::Load() {
   lv_obj_align(lapText, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -btnHeight);
 
   msecTime = lv_label_create(lv_scr_act(), NULL);
-  lv_label_set_text_static(msecTime, "00");
   lv_obj_set_style_local_text_color(msecTime, LV_LABEL_PART_MAIN, LV_STATE_DISABLED, Colors::lightGray);
   lv_obj_align(msecTime, lapText, LV_ALIGN_OUT_TOP_MID, 0, 0);
 
@@ -75,12 +73,13 @@ void StopWatch::Load() {
     refresh(currentTimeSeparated);
   }
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  running = true;
 }
 
 bool StopWatch::UnLoad() {
-  if (running) {
-    running = false;
+  if (running) {    
     lv_task_del(taskRefresh);
+    running = false;
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
     lv_obj_clean(lv_scr_act());
   }

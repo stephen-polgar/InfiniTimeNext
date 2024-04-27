@@ -21,8 +21,7 @@ void Container::Load(const char* title, const char* symbol, lv_layout_t layout) 
   lv_obj_set_style_local_pad_inner(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 15);
   lv_obj_set_style_local_border_width(Container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 0);
   lv_obj_set_pos(Container, 0, 40);
-  lv_obj_set_width(Container, LV_HOR_RES);
-  lv_obj_set_height(Container, LV_VER_RES - 40);
+  lv_obj_set_size(Container, LV_HOR_RES, LV_VER_RES - 40);
   lv_cont_set_layout(Container, layout);  
 }
 

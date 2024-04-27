@@ -35,8 +35,7 @@ namespace Pinetime {
       Calendar,
 #endif
 #ifdef UseFileManager
-      FileManager,
-      FileView,
+      FileManager,    
 #endif
 #ifdef UseTwos
       Twos,
@@ -135,9 +134,9 @@ namespace Pinetime {
                                   ,
                                   Apps::Motion
 #endif
-#ifdef UseGallery
+#ifdef UseFileManager
                                   ,
-                                  Apps::Gallery
+                                  Apps::FileManager
 #endif
                                   >;
 

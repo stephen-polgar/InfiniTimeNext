@@ -17,8 +17,7 @@
 #pragma once
 
 #include "displayapp/screens/Screen.h"
-#include <array>
-// #include <nrf_log.h>
+//#include <nrf_log.h>
 
 using namespace Pinetime::Applications::Screens;
 
@@ -36,15 +35,30 @@ namespace Pinetime {
       Screen* Get(Applications::Apps id);
 
     private:
-      std::array<Screen*, N> screenArray;
+#ifdef NRF_LOG_INFO
+      void content(const char* msg = NULL);
+#endif
+      Screen* screenArray[N];
       uint8_t size = 0;
     };
+
+#ifdef NRF_LOG_INFO
+    template <uint8_t N>
+    void ScreenStack<N>::content(const char* msg) {
+      if (msg)
+        NRF_LOG_INFO("ScreenStack:msg=%s", msg);
+      uint8_t i = size;
+      while (i--) {
+        NRF_LOG_INFO("ScreenStack:content %d %d", screenArray[i], uint8_t(screenArray[i]->Id));
+      }
+    }
+#endif
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Pop() {
 #ifdef NRF_LOG_INFO
       Screen* screen = size ? screenArray[--size] : NULL;
-      NRF_LOG_INFO("ScreenStack:Pop %d %d %d", screen, (screen ? uint8_t(screen->Id) : 0), size);
+      NRF_LOG_INFO("ScreenStack:Pop %d %d size=%d", screen, (screen ? uint8_t(screen->Id) : 0), size);
       return screen;
 #else
       return size ? screenArray[--size] : NULL;
@@ -53,31 +67,44 @@ namespace Pinetime {
 
     template <uint8_t N>
     Screen* ScreenStack<N>::Get(Applications::Apps id) {
-      Screen* screen = NULL;
+#ifdef NRF_LOG_INFO
+      NRF_LOG_INFO("ScreenStack:Get %d", uint8_t(id));
+      content();
+#endif
+      Screen* screen;
       uint8_t i = size;
       while (i--) {
-        if (id == screenArray[i]->Id) {
+        if (id == *screenArray[i]) {
           screen = screenArray[i];
           size--;
           while (i < size) {
-            screenArray[i] = screenArray[++i];
+            //  screenArray[i] = screenArray[++i];  compiler bug !  ++i === i++
+            screenArray[i] = screenArray[i + 1];
+            i++;
           }
-          break;
+#ifdef NRF_LOG_INFO
+          content("get found");
+#endif
+          return screen;
         }
       }
 #ifdef NRF_LOG_INFO
-      NRF_LOG_INFO("ScreenStack:Get %d %d %d", screen, uint8_t(id), size);
+      NRF_LOG_INFO("get not found");
 #endif
-      return screen;
+      return NULL;
     }
 
     template <uint8_t N>
     void ScreenStack<N>::Push(Screen* screen) {
+#ifdef NRF_LOG_INFO
+      NRF_LOG_INFO("ScreenStack:Push %d %d available=%d", screen, uint8_t(screen->Id), N - size);
+      content();
+#endif
       uint8_t i;
       for (i = 0; i < size; i++) {
         if (screenArray[i] == screen) {
-#ifdef StackLog
-          NRF_LOG_INFO("ScreenStack:Push remove %d %d %d", screenArray[0], uint8_t(screenArray[0]->Id), size);
+#ifdef NRF_LOG_INFO
+          NRF_LOG_ERROR("ScreenStack:Push the same %d %d", screen, uint8_t(screen->Id));
 #endif
           size--;
           for (uint8_t i2 = i; i2 < size; i2++) {
@@ -97,7 +124,7 @@ namespace Pinetime {
       }
       screenArray[size++] = screen;
 #ifdef NRF_LOG_INFO
-      NRF_LOG_INFO("ScreenStack:Push %d %d %d", screen, uint8_t(screen->Id), size);
+      content("push end");
 #endif
     }
 
@@ -106,7 +133,7 @@ namespace Pinetime {
 #ifdef NRF_LOG_INFO
       NRF_LOG_INFO("ScreenStack:Reset");
 #endif
-      while (size) {
+     while (size) {
         delete screenArray[--size];
       }
     }

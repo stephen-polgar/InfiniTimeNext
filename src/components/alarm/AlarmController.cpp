@@ -171,7 +171,7 @@ void AlarmController::Init() {
 void AlarmController::Save() {
   lfs_file_t file;
   auto* fs = &System::SystemTask::displayApp->filesystem;
-  fs->FileDelete(fileName);
+  // fs->FileDelete(fileName);
   if (fs->FileOpen(&file, fileName, LFS_O_WRONLY | LFS_O_CREAT) == LFS_ERR_OK) {
     for (auto* alarmController : alarmControllers) {
       fs->FileWrite(&file, reinterpret_cast<uint8_t*>(&alarmController->t), sizeof(timeData));

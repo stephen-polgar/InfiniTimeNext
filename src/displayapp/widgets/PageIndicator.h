@@ -7,7 +7,10 @@ namespace Pinetime {
     namespace Widgets {
       class PageIndicator {
       public:
-        explicit PageIndicator(uint8_t screens) : screens {screens} {
+        PageIndicator(uint8_t screens) : screens {screens} {
+        }
+
+        PageIndicator() {
         }
 
         virtual void Load(uint8_t currentScreen) {
@@ -16,8 +19,12 @@ namespace Pinetime {
         virtual void UnLoad() {
         }
 
+        virtual void SetScreens(uint8_t screens) {
+          this->screens = screens;
+        }
+
       protected:
-        const uint8_t screens;
+        uint8_t screens;
       };
     }
   }

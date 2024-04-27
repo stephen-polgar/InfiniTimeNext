@@ -38,8 +38,7 @@ namespace Pinetime {
         void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
         Utility::ArrayTouchHandler arrayTouchHandler;
         lv_obj_t* container;
-        bool loaded = false;
-        static constexpr uint8_t innerPad = 4;
+        bool loaded = false;       
         Widgets::LineIndicator pageIndicator;
         void onButtonEvent(lv_obj_t* obj);
         static void buttonEventHandler(lv_obj_t* obj, lv_event_t event);

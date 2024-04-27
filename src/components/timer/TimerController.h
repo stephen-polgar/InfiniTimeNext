@@ -30,7 +30,7 @@ namespace Pinetime {
     private:
       TimerHandle_t timer;
       static void displayAppCallbackTimer(TimerHandle_t xTimer);    
-      static constexpr const char* fileName = "/timers.bin";
+      static constexpr const char* fileName = "/timers.dat";
     };
   }
 }

@@ -391,8 +391,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Weather.cpp 
         displayapp/screens/WeatherSymbols.cpp   
         displayapp/screens/Calendar.cpp
-        displayapp/screens/Calculator.cpp
-        displayapp/screens/FileView.cpp
+        displayapp/screens/Calculator.cpp      
         displayapp/screens/FileManager.cpp
         displayapp/screens/Paddle.cpp
         displayapp/screens/Twos.cpp
@@ -612,7 +611,6 @@ set(INCLUDE_FILES
         displayapp/screens/Weather.h
         displayapp/screens/Calendar.h
         displayapp/screens/Calculator.h
-        displayapp/screens/FileView.h
         displayapp/screens/FileManager.h
         displayapp/screens/Paddle.h
         displayapp/screens/Twos.h

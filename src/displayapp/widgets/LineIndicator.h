@@ -9,9 +9,15 @@ namespace Pinetime {
       class LineIndicator : public PageIndicator {
       public:
         LineIndicator(uint8_t screens);
+
+        LineIndicator() {
+        }
+
         void Load(uint8_t currentScreen) override;
         void UnLoad() override;
 
+        void SetScreens(uint8_t screens) override;
+      
       private:
         lv_obj_t *lineIndicator = NULL, *lineIndicatorBase = NULL;
       };

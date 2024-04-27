@@ -20,30 +20,32 @@
 #include "systemtask/SystemTask.h"
 #include "components/settings/Settings.h"
 
-// #define Log
-
-#ifdef Log
-  #include <nrf_log.h>
-#endif
-
 using namespace Pinetime::Applications::Screens;
 
+std::string WatchFaceScreen::bgImage;
+lv_obj_t* WatchFaceScreen::image = NULL;
+
 WatchFaceScreen::WatchFaceScreen() : Screen(Apps::Clock) {
-#ifdef Log
-  NRF_LOG_INFO("WatchFaceScreen new=%d, %d", this, uint8_t(Id));
-#endif
 }
 
 void WatchFaceScreen::Load() {
   Apps selected = Apps(System::SystemTask::displayApp->settingsController.GetWatchFace());
   if (!current || current->Id != selected) {
-    if (current)
+    if (current) {
       delete current;
+      bgImage.clear();
+    }
     current = System::SystemTask::displayApp->GetSelectedWatchFace();
     if (!current) {
       current = new WatchFaceDigital();
       System::SystemTask::displayApp->settingsController.SetWatchFace(WatchFace(current->Id));
     }
+  }
+  if (!bgImage.empty()) {
+    image = lv_img_create(lv_scr_act(), NULL);
+    lv_img_set_src(image, bgImage.c_str());
+    lv_obj_align(image, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+    lv_obj_move_background(image);
   }
   current->Load();
   running = current->IsRunning();
@@ -55,6 +57,10 @@ void WatchFaceScreen::Load() {
 }
 
 bool WatchFaceScreen::UnLoad() {
+  if (image) {
+    lv_obj_del(image);
+    image = NULL;
+  }
   if (running) {
     lv_task_del(taskRefresh);
     running = false;
@@ -64,15 +70,16 @@ bool WatchFaceScreen::UnLoad() {
 }
 
 WatchFaceScreen::~WatchFaceScreen() {
+  if (image) {
+    lv_obj_del(image);
+    image = NULL;
+  }
   if (running) {
     lv_task_del(taskRefresh);
   }
   if (current) {
     delete current;
   }
-#ifdef Log
-  NRF_LOG_INFO("WatchFaceScreen delete=%d %d", this, uint8_t(Id));
-#endif
 }
 
 void WatchFaceScreen::Refresh() {

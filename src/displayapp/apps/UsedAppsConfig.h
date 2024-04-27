@@ -23,21 +23,27 @@ InfiniSimNext simulator uses this settings too.
 */
 
 ////// Select built in apps ///////
+// Select only the apps you need.
+// All apps will not fit in memory and the installation will fail.
 
-#define UseCalendar
+//#define UseCalendar
 #define UseCalculator
 #define UseMotion
-#define UsePaddle
+//#define UsePaddle
 
 #define UseTwos
 // #define UseDice
 // #define UseMetronome
 // #define UseInfiniPaint
 
-#define UseWatchFaceTerminal
+//#define UseWatchFaceTerminal
 #define UseWatchFaceInfineat
 #define UseWatchFacePineTimeStyle
-// #define UseFileManager  // not ready
+
+// File Manager for view images and set selected image for current watch face backgound.
+// You can review all files and delete them by long pressing the delete button.
+#define UseFileManager
+
 //// End built in apps ////
 
 /*

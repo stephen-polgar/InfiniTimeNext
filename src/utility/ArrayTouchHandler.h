@@ -26,10 +26,18 @@ namespace Pinetime {
   namespace Utility {
     class ArrayTouchHandler {
     public:
-      ArrayTouchHandler(uint8_t arraySize,
-                        uint8_t maxItems,
-                        std::function<void(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections)> load)
-        : arraySize {arraySize}, maxItems {maxItems}, load {load}, size {maxItems} {
+      ArrayTouchHandler(uint8_t maxItems,
+                        std::function<void(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections)> load,
+                        uint8_t arraySize = 0)
+        : maxItems {maxItems}, load {load} {
+        if (arraySize)
+          SetArraySize(arraySize);
+      }
+
+      void SetArraySize(uint8_t arraySize) {
+        this->arraySize = arraySize;
+        size = arraySize >= maxItems ? maxItems : arraySize;
+        index = 0;
       }
 
       bool OnTouchEvent(Applications::TouchEvents event) {
@@ -64,8 +72,8 @@ namespace Pinetime {
       }
 
     private:
-      const uint8_t arraySize, maxItems;
-      uint8_t size, index = 0;
+      const uint8_t maxItems;
+      uint8_t arraySize, size, index;
       std::function<void(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections)> load;
     };
   }

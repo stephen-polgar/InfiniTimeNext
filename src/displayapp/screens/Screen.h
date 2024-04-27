@@ -10,7 +10,7 @@ namespace Pinetime {
       class Screen {
       public:
         enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
-        
+      
         // Avoid using `lv_obj_clean(lv_scr_act())`, as this will delete all lvgl objects used by other objects.
         virtual ~Screen() = default;
 
@@ -38,6 +38,9 @@ namespace Pinetime {
         virtual bool OnTouchEvent(uint16_t /*x*/, uint16_t /*y*/) {
           return false;
         }
+
+        bool operator==(const Screen& other) const;
+        bool operator==(const Apps other) const;
 
         Apps Id;
         FullRefreshDirections direction = FullRefreshDirections::None;

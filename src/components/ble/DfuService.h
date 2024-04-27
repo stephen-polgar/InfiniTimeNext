@@ -6,8 +6,8 @@
 #undef max
 #undef min
 
-namespace Pinetime { 
-  namespace Controllers {   
+namespace Pinetime {
+  namespace Controllers {
     class DfuService {
     public:
       DfuService();
@@ -35,14 +35,14 @@ namespace Pinetime {
       };
 
       class DfuImage {
-      public:        
+      public:
         void Init(size_t chunkSize, size_t totalSize, uint16_t expectedCrc);
         void Erase();
         void Append(uint8_t* data, size_t size);
         bool Validate();
         bool IsComplete();
 
-      private:        
+      private:
         static constexpr size_t bufferSize = 200;
         bool ready = false;
         size_t chunkSize = 0;
@@ -58,7 +58,7 @@ namespace Pinetime {
         uint16_t ComputeCrc(uint8_t const* p_data, uint32_t size, uint16_t const* p_crc);
       };
 
-    private:     
+    private:
       DfuImage dfuImage;
       NotificationManager notificationManager;
 

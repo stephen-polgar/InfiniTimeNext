@@ -64,7 +64,7 @@ namespace Pinetime {
       bool hasMoreAlarmSet();
       void createTimer();
       TimerHandle_t alarmTimer;
-      static constexpr const char* fileName = "/alarms.bin";
+      static constexpr const char* fileName = "/alarms.dat";
     };
   }
 }

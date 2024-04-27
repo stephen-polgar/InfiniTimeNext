@@ -9,11 +9,15 @@ namespace Pinetime {
       class DotIndicator : public PageIndicator {
       public:
         DotIndicator(uint8_t screens);
+
+        DotIndicator() {
+        }
+
         void Load(uint8_t currentScreen) override;
         void UnLoad() override;
 
       private:
-        lv_obj_t* container = NULL;        
+        lv_obj_t* container = NULL;
       };
     }
   }

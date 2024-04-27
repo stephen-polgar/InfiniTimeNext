@@ -117,11 +117,11 @@ void SystemInfo::FirmwareScreen::Load() {
 
 SystemInfo::SystemInfo()
   : Screen(Apps::SysInfo),
-    arrayTouchHandler {items,
-                       1,
+    arrayTouchHandler {1,
                        [this](uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction) {
                          load(indexBegin, indexEnd, direction);
-                       }},
+                       },
+                       items},
     pageIndicator {items} {
   list[0] = new MemoryInfo;
   list[1] = new TasksScreen;
