@@ -67,7 +67,7 @@ void FileManager::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefresh
 
   uint8_t i = 0, n = 0;
   lfs_dir_t dir;
-  if (0 == fs->DirOpen(dirPath.c_str(), &dir)) {
+  if (LFS_ERR_OK == fs->DirOpen(dirPath.c_str(), &dir)) {
     lfs_info info;
     uint8_t skeep = dirPath.starts_with(rootDir) ? 2 : 1;
     while (fs->DirRead(&dir, &info) && n < maxItems) {
@@ -83,7 +83,7 @@ void FileManager::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefresh
         i++;
       }
     }
-    assert(fs->DirClose(&dir) == 0);
+    assert(fs->DirClose(&dir) == LFS_ERR_OK);
   }
 
   lv_obj_t* btn = NULL;
@@ -131,7 +131,7 @@ FileManager::~FileManager() {
 void FileManager::updateSize() {
   uint8_t i = 0;
   lfs_dir_t dir;
-  if (0 == fs->DirOpen(dirPath.c_str(), &dir)) {
+  if (LFS_ERR_OK == fs->DirOpen(dirPath.c_str(), &dir)) {
     lfs_info info;
     uint8_t skeep = dirPath.starts_with(rootDir) ? 2 : 1;
     while (fs->DirRead(&dir, &info)) {
@@ -143,7 +143,7 @@ void FileManager::updateSize() {
       NRF_LOG_INFO("FileManager file=%s", info.name);
   #endif
     }
-    assert(fs->DirClose(&dir) == 0);
+    assert(fs->DirClose(&dir) == LFS_ERR_OK);
   }
   #ifdef Log
   NRF_LOG_INFO("FileManager files=%d", i);
@@ -201,11 +201,17 @@ void FileManager::openFile(lv_obj_t* item) {
 
 void FileManager::deleteFile(lv_obj_t* item) {
   File* file = static_cast<File*>(item->user_data);
+  /*
   std::string path = (dirPath.starts_with(rootDir) ? "" : "/" + dirPath) + "/" + file->path;
   #ifdef Log
   NRF_LOG_INFO("FileManager delete=%s", path.c_str());
   #endif
   if (LFS_ERR_OK == fs->FileDelete(path.c_str())) {
+    lv_obj_set_hidden(item, true);
+  }
+*/
+  std::string path = "F:" + (dirPath.starts_with(rootDir) ? "" : "/" + dirPath) + "/" + file->path;
+  if (LFS_ERR_OK == lv_fs_remove(path.c_str())) {
     lv_obj_set_hidden(item, true);
   }
   closeMenu();

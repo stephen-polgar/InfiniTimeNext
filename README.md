@@ -4,13 +4,14 @@ This repository is a fork of the [InfiniTime firmware](https://github.com/Infini
 
 Code optimized to access all the capabilities of the watch.
 
-## New main functions
+## Main features
 - The stopwatch can run in the background
 - Multiple saved alarm times with advanced settings
 - Several saved timers can run at the same time
 - Steps are shown in distance also
 * [Calculator](https://github.com/InfiniTimeOrg/InfiniTime/pull/1483)
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
+* [File Manager](doc/apps/FileManager.md)
 
 ### [Changes](doc/code/Apps.md)
 Most of system and user application constructors are empty, and are used to create new `Screen` based objects with different arguments.

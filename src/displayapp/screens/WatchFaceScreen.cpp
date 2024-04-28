@@ -22,8 +22,10 @@
 
 using namespace Pinetime::Applications::Screens;
 
+#ifdef UseFileManager
 std::string WatchFaceScreen::bgImage;
 lv_obj_t* WatchFaceScreen::image = NULL;
+#endif
 
 WatchFaceScreen::WatchFaceScreen() : Screen(Apps::Clock) {
 }
@@ -33,7 +35,9 @@ void WatchFaceScreen::Load() {
   if (!current || current->Id != selected) {
     if (current) {
       delete current;
+#ifdef UseFileManager
       bgImage.clear();
+#endif
     }
     current = System::SystemTask::displayApp->GetSelectedWatchFace();
     if (!current) {
@@ -41,12 +45,14 @@ void WatchFaceScreen::Load() {
       System::SystemTask::displayApp->settingsController.SetWatchFace(WatchFace(current->Id));
     }
   }
+#ifdef UseFileManager
   if (!bgImage.empty()) {
     image = lv_img_create(lv_scr_act(), NULL);
     lv_img_set_src(image, bgImage.c_str());
     lv_obj_align(image, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
     lv_obj_move_background(image);
   }
+#endif
   current->Load();
   running = current->IsRunning();
   if (running) {
@@ -57,10 +63,12 @@ void WatchFaceScreen::Load() {
 }
 
 bool WatchFaceScreen::UnLoad() {
+#ifdef UseFileManager
   if (image) {
     lv_obj_del(image);
     image = NULL;
   }
+#endif
   if (running) {
     lv_task_del(taskRefresh);
     running = false;
@@ -70,10 +78,12 @@ bool WatchFaceScreen::UnLoad() {
 }
 
 WatchFaceScreen::~WatchFaceScreen() {
+#ifdef UseFileManager
   if (image) {
     lv_obj_del(image);
     image = NULL;
   }
+#endif
   if (running) {
     lv_task_del(taskRefresh);
   }

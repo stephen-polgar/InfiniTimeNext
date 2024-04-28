@@ -17,9 +17,10 @@ namespace Pinetime {
         bool OnButtonPushed() override;
         bool OnTouchEvent(uint16_t, uint16_t) override;
         bool OnTouchEvent(TouchEvents) override;
+#ifdef UseFileManager
         static std::string bgImage;
         static lv_obj_t* image;
-
+#endif
       private:
         void Refresh() override;
         lv_task_t* taskRefresh;

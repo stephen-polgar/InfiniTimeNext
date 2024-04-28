@@ -41,7 +41,7 @@ InfiniSimNext simulator uses this settings too.
 #define UseWatchFacePineTimeStyle
 
 // File Manager for view images and set selected image for current watch face backgound.
-// You can review all files and delete them by long pressing the delete button.
+// You can review all files on 4MB external (SPI) Flash.
 #define UseFileManager
 
 //// End built in apps ////
