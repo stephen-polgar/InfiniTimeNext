@@ -11,7 +11,6 @@ namespace Pinetime {
       public:
         enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
       
-        // Avoid using `lv_obj_clean(lv_scr_act())`, as this will delete all lvgl objects used by other objects.
         virtual ~Screen() = default;
 
         bool IsRunning() const {

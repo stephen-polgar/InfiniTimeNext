@@ -18,8 +18,8 @@ Use color format CF_TRUE_COLOR or CF_TRUE_COLOR_ALPHA and output format Binary R
 $ lv_img_conv imagefile.png --output-file imagefile.bin --color-format CF_TRUE_COLOR -output-format bin -binary-format ARGB8565_RBSWAP   
 ```
 
-Then send the image over to myimages/filename.bin on the watch's file system using a companion app like ITD , Amazfish or, using [File Explorer for PineTime](https://infinitimeexplorer.netlify.app) in chromium browser.
+Then send the image over to myimages/filename.bin on the watch's file system using a companion app like ITD , Amazfish or using [File Explorer for PineTime](https://infinitimeexplorer.netlify.app) in chromium browser.
 
 ```sh
-$ $ itctl fs write imagefile.bin /myimages/imagename.bin        # upload image   
+$ itctl fs write imagefile.bin /myimages/imagename.bin        # upload image   
 ```

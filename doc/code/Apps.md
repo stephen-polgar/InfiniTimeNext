@@ -163,10 +163,13 @@ MyApp::MyApp() : Screen(Apps::MyApp) {
 void MyApp::Load() {
   running = true;
  // using optional arguments for load if any
-  lv_obj_t* title = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_text_static(title, "My test application");
+  parentBackground = lv_obj_create(lv_scr_act(), NULL);  // used as a parent of other objects
+  lv_obj_set_style_local_bg_color(parentBackground, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);  // for black background
+  lv_obj_set_size(parentBackground, LV_HOR_RES, LV_VER_RES);  
+  lv_obj_t* title = lv_label_create(parentBackground, NULL);  
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(title, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+  lv_label_set_text_static(title, "My test application");
+  lv_obj_align(title, NULL, LV_ALIGN_CENTER, 0, 0);
   /*
    Controllers:
    System::SystemTask::displayApp->settingsController , ....
@@ -177,7 +180,8 @@ void MyApp::Load() {
 bool MyApp::UnLoad()  {
   if (running) {
    running = false;
-   lv_obj_clean(lv_scr_act());
+   // Avoid using `lv_obj_clean(lv_scr_act())`, as this will delete all lvgl objects used by other objects.
+   lv_obj_del(parentBackground);
   }
   return true; // value of true enables this object to be stored in the ScreenStack
 }
