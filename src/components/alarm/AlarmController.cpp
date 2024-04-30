@@ -24,9 +24,8 @@ AlarmController::AlarmController() {
 }
 
 AlarmController::~AlarmController() {
-  // TODO: xTimerDelete(alarmTimer, 1);
-  if (t.state != AlarmState::Not_Set)
-    xTimerStop(alarmTimer, 0);
+  // if (t.state != AlarmState::Not_Set)  xTimerStop(alarmTimer, 0);
+  xTimerDelete(alarmTimer, 0);
   alarmControllers.erase(std::remove(alarmControllers.begin(), alarmControllers.end(), this), alarmControllers.end());
 }
 

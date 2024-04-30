@@ -1,7 +1,6 @@
 #include "TimerController.h"
 #include "systemtask/SystemTask.h"
 
-
 using namespace Pinetime::Controllers;
 
 std::vector<TimerController*> TimerController::timers;
@@ -54,7 +53,7 @@ void TimerController::Init() {
 void TimerController::Save() {
   lfs_file_t file;
   auto* fs = &System::SystemTask::displayApp->filesystem;
- // fs->FileDelete(fileName);
+  // fs->FileDelete(fileName);
   if (fs->FileOpen(&file, fileName, LFS_O_WRONLY | LFS_O_CREAT) == LFS_ERR_OK) {
     for (auto* timer : timers) {
       fs->FileWrite(&file, reinterpret_cast<uint8_t*>(&timer->duration), sizeof(std::chrono::milliseconds));
@@ -64,8 +63,7 @@ void TimerController::Save() {
 }
 
 TimerController::~TimerController() {
-  // xTimerDelete
-  if (IsRunning())
-    StopTimer();
+  // if (IsRunning()) StopTimer();
+  xTimerDelete(timer, 0);
   timers.erase(std::remove(timers.begin(), timers.end(), this), timers.end());
 }
