@@ -8,7 +8,7 @@ using namespace Pinetime::Applications::Screens;
 extern lv_font_t jetbrains_mono_extrabold_compressed;
 extern lv_font_t jetbrains_mono_bold_20;
 
-Notifications::Notifications(Apps id) : Screen(id) {
+Notifications::Notifications(Apps id) : ScreenRefresh(id) {
 }
 
 void Notifications::Load() {
@@ -53,7 +53,7 @@ void Notifications::Load() {
     interacted = true;
     timeoutLine = NULL;
   }
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 void Notifications::deleteTimeOut() {
@@ -65,14 +65,11 @@ void Notifications::deleteTimeOut() {
 
 bool Notifications::UnLoad() {
   if (taskRefresh) {
-    lv_task_del(taskRefresh);
-    taskRefresh = NULL;
-    running = false;
-    currentItem.reset(); 
+    currentItem.reset();
+    ScreenRefresh::UnLoad();
     // make sure we stop any vibrations before exiting
     System::SystemTask::displayApp->motorController.StopRinging();
     System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
-    lv_obj_clean(lv_scr_act());
   }
   return true;
 }

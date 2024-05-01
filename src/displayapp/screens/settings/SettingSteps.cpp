@@ -78,14 +78,6 @@ void SettingSteps::Load() {
   lv_label_create(btnP, lblPlus);
 }
 
-bool SettingSteps::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
 SettingSteps::~SettingSteps() {
   UnLoad();
   System::SystemTask::displayApp->settingsController.SaveSettings();

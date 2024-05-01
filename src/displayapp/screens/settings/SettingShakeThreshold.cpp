@@ -6,7 +6,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-SettingShakeThreshold::SettingShakeThreshold() : Screen(Apps::SettingShakeThreshold) {
+SettingShakeThreshold::SettingShakeThreshold() : ScreenRefresh(Apps::SettingShakeThreshold) {
 }
 
 void SettingShakeThreshold::Load() {
@@ -61,23 +61,20 @@ void SettingShakeThreshold::Load() {
     System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, true);
   } else
     EnableForCal = false;
-  refreshTask = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
   screenTimeout = System::SystemTask::displayApp->settingsController.GetScreenTimeOut();
   System::SystemTask::displayApp->settingsController.SetScreenTimeOut(20000);
 }
 
 bool SettingShakeThreshold::UnLoad() {
-  if (running) {
-    lv_task_del(refreshTask);
-    running = false;
-    lv_obj_clean(lv_scr_act());
+  if (running) {   
     System::SystemTask::displayApp->settingsController.SetScreenTimeOut(screenTimeout);
     System::SystemTask::displayApp->settingsController.SetShakeThreshold(lv_arc_get_value(positionArc));
     if (EnableForCal) {
       System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, false);
     }
   }
-  return true;
+  return ScreenRefresh::UnLoad();
 }
 
 SettingShakeThreshold::~SettingShakeThreshold() {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include <portmacro_cmsis.h>
 #include "displayapp/apps/Apps.h"
 #include "Symbols.h"
@@ -17,7 +17,7 @@ namespace Pinetime {
         int hundredths;
       };
 
-      class StopWatch : public Screen {
+      class StopWatch : public ScreenRefresh {
       public:
         explicit StopWatch();
         ~StopWatch() override;
@@ -54,8 +54,7 @@ namespace Pinetime {
         bool isHoursLabelUpdated;
 
         lv_obj_t *time, *msecTime, *btnPlayPause, *btnStopLap, *txtPlayPause, *txtStopLap;
-        lv_obj_t* lapText;
-        lv_task_t* taskRefresh;
+        lv_obj_t* lapText;       
       };
     }
 

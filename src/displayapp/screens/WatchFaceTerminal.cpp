@@ -52,18 +52,6 @@ void WatchFaceTerminal::Load() {
   running = true;
 }
 
-bool WatchFaceTerminal::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-WatchFaceTerminal::~WatchFaceTerminal() {
-  UnLoad();
-}
-
 void WatchFaceTerminal::Refresh() {
   auto* app = System::SystemTask::displayApp;
 

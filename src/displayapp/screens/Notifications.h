@@ -2,14 +2,14 @@
 
 #include <FreeRTOS.h>
 #include <timers.h>
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "components/ble/NotificationManager.h"
 #include <memory>
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class Notifications : public Screen {
+      class Notifications : public ScreenRefresh {
       public:
         explicit Notifications(Apps id);
         ~Notifications() override;
@@ -65,8 +65,7 @@ namespace Pinetime {
 
         static const TickType_t timeoutLength = pdMS_TO_TICKS(7000);
         bool interacted;
-        bool dismissingNotification;
-        lv_task_t* taskRefresh = NULL;
+        bool dismissingNotification;       
       };
     }
   }

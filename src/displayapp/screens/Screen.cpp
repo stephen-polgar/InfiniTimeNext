@@ -2,10 +2,6 @@
 
 using namespace Pinetime::Applications::Screens;
 
-void Screen::RefreshTaskCallback(lv_task_t* task) {
-  static_cast<Screen*>(task->user_data)->Refresh();
-}
-
 Screen::Screen(Apps Id) : Id {Id} { 
 }
 
@@ -18,4 +14,16 @@ bool Screen::operator==(const Screen& other) const {
 
 bool Screen::operator==(const Apps other) const {
   return Id == other && other != Apps::None;
+}
+
+bool Screen::UnLoad() {
+  if (running) {   
+    running = false;
+    lv_obj_clean(lv_scr_act());
+  }
+  return Id != Apps::None;
+}
+
+Screen::~Screen() {
+  UnLoad();
 }

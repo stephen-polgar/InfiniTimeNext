@@ -13,7 +13,7 @@ Code optimized to access all the capabilities of the watch.
 * [Calendar](https://github.com/InfiniTimeOrg/InfiniTime/pull/923)
 * [File Manager](doc/apps/FileManager.md)
 
-### [Changes](doc/code/Apps.md)
+### Changes [here](doc/code/Apps.md)
 Most of system and user application constructors are empty, and are used to create new `Screen` based objects with different arguments.
 Constructors do not load the screen. The watch screen are filled and cleaned by the `Screen::Load()` and `Screen::UnLoad()` methods.
 The `utility/StaticStack.h` has been replaced with `utility/ScreenStack.h` which can store `Screen objects` with different arguments, so it can continue interrupted apps (for example, game results are not lost due to new notifications and timers). Watch faces are handled by `WatchFaceScreen class` instead of `DisplayApp`. `ScreenList class` has been replaced with `utility/ArrayTouchHandler` which allows scrolling large arrays without creating and deleting objects (the items are only renamed), so some class and constant size `std::array` has been removed (`Label`, `Tile`, `List`, `CheckboxList`). I have no debug device and bug reports are welcome.

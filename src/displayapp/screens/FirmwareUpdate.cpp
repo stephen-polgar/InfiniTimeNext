@@ -3,12 +3,12 @@
 
 using namespace Pinetime::Applications::Screens;
 
-FirmwareUpdate::FirmwareUpdate(const Controllers::Ble& bleController) : Screen(Apps::FirmwareUpdate), bleController {bleController} {
+FirmwareUpdate::FirmwareUpdate(const Controllers::Ble& bleController) : ScreenRefresh(Apps::FirmwareUpdate), bleController {bleController} {
 }
 
 void FirmwareUpdate::Load() {
   titleLabel = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_text_static(titleLabel, "Firmware update");
+  lv_label_set_text_static(titleLabel, "Firmware Update");
   lv_obj_align(titleLabel, nullptr, LV_ALIGN_IN_TOP_MID, 0, 50);
 
   bar1 = lv_bar_create(lv_scr_act(), nullptr);
@@ -22,22 +22,9 @@ void FirmwareUpdate::Load() {
   lv_label_set_recolor(percentLabel, true);
   lv_obj_set_auto_realign(percentLabel, true);
   lv_obj_align(percentLabel, bar1, LV_ALIGN_OUT_TOP_MID, 0, 60);
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
   startTime = xTaskGetTickCount();
   running = true;
-}
-
-bool FirmwareUpdate::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-FirmwareUpdate::~FirmwareUpdate() {
-  UnLoad();
 }
 
 void FirmwareUpdate::Refresh() {

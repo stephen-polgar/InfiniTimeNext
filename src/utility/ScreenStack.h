@@ -17,7 +17,7 @@
 #pragma once
 
 #include "displayapp/screens/Screen.h"
-//#include <nrf_log.h>
+// #include <nrf_log.h>
 
 using namespace Pinetime::Applications::Screens;
 
@@ -28,6 +28,7 @@ namespace Pinetime {
     public:
       Screen* Pop();
       void Push(Screen*);
+      void Put(Screen*);
       void Reset();
       Screen* Top();
       bool Empty();
@@ -129,11 +130,32 @@ namespace Pinetime {
     }
 
     template <uint8_t N>
+    void ScreenStack<N>::Put(Screen* screen) {
+#ifdef NRF_LOG_INFO
+      NRF_LOG_INFO("ScreenStack:Put %d %d available=%d", screen, uint8_t(screen->Id), N - size);
+#endif
+      if (size == N) {
+        delete screenArray[0];
+      } else {
+        uint8_t i = size++;
+        while (i) {
+          // screenArray[i] = screenArray[--i];  compiler bug !  --i === i--
+          screenArray[i] = screenArray[i-1];
+          i--;
+        }
+      }
+      screenArray[0] = screen;
+#ifdef NRF_LOG_INFO
+      content("Put end");
+#endif
+    }
+
+    template <uint8_t N>
     void ScreenStack<N>::Reset() {
 #ifdef NRF_LOG_INFO
       NRF_LOG_INFO("ScreenStack:Reset");
 #endif
-     while (size) {
+      while (size) {
         delete screenArray[--size];
       }
     }

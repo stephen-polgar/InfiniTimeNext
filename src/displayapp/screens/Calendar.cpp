@@ -5,7 +5,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Calendar::Calendar() : Screen(Apps::Calendar) {
+Calendar::Calendar() : ScreenRefresh(Apps::Calendar) {
 }
 
 void Calendar::Load() {
@@ -49,23 +49,9 @@ void Calendar::Load() {
 
   // Use today's date as a reference for which month to show if moved
   current = today;
-  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
+  createRefreshTask(5000, LV_TASK_PRIO_MID);
   Refresh();
 }
-
-bool Calendar::UnLoad() {
-  if (running) {
-    running = false;
-    lv_task_del(taskUpdate);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Calendar::~Calendar() {
-  UnLoad();
-}
-
 
 void Calendar::Refresh() {
   lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());

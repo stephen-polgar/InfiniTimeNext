@@ -1,18 +1,16 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #ifdef UseMotion
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class Motion : public Screen {
+      class Motion : public ScreenRefresh {
       public:
-        Motion();
-        ~Motion() override;
+        Motion();       
         void Load() override;
-        bool UnLoad() override;
         void Refresh() override;
 
       private:
@@ -22,8 +20,7 @@ namespace Pinetime {
         lv_chart_series_t* ser3;
         lv_obj_t* label;
 
-        lv_obj_t* labelStep;
-        lv_task_t* taskRefresh;
+        lv_obj_t* labelStep;        
       };
     }
 

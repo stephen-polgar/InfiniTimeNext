@@ -14,10 +14,8 @@ namespace Pinetime {
       class WatchFaceDigital : public Screen {
       public:
         WatchFaceDigital();
-        ~WatchFaceDigital() override;
-
+       
         void Load() override;
-        bool UnLoad() override;
         void Refresh() override;
         bool OnTouchEvent(uint16_t /*x*/, uint16_t /*y*/) override;
 

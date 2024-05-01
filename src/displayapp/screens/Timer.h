@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "displayapp/widgets/ButtonListItem.h"
 #include "components/timer/TimerController.h"
 #include "Symbols.h"
 
 namespace Pinetime::Applications {
   namespace Screens {
-    class Timer : public Screen {
+    class Timer : public ScreenRefresh {
     public:
       Timer();
       ~Timer() override;
@@ -15,6 +15,7 @@ namespace Pinetime::Applications {
       bool UnLoad() override;
 
     private:
+      void Refresh() override;
       static bool changed;
       void createNewItem(Controllers::TimerController* timer);
       void updateAddButton();

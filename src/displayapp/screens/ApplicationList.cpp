@@ -16,11 +16,6 @@ ApplicationList::ApplicationList(std::array<AppList, UserAppTypes::Count>& apps)
 }
 
 void ApplicationList::Load() {
-  statusIcons.Load();
-  lv_obj_align(statusIcons.Container, lv_scr_act(), LV_ALIGN_IN_TOP_RIGHT, -8, 0);
-  label_time = lv_label_create(lv_scr_act(), NULL);
-  lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(label_time, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
   btnm = lv_btnmatrix_create(lv_scr_act(), NULL);
   lv_obj_set_style_local_radius(btnm, LV_BTNMATRIX_PART_BTN, LV_STATE_DEFAULT, 20);
   lv_obj_set_style_local_bg_opa(btnm, LV_BTNMATRIX_PART_BTN, LV_STATE_DEFAULT, LV_OPA_50);
@@ -37,8 +32,6 @@ void ApplicationList::Load() {
     }
   });
   arrayTouchHandler.LoadCurrentPos();
-  Refresh();
-  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
   running = true;
 }
 
@@ -62,13 +55,12 @@ void ApplicationList::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRef
     lv_btnmatrix_set_btn_ctrl(btnm, i, LV_BTNMATRIX_CTRL_CLICK_TRIG);
   }
   lv_obj_set_size(btnm, LV_HOR_RES - 16, size < 4 ? (LV_VER_RES - 60) / 2 : (LV_VER_RES - 60));
-  lv_obj_align(btnm, NULL, LV_ALIGN_CENTER, 0, 10);
+  lv_obj_align(btnm, NULL, LV_ALIGN_CENTER, 0, 0);
 }
 
 bool ApplicationList::UnLoad() {
-  if (taskUpdate) {
-    lv_task_del(taskUpdate);
-    taskUpdate = NULL;
+  if (btnm) {
+    btnm = NULL;
     running = false;
     pageIndicator.UnLoad();
     lv_obj_clean(lv_scr_act());
@@ -82,12 +74,17 @@ ApplicationList::~ApplicationList() {
 
 bool ApplicationList::OnTouchEvent(Applications::TouchEvents event) {
   enableEvent = event == TouchEvents::Tap;
-  return arrayTouchHandler.OnTouchEvent(event);
-}
-
-void ApplicationList::Refresh() {
-  lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
-  statusIcons.Refresh();
+  switch (event) {
+    case TouchEvents::SwipeRight:
+      System::SystemTask::displayApp->StartApp(Apps::QuickSettings, Screen::FullRefreshDirections::RightAnim);
+      break;
+    case TouchEvents::SwipeLeft:
+      System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace, Screen::FullRefreshDirections::LeftAnim);
+      break;
+    default:
+      return arrayTouchHandler.OnTouchEvent(event);
+  }
+  return false;
 }
 
 void ApplicationList::onValueChangedEvent(uint8_t index) {

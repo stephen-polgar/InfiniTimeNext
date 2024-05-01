@@ -185,7 +185,7 @@ namespace {
   }
 }
 
-Navigation::Navigation() : Screen(Apps::Navigation) {
+Navigation::Navigation() : ScreenRefresh(Apps::Navigation) {
 }
 
 void Navigation::Load() {
@@ -229,20 +229,7 @@ void Navigation::Load() {
   lv_bar_set_range(barProgress, 0, 100);
   lv_bar_set_value(barProgress, 0, LV_ANIM_OFF);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-}
-
-bool Navigation::UnLoad() {
-  if (running) {
-    running = false;
-    lv_task_del(taskRefresh);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Navigation::~Navigation() {
-  UnLoad();
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 void Navigation::Refresh() {

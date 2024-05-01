@@ -43,14 +43,6 @@ void SettingWakeUp::Load() {
   }
 }
 
-bool SettingWakeUp::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
 SettingWakeUp::~SettingWakeUp() {
   UnLoad();
   System::SystemTask::displayApp->settingsController.SaveSettings();

@@ -10,9 +10,7 @@ namespace Pinetime {
       class InfiniPaint : public Screen {
       public:
         InfiniPaint();
-        ~InfiniPaint() override;
         void Load() override;
-        bool UnLoad() override;
         bool OnTouchEvent(TouchEvents event) override;
         bool OnTouchEvent(uint16_t x, uint16_t y) override;
 

@@ -24,7 +24,7 @@
 #include "displayapp/screens/PassKey.h"
 #include "displayapp/screens/Error.h"
 
-//#include <nrf_log.h>
+// #include <nrf_log.h>
 
 using namespace Pinetime::Applications;
 using namespace Pinetime::Applications::Display;
@@ -319,15 +319,18 @@ void DisplayApp::StartApp(Screen* screen, Screen::FullRefreshDirections directio
   nextScreen = screen;
 }
 
-void DisplayApp::loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store) {
+void DisplayApp::loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool push) {
 #ifdef NRF_LOG_INFO
   NRF_LOG_INFO("DisplayApp:loadScreen %d Id=%d", screen, uint8_t(screen->Id));
 #endif
   lvgl.CancelTap();
   lv_disp_trig_activity(NULL);
   if (currentScreen) {
-    if (currentScreen->UnLoad() && store) {
-      screenStack.Push(currentScreen);
+    if (currentScreen->UnLoad()) {
+      if (push)
+        screenStack.Push(currentScreen);
+      else  // cache
+        screenStack.Put(currentScreen);
       currentScreen->direction = direction;
     } else
       delete currentScreen;
@@ -362,7 +365,7 @@ void DisplayApp::loadScreen(Apps app, Screen::FullRefreshDirections direction) {
         }
         screen = new ApplicationList(apps);
       } break;
-      case Apps::Clock:        
+      case Apps::Clock:
         screen = new WatchFaceScreen();
         break;
       case Apps::Error:

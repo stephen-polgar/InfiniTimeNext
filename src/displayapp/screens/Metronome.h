@@ -1,6 +1,6 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
+#include "displayapp/screens/ScreenRefresh.h"
 #ifdef UseMetronome
   #include "Symbols.h"
   #include <portmacro_cmsis.h>
@@ -9,7 +9,7 @@ namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class Metronome : public Screen {
+      class Metronome : public ScreenRefresh {
       public:
         Metronome();
         ~Metronome() override;
@@ -35,8 +35,6 @@ namespace Pinetime {
         lv_obj_t *bpbDropdown, *currentBpbText;
         lv_obj_t* playPause;
         lv_obj_t* lblPlayPause;
-
-        lv_task_t* taskRefresh;
       };
     }
 

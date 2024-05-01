@@ -12,8 +12,7 @@ namespace Pinetime {
         SettingDisplay();
         ~SettingDisplay() override;
         void Load() override;
-        bool UnLoad() override;
-
+      
       private:
         static constexpr std::array<uint16_t, 6> options = {5000, 7000, 10000, 15000, 20000, 30000};
         void onButtonEvent(lv_obj_t* obj);

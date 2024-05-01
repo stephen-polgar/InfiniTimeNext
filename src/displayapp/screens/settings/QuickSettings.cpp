@@ -9,20 +9,10 @@ QuickSettings::QuickSettings() : Screen(Apps::QuickSettings) {
 }
 
 void QuickSettings::Load() {
-  statusIcons.Load();
-
   // This is the distance (padding) between all objects on this screen.
   static constexpr uint8_t innerDistance = 10;
-
-  // Time
-  label_time = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
-  lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 0, 0);
-
-  static constexpr uint8_t barHeight = 20 + innerDistance;
-  static constexpr uint8_t buttonHeight = (LV_VER_RES_MAX - barHeight - innerDistance) / 2;
+  static constexpr uint8_t buttonHeight = (LV_VER_RES_MAX - innerDistance * 2) / 2;
   static constexpr uint8_t buttonWidth = (LV_HOR_RES_MAX - innerDistance) / 2; // wide buttons
-  // static constexpr uint8_t buttonWidth = buttonHeight; // square buttons
   static constexpr uint8_t buttonXOffset = (LV_HOR_RES_MAX - buttonWidth * 2 - innerDistance) / 2;
 
   lv_style_init(&btn_style);
@@ -34,7 +24,7 @@ void QuickSettings::Load() {
   lv_obj_set_event_cb(btn1, buttonEventHandler);
   lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_size(btn1, buttonWidth, buttonHeight);
-  lv_obj_align(btn1, nullptr, LV_ALIGN_IN_TOP_LEFT, buttonXOffset, barHeight);
+  lv_obj_align(btn1, nullptr, LV_ALIGN_IN_TOP_LEFT, buttonXOffset, innerDistance);
 
   btn1_lvl = lv_label_create(btn1, nullptr);
   lv_obj_set_style_local_text_font(btn1_lvl, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
@@ -45,7 +35,7 @@ void QuickSettings::Load() {
   lv_obj_set_event_cb(btn2, buttonEventHandler);
   lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &btn_style);
   lv_obj_set_size(btn2, buttonWidth, buttonHeight);
-  lv_obj_align(btn2, nullptr, LV_ALIGN_IN_TOP_RIGHT, -buttonXOffset, barHeight);
+  lv_obj_align(btn2, nullptr, LV_ALIGN_IN_TOP_RIGHT, -buttonXOffset, innerDistance);
 
   lv_obj_t* lbl_btn;
   lbl_btn = lv_label_create(btn2, nullptr);
@@ -85,30 +75,18 @@ void QuickSettings::Load() {
   lbl_btn = lv_label_create(btn4, nullptr);
   lv_obj_set_style_local_text_font(lbl_btn, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_sys_48);
   lv_label_set_text_static(lbl_btn, Symbols::settings);
-
-  Refresh();
-  taskUpdate = lv_task_create(RefreshTaskCallback, 5000, LV_TASK_PRIO_MID, this);
   running = true;
 }
 
 bool QuickSettings::UnLoad() {
-  if (running) {
-    lv_task_del(taskUpdate);
-    running = false;
+  if (running)
     lv_style_reset(&btn_style);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
+  return Screen::UnLoad();
 }
 
 QuickSettings::~QuickSettings() {
   UnLoad();
   System::SystemTask::displayApp->settingsController.SaveSettings();
-}
-
-void QuickSettings::Refresh() {
-  lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
-  statusIcons.Refresh();
 }
 
 void QuickSettings::buttonEventHandler(lv_obj_t* obj, lv_event_t event) {

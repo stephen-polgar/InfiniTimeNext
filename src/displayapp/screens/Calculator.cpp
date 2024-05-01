@@ -52,18 +52,6 @@ void Calculator::Load() {
   UpdateValueLabel();   // show value after reload
 }
 
-bool Calculator::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Calculator::~Calculator() {
-  UnLoad();
-}
-
 void Calculator::eventHandler(lv_obj_t* obj, lv_event_t event) {
   if (event == LV_EVENT_PRESSED)
     static_cast<Calculator*>(obj->user_data)->HandleInput();

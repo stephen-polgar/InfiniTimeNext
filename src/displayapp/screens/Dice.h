@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #ifdef UseDice
   #include "displayapp/widgets/Counter.h"
   #include "Symbols.h"
@@ -10,7 +10,7 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class Dice : public Screen {
+      class Dice : public ScreenRefresh {
       public:
         Dice();
         ~Dice() override;
@@ -25,7 +25,6 @@ namespace Pinetime {
         lv_obj_t* btnRollLabel;
         lv_obj_t* resultTotalLabel;
         lv_obj_t* resultIndividualLabel;
-        lv_task_t* refreshTask;
         bool enableShakeForDice = false;
 
         std::mt19937 gen;

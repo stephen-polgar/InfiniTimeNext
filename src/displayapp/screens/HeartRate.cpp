@@ -5,7 +5,7 @@
 using namespace Pinetime::Applications::Screens;
 using namespace Pinetime::Controllers;
 
-HeartRate::HeartRate() : Screen(Apps::HeartRate) {
+HeartRate::HeartRate() : ScreenRefresh(Apps::HeartRate) {
 }
 
 void HeartRate::Load() {
@@ -37,18 +37,13 @@ void HeartRate::Load() {
   Refresh();
   lv_obj_align(label_hr, NULL, LV_ALIGN_CENTER, 0, -40);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_MID, this);
+  createRefreshTask(100, LV_TASK_PRIO_MID);
   running = true;
 }
 
 bool HeartRate::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    running = false;
-    lv_obj_clean(lv_scr_act());
-    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
-  }
-  return true;
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+  return ScreenRefresh::UnLoad();
 }
 
 HeartRate::~HeartRate() {

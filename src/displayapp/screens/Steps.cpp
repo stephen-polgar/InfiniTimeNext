@@ -5,7 +5,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Steps::Steps() : Screen(Apps::Steps) {
+Steps::Steps() : ScreenRefresh(Apps::Steps) {
 }
 
 void Steps::Load() {
@@ -56,21 +56,8 @@ void Steps::Load() {
 #else
   lv_obj_align(tripLabel, lstepsGoal, LV_ALIGN_IN_LEFT_MID, -20, 20);
 #endif
-  taskRefresh = lv_task_create(RefreshTaskCallback, 100, LV_TASK_PRIO_LOW, this);
+  createRefreshTask(100, LV_TASK_PRIO_LOW);
   running = true;
-}
-
-bool Steps::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    lv_obj_clean(lv_scr_act());
-    running = false;
-  }
-  return true;
-}
-
-Steps::~Steps() {
-  UnLoad();
 }
 
 void Steps::Refresh() {

@@ -15,10 +15,13 @@ SettingWatchFace::SettingWatchFace(std::array<Screens::SettingWatchFace::Item, U
                        },
                        UserWatchFaceTypes::Count},
     pageIndicator {UserWatchFaceTypes::Count / maxItems + 1} {
+#ifdef NRF_LOG_INFO
+  NRF_LOG_INFO("SettingWatchFace::Create %d", this);
+#endif
 }
 
 void SettingWatchFace::Load() {
-  container.Load("Watch face", Symbols::home);
+  container.Load("Watch Face", Symbols::home);
   container.Container->user_data = this;
   currentWatchface = System::SystemTask::displayApp->settingsController.GetWatchFace();
   for (uint8_t i = 0; i < maxItems; i++) {
@@ -59,15 +62,17 @@ void SettingWatchFace::load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRe
 }
 
 bool SettingWatchFace::UnLoad() {
-  if (running) {
-    running = false;
-    pageIndicator.UnLoad();
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
+#ifdef NRF_LOG_INFO
+  NRF_LOG_INFO("SettingWatchFace::UnLoad %d", this);
+#endif
+  pageIndicator.UnLoad();
+  return Screen::UnLoad();
 }
 
 SettingWatchFace::~SettingWatchFace() {
+#ifdef NRF_LOG_INFO
+  NRF_LOG_INFO("SettingWatchFace::delete %d", this);
+#endif
   UnLoad();
   System::SystemTask::displayApp->settingsController.SaveSettings();
 }
@@ -79,11 +84,11 @@ bool SettingWatchFace::OnTouchEvent(TouchEvents event) {
 
 void SettingWatchFace::onButtonEvent(lv_obj_t* obj) {
 #ifdef NRF_LOG_INFO
- // NRF_LOG_INFO("SettingWatchFace::onButtonEvent %d", obj);
+  // NRF_LOG_INFO("SettingWatchFace::onButtonEvent %d", obj);
 #endif
   if (enableEvent) {
 #ifdef NRF_LOG_INFO
-   // NRF_LOG_INFO("SettingWatchFace::onButtonEvent enabled %d", obj);
+    // NRF_LOG_INFO("SettingWatchFace::onButtonEvent enabled %d", obj);
 #endif
     WatchFace watchface = *static_cast<WatchFace*>(obj->user_data);
     System::SystemTask::displayApp->settingsController.SetWatchFace(watchface);

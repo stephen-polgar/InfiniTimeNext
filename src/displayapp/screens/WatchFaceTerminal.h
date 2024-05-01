@@ -13,10 +13,8 @@ namespace Pinetime {
       class WatchFaceTerminal : public Screen {
       public:
         WatchFaceTerminal();
-        ~WatchFaceTerminal() override;
-        void Load() override;
-        bool UnLoad() override;
-        void Refresh() override;
+       void Load() override;
+       void Refresh() override;
 
       private:
         Utility::DirtyValue<int> batteryPercentRemaining;

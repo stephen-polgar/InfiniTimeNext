@@ -2,17 +2,20 @@
 
 This page will teach you:
 
-- what screens and apps are in InfiniTime
+- what screens and apps are in InfiniTimeNext
 - how to implement your own app
 
 ## Theory
 
-The user interface of InfiniTime is made up of **screens**.
+The user interface of InfiniTimeNext is made up of **screens**.
 Screens that are opened from the app launcher are considered **apps**.
-Every app in InfiniTime is its own class.
-An instance of the class is created when the app is launched, and destroyed when the user exits the app.
+Every app in InfiniTimeNext is its own class.
 Apps run inside the `DisplayApp` task (briefly discussed [here](./Intro.md)).
-Apps are responsible for everything drawn on the screen when they are running.
+When the user launch an app new instance of the class is created when it is not in the `ScreenStack` and the `DisplayApp` calls the `void Load()` method.
+Apps `void Load()` method are responsible for everything drawn on the screen.
+On leaving the app `DisplayApp` calls the `bool UnLoad()` method.  
+If the `bool UnLoad()` method returns true, `DisplayApp` stores the app in `ScreenStack`, otherwise deletes it.
+The `bool UnLoad()` method normally calls the ,lv_obj_clean(lv_scr_act())` method, which also deletes any lvgl objects created by other objects. 
 Apps can be refreshed periodically and reacts to external events (touch or button).
 
 ## Interface
@@ -24,7 +27,7 @@ from [`Pinetime::Applications::Screens::Screen`](/src/displayapp/screens/Screen.
 Each app defines its own constructor.
 The constructors mostly used to create new object with different parameters (ex: [AlarmSet](/src/displayapp/screens/AlarmSet.h),...). The Screen::Load() method is responsible for initializing the UI of the app.
 
-The **destructor** cleans up LVGL and restores any changes (for example re-enable sleeping).
+The **destructor** normally calls the `bool UnLoad()` method for cleans up LVGL and restores any changes (for example re-enable sleeping).
 
 App classes can override `bool OnButtonPushed()`, `bool OnTouchEvent(TouchEvents event)`
 and `bool OnTouchEvent(uint16_t x, uint16_t y)` to implement their own functionality for those events.
@@ -36,10 +39,9 @@ that will call the method `Refresh()` periodically.
 
 There are basically 3 types of applications : **system** apps and **user** apps and **watch faces**.
 
-**System** applications are always built into InfiniTime, and InfiniTime cannot work properly without those apps.
-Settings, notifications and the application launcher are examples of such system applications.
+**System** applications are always built into InfiniTimeNext, and InfiniTimeNext cannot work properly without those apps.
 
-**User** applications are optionally built into the firmware. They extend the functionalities of the system.
+**User** applications are optionally built into the firmware. 
 
 **Watch faces** are very similar to the **user** apps, they are optional, but at least one must be built into the firmware.
 
@@ -163,32 +165,23 @@ MyApp::MyApp() : Screen(Apps::MyApp) {
 void MyApp::Load() {
   running = true;
  // using optional arguments for load if any
-  parentBackground = lv_obj_create(lv_scr_act(), NULL);  // used as a parent of other objects
-  lv_obj_set_style_local_bg_color(parentBackground, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);  // for black background
-  lv_obj_set_size(parentBackground, LV_HOR_RES, LV_VER_RES);  
-  lv_obj_t* title = lv_label_create(parentBackground, NULL);  
+  lv_obj_t* title = lv_label_create(lv_scr_act(), NULL);  
   lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
   lv_label_set_text_static(title, "My test application");
   lv_obj_align(title, NULL, LV_ALIGN_CENTER, 0, 0);
-  /*
-   Controllers:
-   System::SystemTask::displayApp->settingsController , ....
-   System::SystemTask::displayApp->systemTask->nimbleController.weatherService , ...
+  /**
+  * Controllers:
+  * System::SystemTask::displayApp->settingsController , ...
+  * System::SystemTask::displayApp->systemTask->nimbleController.weatherService , ...
   */
 }
 
-bool MyApp::UnLoad()  {
-  if (running) {
-   running = false;
-   // Avoid using `lv_obj_clean(lv_scr_act())`, as this will delete all lvgl objects used by other objects.
-   lv_obj_del(parentBackground);
-  }
-  return true; // value of true enables this object to be stored in the ScreenStack
-}
- 
-MyApp::~MyApp() {
-  UnLoad();
-}
+/**
+* Override `Screen::~Screen()` with `MyApp::~MyApp() { UnLoad(); }`
+* and `bool Screen::UnLoad()` with `bool MyApp::UnLoad() { ... }`
+* if necessary.
+*/ 
+
 ```
 
 Both of these files should be in [displayapp/screens/](/src/displayapp/screens/).
@@ -213,7 +206,7 @@ Starting applications:
 
 ```cpp
 #include "systemtask/SystemTask.h"
-System::SystemTask::displayApp->StartApp(Apps::MyApp);  // old but working method for use constant arguments
+System::SystemTask::displayApp->StartApp(Apps::MyApp);  // old but working method for use permanent arguments
 System::SystemTask::displayApp->StartApp(new MyApp(/* arguments */);  // new method for use different arguments
 ```
 

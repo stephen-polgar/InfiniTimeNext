@@ -10,12 +10,12 @@
 
 using namespace Pinetime::Applications::Screens;
 
-TimerSet::TimerSet(Controllers::TimerController* t) : timer {t}, Screen(Apps::TimerSet) {
+TimerSet::TimerSet(Controllers::TimerController* t) : timer {t}, ScreenRefresh(Apps::TimerSet) {
   if (!t)
     timer = new Controllers::TimerController();
 }
 
-TimerSet::TimerSet() : Screen(Apps::TimerSet) {
+TimerSet::TimerSet() : ScreenRefresh(Apps::TimerSet) {
   TimerDone();
 }
 
@@ -91,23 +91,7 @@ void TimerSet::Load() {
     setTimerStopped();
     updateTime(timer->duration);
   }
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-}
-
-bool TimerSet::UnLoad() {
-#ifdef Log
-  NRF_LOG_INFO("TimerSet::UnLoad=%d", this);
-#endif
-  if (running) {
-    running = false;
-    lv_task_del(taskRefresh);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-TimerSet::~TimerSet() {
-  UnLoad();
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 void TimerSet::buttonPressed() {

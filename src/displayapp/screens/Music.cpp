@@ -44,7 +44,7 @@ inline void lv_img_set_src_arr(lv_obj_t* img, const lv_img_dsc_t* src_img) {
  *
  * TODO: Investigate Apple Media Service and AVRCPv1.6 support for seamless integration
  */
-Music::Music() : Screen(Apps::Music) {
+Music::Music() : ScreenRefresh(Apps::Music) {
 }
 
 void Music::Load() {
@@ -141,17 +141,14 @@ void Music::Load() {
 
   System::SystemTask::displayApp->systemTask->nimbleController.musicService.event(Controllers::MusicService::EVENT_MUSIC_OPEN);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 bool Music::UnLoad() {
   if (running) {
-    running = false;
-    lv_task_del(taskRefresh);
-    lv_style_reset(&btn_style);
-    lv_obj_clean(lv_scr_act());
+    lv_style_reset(&btn_style);   
   }
-  return true;
+  return ScreenRefresh::UnLoad();
 }
 
 Music::~Music() {

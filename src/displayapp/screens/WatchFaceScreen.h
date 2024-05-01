@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include <string>
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class WatchFaceScreen : public Screen {
+      class WatchFaceScreen : public ScreenRefresh {
       public:
         WatchFaceScreen();
         ~WatchFaceScreen() override;
@@ -22,8 +22,7 @@ namespace Pinetime {
         static lv_obj_t* image;
 #endif
       private:
-        void Refresh() override;
-        lv_task_t* taskRefresh;
+        void Refresh() override;      
         Screen* current = NULL;
       };
     }

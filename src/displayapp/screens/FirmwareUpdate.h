@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "components/ble/BleController.h"
 #include "FreeRTOS.h"
 
@@ -8,13 +8,11 @@ namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class FirmwareUpdate : public Screen {
+      class FirmwareUpdate : public ScreenRefresh {
       public:
         FirmwareUpdate(const Controllers::Ble& bleController);
-        ~FirmwareUpdate() override;
         void Load() override;
-        bool UnLoad() override;
-
+       
       private:
         void Refresh() override;
         enum class States : uint8_t { Idle, Running, Validated, Error };
@@ -33,7 +31,6 @@ namespace Pinetime {
 
         void UpdateError();
 
-        lv_task_t* taskRefresh;
         TickType_t startTime;
       };
     }

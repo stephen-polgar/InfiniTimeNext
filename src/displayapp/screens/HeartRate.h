@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "components/heartrate/HeartRateController.h"
 #include "Symbols.h"
 
@@ -8,7 +8,7 @@ namespace Pinetime {
    namespace Applications {
     namespace Screens {
 
-      class HeartRate : public Screen {
+      class HeartRate : public ScreenRefresh {
       public:
         HeartRate();
         ~HeartRate() override;
@@ -24,8 +24,6 @@ namespace Pinetime {
         lv_obj_t* label_hr;
         lv_obj_t* label_status;
         lv_obj_t* label_startStop;
-
-        lv_task_t* taskRefresh;
       };
     }
 

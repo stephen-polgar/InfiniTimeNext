@@ -26,23 +26,23 @@ InfiniSimNext simulator uses this settings too.
 // Select only the apps you need.
 // All apps will not fit in memory and the installation will fail.
 
-//#define UseCalendar
+#define UseCalendar
 #define UseCalculator
 #define UseMotion
-//#define UsePaddle
+// #define UsePaddle
 
 #define UseTwos
 // #define UseDice
 // #define UseMetronome
 // #define UseInfiniPaint
 
-//#define UseWatchFaceTerminal
+// #define UseWatchFaceTerminal
 #define UseWatchFaceInfineat
 #define UseWatchFacePineTimeStyle
 
 // File Manager for view images and set selected image for current watch face backgound.
 // You can review all files on 4MB external (SPI) Flash.
-#define UseFileManager
+// #define UseFileManager
 
 //// End built in apps ////
 

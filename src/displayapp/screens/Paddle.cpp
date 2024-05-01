@@ -4,7 +4,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Paddle::Paddle() : Screen(Apps::Paddle) {
+Paddle::Paddle() : ScreenRefresh(Apps::Paddle) {
 }
 
 void Paddle::Load() {
@@ -33,21 +33,9 @@ void Paddle::Load() {
   Refresh();
   lv_obj_align(points, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 10);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
-bool Paddle::UnLoad() {
-  if (running) {
-    running = false;
-    lv_task_del(taskRefresh);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Paddle::~Paddle() {
-  UnLoad();
-}
 
 void Paddle::Refresh() {
   ballX += dx;

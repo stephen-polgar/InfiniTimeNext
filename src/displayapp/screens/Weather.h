@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "components/ble/SimpleWeatherService.h"
 #include "Symbols.h"
 #include "utility/DirtyValue.h"
@@ -9,13 +9,11 @@ namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class Weather : public Screen {
+      class Weather : public ScreenRefresh {
       public:
         Weather();
-        ~Weather() override;
         void Load() override;
-        bool UnLoad() override;
-
+       
       private:
         void Refresh() override;
         lv_color_t temperatureColor(int16_t temperature);
@@ -31,8 +29,6 @@ namespace Pinetime {
         lv_obj_t* minTemperature;
         lv_obj_t* maxTemperature;
         lv_obj_t* forecast;
-
-        lv_task_t* taskRefresh;
       };
     }
 

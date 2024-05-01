@@ -8,11 +8,10 @@ namespace Pinetime {
       class PassKey : public Screen {
       public:
         explicit PassKey(uint32_t key);
-        ~PassKey() override;
         void Load() override;
-        bool UnLoad() override;   
-        private:
-          uint32_t key;
+
+      private:
+        uint32_t key;
       };
     }
   }

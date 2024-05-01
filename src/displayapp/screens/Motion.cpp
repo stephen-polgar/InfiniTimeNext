@@ -6,7 +6,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Motion::Motion() : Screen(Apps::Motion) {
+Motion::Motion() : ScreenRefresh(Apps::Motion) {
 }
 
 void Motion::Load() {
@@ -42,21 +42,8 @@ void Motion::Load() {
   lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
   lv_obj_align(labelStep, chart, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
   running = true;
-}
-
-bool Motion::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Motion::~Motion() {
-  UnLoad();
 }
 
 void Motion::Refresh() {

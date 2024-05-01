@@ -21,10 +21,8 @@ namespace Pinetime {
       class Calculator : public Screen {
       public:
         Calculator();
-        ~Calculator() override;      
         void Load() override;
-        bool UnLoad() override;
-       
+             
       private:
         lv_obj_t* buttonMatrix;
         lv_obj_t* valueLabel;

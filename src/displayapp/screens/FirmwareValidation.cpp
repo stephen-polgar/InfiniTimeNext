@@ -54,18 +54,6 @@ void FirmwareValidation::Load() {
   }
 }
 
-bool FirmwareValidation::UnLoad() {
-  if (running) {   
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-FirmwareValidation::~FirmwareValidation() {
-  UnLoad();
-}
-
 void FirmwareValidation::onButtonEvent(lv_obj_t* object) {
   if (object == buttonValidate) {
     validator.Validate();   

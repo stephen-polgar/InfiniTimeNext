@@ -62,18 +62,6 @@ void WatchFaceDigital::Load() {
   running = true;
 }
 
-bool WatchFaceDigital::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-WatchFaceDigital::~WatchFaceDigital() {
-  UnLoad();
-}
-
 void WatchFaceDigital::Refresh() {
   statusIcons.Refresh();
 

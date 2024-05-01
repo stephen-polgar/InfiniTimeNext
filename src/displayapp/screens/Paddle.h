@@ -1,18 +1,16 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #ifdef UsePaddle
   #include "Symbols.h"
 
 namespace Pinetime {
    namespace Applications {
     namespace Screens {
-      class Paddle : public Screen {
+      class Paddle : public ScreenRefresh {
       public:
         Paddle();
-        ~Paddle() override;
         void Load() override;
-        bool UnLoad() override;
         bool OnTouchEvent(TouchEvents event) override;
         bool OnTouchEvent(uint16_t x, uint16_t y) override;
 
@@ -32,8 +30,7 @@ namespace Pinetime {
         lv_obj_t* points;
         lv_obj_t* paddle;
         lv_obj_t* ball;
-        lv_obj_t* background;
-        lv_task_t* taskRefresh;
+        lv_obj_t* background;       
       };
     }
 

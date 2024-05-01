@@ -1,12 +1,12 @@
 #pragma once
 
-#include "displayapp/screens/Screen.h"
+#include "displayapp/screens/ScreenRefresh.h"
 
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
 
-      class SettingShakeThreshold : public Screen {
+      class SettingShakeThreshold : public ScreenRefresh {
       public:
         SettingShakeThreshold();
 
@@ -22,8 +22,7 @@ namespace Pinetime {
         uint8_t calibrating;
         bool EnableForCal;
         uint32_t vDecay, vCalTime;
-        lv_obj_t *positionArc, *animArc, *calButton, *calLabel;
-        lv_task_t* refreshTask;
+        lv_obj_t *positionArc, *animArc, *calButton, *calLabel;       
       };
     }
   }

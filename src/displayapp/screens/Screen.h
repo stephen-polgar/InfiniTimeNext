@@ -11,7 +11,7 @@ namespace Pinetime {
       public:
         enum class FullRefreshDirections : uint8_t { None, Up, Down, Left, Right, LeftAnim, RightAnim };
       
-        virtual ~Screen() = default;
+        virtual ~Screen();
 
         bool IsRunning() const {
           return running;
@@ -25,9 +25,7 @@ namespace Pinetime {
         virtual void Load() {
         }
 
-        virtual bool UnLoad() {
-          return false;
-        }
+        virtual bool UnLoad();
 
         /** @return false if the event hasn't been handled by the app, true if it has been handled and will cancel lvgl tap*/
         virtual bool OnTouchEvent(TouchEvents /*event*/) {
@@ -50,8 +48,7 @@ namespace Pinetime {
       protected:
         Screen(Apps Id = Apps::None);
         Screen(WatchFace Id);
-        bool running = false;
-        static void RefreshTaskCallback(lv_task_t* task);
+        bool running = false;        
       };
     }
   }

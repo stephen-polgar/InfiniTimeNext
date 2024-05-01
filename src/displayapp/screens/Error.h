@@ -9,10 +9,8 @@ namespace Pinetime {
       class Error : public Screen {
       public:
         Error(System::BootErrors error);
-        ~Error() override;
         void Load() override;
-        bool UnLoad() override;
-
+      
       private:
         System::BootErrors error;
         static void buttonEventCallback(lv_obj_t*, lv_event_t);

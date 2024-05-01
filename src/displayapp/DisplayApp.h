@@ -83,7 +83,7 @@ namespace Pinetime {
       void InitHw();
       void refresh();
       void loadScreen(Apps app, Screen::FullRefreshDirections direction);
-      void loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool store = true);
+      void loadScreen(Screen* screen, Screen::FullRefreshDirections direction, bool push = true);
 
       System::BootErrors bootError;
       void ApplyBrightness();

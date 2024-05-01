@@ -1,6 +1,6 @@
 #include "displayapp/widgets/ButtonListItem.h"
+#include "systemtask/SystemTask.h"
 #include "displayapp/InfiniTimeTheme.h"
-
 
 using namespace Pinetime::Applications::Widgets;
 
@@ -11,20 +11,26 @@ ButtonListItem::ButtonListItem(std::function<void(bool, void*)> on_checked,
   : on_checked {on_checked}, on_open {on_open}, on_removed {on_removed}, on_addNew {on_addNew} {
 }
 
+void ButtonListItem::Load() {
+  statusIcons.Load();
+  label_time = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_align(label_time, LV_LABEL_ALIGN_CENTER);
+  lv_obj_align(label_time, lv_scr_act(), LV_ALIGN_IN_TOP_LEFT, 0, 0);
+}
+
 void ButtonListItem::CreateNewItem(lv_obj_t* label, bool checked, void* data) {
   lv_obj_t* cont = lv_cont_create(lv_scr_act(), NULL);
   cont->user_data = data;
-
   lv_obj_set_style_local_bg_opa(cont, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
   lv_obj_set_style_local_pad_all(cont, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 3);
   lv_obj_set_style_local_pad_inner(cont, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 8);
   lv_obj_set_style_local_border_width(cont, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, 1);
-
+  
   lv_cont_set_fit(cont, LV_FIT_TIGHT);
   lv_cont_set_layout(cont, LV_LAYOUT_ROW_MID);
-  const lv_coord_t size = 40;
+  static const lv_coord_t size = 40;
 
-  lv_obj_t* cb = lv_checkbox_create(cont, NULL);  
+  lv_obj_t* cb = lv_checkbox_create(cont, NULL);
   lv_checkbox_set_text_static(cb, "");
   lv_obj_set_size(cb, size, size);
   lv_checkbox_set_checked(cb, checked);
@@ -67,7 +73,7 @@ void ButtonListItem::CreateNewItem(lv_obj_t* label, bool checked, void* data) {
   if (last)
     lv_obj_align(cont, last, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
   else
-    lv_obj_align(cont, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 0);
+    lv_obj_align(cont, NULL, LV_ALIGN_IN_TOP_MID, 0, 20);
   last = cont;
 }
 
@@ -78,7 +84,7 @@ void ButtonListItem::CreateButtonNew() {
   btnNew->user_data = this;
   lv_obj_set_event_cb(btnNew, [](lv_obj_t* obj, lv_event_t event) {
     if (event == LV_EVENT_CLICKED) {
-      static_cast<ButtonListItem*>(obj->user_data)->on_addNew();      
+      static_cast<ButtonListItem*>(obj->user_data)->on_addNew();
     }
   });
   lv_label_set_text_static(label, "+");
@@ -91,4 +97,9 @@ void ButtonListItem::EnableAddButton(bool enable) {
 
 void ButtonListItem::Unload() {
   last = NULL;
+}
+
+void ButtonListItem::Refresh() {
+  lv_label_set_text(label_time, System::SystemTask::displayApp->dateTimeController.FormattedTime().c_str());
+  statusIcons.Refresh();
 }

@@ -16,10 +16,10 @@ TimeSeparated_t StopWatch::currentTimeSeparated;
 
 constexpr TickType_t blinkInterval = pdMS_TO_TICKS(1000);
 
-StopWatch::StopWatch() : Screen(Apps::StopWatch) {
+StopWatch::StopWatch() : ScreenRefresh(Apps::StopWatch) {
 }
 
-void StopWatch::Load() {  
+void StopWatch::Load() {
   if (currentState == States::Init) {
     oldTimeElapsed = 0;
     blinkTime = 0;
@@ -72,18 +72,13 @@ void StopWatch::Load() {
     SetInterfacePaused();
     refresh(currentTimeSeparated);
   }
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
   running = true;
 }
 
 bool StopWatch::UnLoad() {
-  if (running) {    
-    lv_task_del(taskRefresh);
-    running = false;
-    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
+  System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
+  return ScreenRefresh::UnLoad();
 }
 
 StopWatch::~StopWatch() {

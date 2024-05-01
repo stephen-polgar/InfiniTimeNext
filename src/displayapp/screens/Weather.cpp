@@ -5,7 +5,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Weather::Weather() : Screen(Apps::Weather) {
+Weather::Weather() : ScreenRefresh(Apps::Weather) {
 }
 
 void Weather::Load() {
@@ -70,21 +70,8 @@ void Weather::Load() {
     lv_table_set_cell_align(forecast, 3, i, LV_LABEL_ALIGN_CENTER);
   }
   Refresh();
-  taskRefresh = lv_task_create(RefreshTaskCallback, 1000, LV_TASK_PRIO_MID, this);
+  createRefreshTask(1000, LV_TASK_PRIO_MID);
   running = true;
-}
-
-bool Weather::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-Weather::~Weather() {
-  UnLoad();
 }
 
 lv_color_t Weather::temperatureColor(int16_t temperature) {

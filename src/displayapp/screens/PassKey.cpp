@@ -13,15 +13,3 @@ void PassKey::Load() {
   lv_label_set_text_fmt(passkeyLabel, "%06u", key);
   lv_obj_align(passkeyLabel, nullptr, LV_ALIGN_CENTER, 0, -20);
 }
-
-bool PassKey::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-PassKey::~PassKey() {
-  UnLoad();
-}

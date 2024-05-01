@@ -12,8 +12,7 @@ namespace Pinetime {
         SettingWakeUp();
         ~SettingWakeUp() override;
         void Load() override;
-        bool UnLoad() override;
-
+      
       private:
         void updateSelected(lv_obj_t* object);
         static void event_handler(lv_obj_t* obj, lv_event_t event);       

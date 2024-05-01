@@ -6,7 +6,7 @@
 
 using namespace Pinetime::Applications::Screens;
 
-Metronome::Metronome() : Screen(Apps::Metronome) {
+Metronome::Metronome() : ScreenRefresh(Apps::Metronome) {
 }
 
 void Metronome::Load() {
@@ -54,17 +54,14 @@ void Metronome::Load() {
   lblPlayPause = lv_label_create(playPause, nullptr);
   lv_label_set_text_static(lblPlayPause, Symbols::play);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 bool Metronome::UnLoad() {
-  if (running) {
-    lv_task_del(taskRefresh);
-    running = false;
-    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);
-    lv_obj_clean(lv_scr_act());
+  if (running) {   
+    System::SystemTask::displayApp->systemTask->PushMessage(System::Messages::EnableSleeping);   
   }
-  return true;
+  return ScreenRefresh::UnLoad();
 }
 
 Metronome::~Metronome() {

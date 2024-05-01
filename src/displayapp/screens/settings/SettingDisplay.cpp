@@ -29,14 +29,6 @@ void SettingDisplay::Load() {
   }
 }
 
-bool SettingDisplay::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return false;
-}
-
 SettingDisplay::~SettingDisplay() {
   UnLoad();
   System::SystemTask::displayApp->settingsController.SaveSettings();

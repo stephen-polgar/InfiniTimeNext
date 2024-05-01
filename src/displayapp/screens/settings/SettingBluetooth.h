@@ -10,10 +10,7 @@ namespace Pinetime {
       class SettingBluetooth : public Screen {
       public:
         SettingBluetooth();
-        ~SettingBluetooth() override;
-
         void Load() override;
-        bool UnLoad() override;
       };
     }
   }

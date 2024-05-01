@@ -37,18 +37,6 @@ void Error::Load() {
   lv_obj_set_style_local_bg_color(btnOk, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_ORANGE);
 }
 
-bool Error::UnLoad() {
-  if (running) {
-    lv_obj_clean(lv_scr_act());
-    running = false;
-  }
-  return true;
-}
-
-Error::~Error() {
-  UnLoad();
-}
-
 void Error::buttonEventCallback(lv_obj_t* obj, lv_event_t /*event*/) {
   static_cast<Error*>(obj->user_data)->UnLoad();
 }

@@ -8,7 +8,7 @@ using Pinetime::Controllers::AlarmController;
 bool Alarm::changed = false;
 
 Alarm::Alarm()
-  : Screen(Apps::Alarm),
+  : ScreenRefresh(Apps::Alarm),
     buttonListItem {[this](bool enabled, void* data) {
                       on_checked(enabled, static_cast<AlarmController*>(data));
                     },
@@ -24,21 +24,21 @@ Alarm::Alarm()
 }
 
 void Alarm::Load() {
-  running = true;
+  buttonListItem.Load();
   for (auto* alarmController : AlarmController::alarmControllers) {
     createNewItem(alarmController);
   }
   buttonListItem.CreateButtonNew();
   updateAddButton();
+
+  Refresh();
+  createRefreshTask(5000, LV_TASK_PRIO_MID);
+  running = true;
 }
 
 bool Alarm::UnLoad() {
-  if (running) {
-    lv_obj_clean(lv_scr_act());
-    buttonListItem.Unload();
-    running = false;
-  }  
-  return true;
+  buttonListItem.Unload();     
+  return ScreenRefresh::UnLoad();
 }
 
 Alarm::~Alarm() {
@@ -83,4 +83,8 @@ void Alarm::on_addNew() {
   createNewItem(alarmController);
   System::SystemTask::displayApp->StartApp(new AlarmSet(alarmController));
   updateAddButton();
+}
+
+void Alarm::Refresh() {
+  buttonListItem.Refresh();
 }

@@ -365,6 +365,7 @@ list(APPEND SOURCE_FILES
         logging/NrfLogger.cpp
         displayapp/DisplayApp.cpp
         displayapp/screens/Screen.cpp
+        displayapp/screens/ScreenRefresh.cpp
         displayapp/screens/WatchFaceScreen.cpp                 
         displayapp/screens/StopWatch.cpp
         displayapp/screens/BatteryIcon.cpp
@@ -591,6 +592,7 @@ set(INCLUDE_FILES
         displayapp/Messages.h
         displayapp/TouchEvents.h
         displayapp/screens/Screen.h
+        displayapp/screens/ScreenRefresh.h
         displayapp/screens/WatchFaceScreen.h       
         displayapp/screens/StopWatch.h       
         displayapp/screens/BatteryIcon.h

@@ -16,18 +16,6 @@ void InfiniPaint::Load() {
   std::fill(b, b + bufferSize, selectColor);
 }
 
-bool InfiniPaint::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());
-  }
-  return true;
-}
-
-InfiniPaint::~InfiniPaint() {
-  UnLoad();
-}
-
 bool InfiniPaint::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
   switch (event) {
     case Pinetime::Applications::TouchEvents::LongTap:

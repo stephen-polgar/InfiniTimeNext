@@ -17,7 +17,7 @@
 */
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include <FreeRTOS.h>
 #include <portmacro_cmsis.h>
 #include <string>
@@ -26,7 +26,7 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class Music : public Screen {
+      class Music : public ScreenRefresh {
       public:
         Music();
         ~Music() override;
@@ -70,8 +70,6 @@ namespace Pinetime {
         TickType_t lastIncrement;
 
         bool playing;
-
-        lv_task_t* taskRefresh;
 
         /** Watchapp */
       };

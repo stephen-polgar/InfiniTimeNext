@@ -2,7 +2,6 @@
 
 #include "Screen.h"
 #include "displayapp/widgets/LineIndicator.h"
-#include "displayapp/widgets/StatusIcons.h"
 #include "utility/ArrayTouchHandler.h"
 #include <array>
 
@@ -27,15 +26,11 @@ namespace Pinetime {
         void load(uint8_t indexBegin, uint8_t indexEnd, Screen::FullRefreshDirections direction);
         uint8_t indexBegin;
         bool enableEvent;
-        lv_obj_t* btnm;
-        void Refresh() override;
+        lv_obj_t* btnm = NULL;       
         Utility::ArrayTouchHandler arrayTouchHandler;
         std::array<AppList, UserAppTypes::Count> apps;
         Widgets::LineIndicator pageIndicator;
-        Widgets::StatusIcons statusIcons;
-        void onValueChangedEvent(uint8_t index);
-        lv_task_t* taskUpdate = NULL;
-        lv_obj_t* label_time;
+        void onValueChangedEvent(uint8_t index);        
         const char* btnmMap[8];
       };
     }

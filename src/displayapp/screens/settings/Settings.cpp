@@ -85,7 +85,14 @@ Settings::~Settings() {
 }
 
 bool Settings::OnTouchEvent(Applications::TouchEvents event) {
-  return arrayTouchHandler.OnTouchEvent(event);
+   switch (event) {   
+    case TouchEvents::SwipeLeft:
+      System::SystemTask::displayApp->StartApp(Apps::SettingWatchFace, Screen::FullRefreshDirections::LeftAnim);
+      break;
+    default:
+      return arrayTouchHandler.OnTouchEvent(event);
+  }
+  return false;
 }
 
 void Settings::onButtonEvent(lv_obj_t* obj) {

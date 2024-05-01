@@ -9,10 +9,8 @@ namespace Pinetime {
       class FirmwareValidation : public Screen {
       public:
         FirmwareValidation(Controllers::FirmwareValidator& validator);
-        ~FirmwareValidation() override;
         void Load() override;
-        bool UnLoad() override;
-
+    
       private:
         Controllers::FirmwareValidator& validator;
         void onButtonEvent(lv_obj_t* object);

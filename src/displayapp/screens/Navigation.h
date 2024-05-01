@@ -17,7 +17,7 @@
 */
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "components/fs/FS.h"
 #include "Symbols.h"
 #include <string>
@@ -26,16 +26,14 @@
 namespace Pinetime {
    namespace Applications {
     namespace Screens {
-      class Navigation : public Screen {
+      class Navigation : public ScreenRefresh {
       public:
         explicit Navigation();
-        ~Navigation() override;
-        void Load() override;
-        bool UnLoad() override;
-        void Refresh() override;
+        void Load() override;              
         static bool IsAvailable(Controllers::FS& filesystem);
 
       private:
+        void Refresh() override;
         lv_obj_t* imgFlag;
         lv_obj_t* txtNarrative;
         lv_obj_t* txtManDist;
@@ -45,8 +43,6 @@ namespace Pinetime {
         std::string narrative;
         std::string manDist;
         int progress;
-
-        lv_task_t* taskRefresh;
       };
     }
 

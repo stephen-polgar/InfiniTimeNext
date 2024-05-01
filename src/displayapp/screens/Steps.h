@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "displayapp/apps/Apps.h"
 #include "Symbols.h"
 
@@ -8,20 +8,17 @@ namespace Pinetime {
     namespace Applications {
     namespace Screens {
 
-      class Steps : public Screen {
+      class Steps : public ScreenRefresh {
       public:
-        Steps();
-        ~Steps() override;
+        Steps();       
         void Load() override;
-        bool UnLoad() override;
         bool OnTouchEvent(TouchEvents) override;
 
       private:
         void Refresh() override;
         void lapBtnClicked();
         static void lap_event_handler(lv_obj_t* obj, lv_event_t event);      
-        lv_obj_t *lSteps, *stepsArc, *resetBtn, *resetButtonLabel, *tripLabel;
-        lv_task_t* taskRefresh;
+        lv_obj_t *lSteps, *stepsArc, *resetBtn, *resetButtonLabel, *tripLabel;       
       };
     }
 

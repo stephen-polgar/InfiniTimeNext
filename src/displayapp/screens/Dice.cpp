@@ -32,7 +32,7 @@ namespace {
   }
 }
 
-Dice::Dice() : Screen(Apps::Dice) {
+Dice::Dice() : ScreenRefresh(Apps::Dice) {
 }
 
 void Dice::Load() {
@@ -123,20 +123,17 @@ void Dice::Load() {
   if (enableShakeForDice) {
     System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, true);
   }
-  refreshTask = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
 }
 
 bool Dice::UnLoad() {
-  if (running) {
-    running = false;
+  if (running) { 
     // reset the shake to wake mode.
     if (enableShakeForDice) {
       System::SystemTask::displayApp->settingsController.setWakeUpMode(Controllers::Settings::WakeUpMode::Shake, false);
-    }
-    lv_task_del(refreshTask);
-    lv_obj_clean(lv_scr_act());
+    }  
   }
-  return true;
+  return ScreenRefresh::UnLoad();
 }
 
 Dice::~Dice() {

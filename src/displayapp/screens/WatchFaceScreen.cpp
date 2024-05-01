@@ -27,7 +27,7 @@ std::string WatchFaceScreen::bgImage;
 lv_obj_t* WatchFaceScreen::image = NULL;
 #endif
 
-WatchFaceScreen::WatchFaceScreen() : Screen(Apps::Clock) {
+WatchFaceScreen::WatchFaceScreen() : ScreenRefresh(Apps::Clock) {
 }
 
 void WatchFaceScreen::Load() {
@@ -56,7 +56,7 @@ void WatchFaceScreen::Load() {
   current->Load();
   running = current->IsRunning();
   if (running) {
-    taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+    createRefreshTask(LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID);
   } else {
     System::SystemTask::displayApp->settingsController.SetWatchFace(WatchFace::Digital);
   }

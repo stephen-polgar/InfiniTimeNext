@@ -12,8 +12,7 @@ namespace Pinetime {
         SettingSteps();
         ~SettingSteps() override;
         void Load() override;
-        bool UnLoad() override;
-
+      
       private:
         void updateGoal(lv_obj_t* object, lv_event_t event);
         void updateLength(lv_obj_t* object, lv_event_t event);

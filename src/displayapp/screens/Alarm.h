@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "ScreenRefresh.h"
 #include "displayapp/widgets/ButtonListItem.h"
 #include "components/alarm/AlarmController.h"
 #include "Symbols.h"
@@ -8,7 +8,7 @@
 namespace Pinetime {
   namespace Applications {
     namespace Screens {
-      class Alarm : public Screen {
+      class Alarm : public ScreenRefresh {
       public:
         explicit Alarm();
         ~Alarm() override;
@@ -16,6 +16,7 @@ namespace Pinetime {
         bool UnLoad() override;
 
       private:
+        void Refresh() override;
         void createNewItem(Controllers::AlarmController* alarmController);
         static bool changed;
         void updateAddButton();

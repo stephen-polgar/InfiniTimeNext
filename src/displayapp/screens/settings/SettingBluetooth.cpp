@@ -31,15 +31,3 @@ void SettingBluetooth::Load() {
     }
   });
 }
-
-bool SettingBluetooth::UnLoad() {
-  if (running) {
-    running = false;
-    lv_obj_clean(lv_scr_act());   
-  }
-  return true;
-}
-
-SettingBluetooth::~SettingBluetooth() {
-  UnLoad();
-}
